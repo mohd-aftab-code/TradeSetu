@@ -198,7 +198,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, selectedPlan, on
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
             <p className="text-purple-200 text-sm">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <button className="text-purple-400 hover:text-purple-300 font-medium transition-colors duration-200">
                 Sign up for free
               </button>

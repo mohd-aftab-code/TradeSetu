@@ -518,15 +518,15 @@ const BillingPage: React.FC = () => {
           <div className="mt-4 space-y-4">
             <div className="bg-white/5 rounded-xl p-4">
               <h3 className="text-lg font-semibold text-white mb-2">How do I change my subscription plan?</h3>
-              <p className="text-blue-200">Click the 'Upgrade Subscription' button above and follow the instructions in the dialog.</p>
+              <p className="text-blue-200">Click the &apos;Upgrade Subscription&apos; button above and follow the instructions in the dialog.</p>
             </div>
             <div className="bg-white/5 rounded-xl p-4">
               <h3 className="text-lg font-semibold text-white mb-2">How can I download or email my invoice?</h3>
-              <p className="text-blue-200">Use the 'Download Latest Invoice' or 'Email Latest Invoice' buttons in the Invoice History section.</p>
+              <p className="text-blue-200">Use the &apos;Download Latest Invoice&apos; or &apos;Email Latest Invoice&apos; buttons in the Invoice History section.</p>
             </div>
             <div className="bg-white/5 rounded-xl p-4">
               <h3 className="text-lg font-semibold text-white mb-2">How do I update my payment method?</h3>
-              <p className="text-blue-200">Go to the Payment Methods section and click 'Add New Payment Method' or 'Edit' on an existing card.</p>
+              <p className="text-blue-200">Go to the Payment Methods section and click &apos;Add New Payment Method&apos; or &apos;Edit&apos; on an existing card.</p>
             </div>
             <div className="bg-white/5 rounded-xl p-4">
               <h3 className="text-lg font-semibold text-white mb-2">Who do I contact for billing support?</h3>
