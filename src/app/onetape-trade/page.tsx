@@ -424,7 +424,8 @@ const OnetapeTrade: React.FC = () => {
                      </div>
                    </div>
 
-                   {/* Strategy Label */}
+                     
+                     {/* Strategy Label */}
                    <div className="mb-4">
                      <label className="block text-blue-200 text-sm font-semibold mb-2">Strategy Label (Optional)</label>
                      <input

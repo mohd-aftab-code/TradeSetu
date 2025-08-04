@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import { Shield, UserPlus, Eye, EyeOff } from 'lucide-react';
 

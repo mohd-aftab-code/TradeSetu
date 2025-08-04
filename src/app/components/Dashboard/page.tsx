@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import { TrendingUp, TrendingDown, Target, DollarSign, Activity, Users, UserCircle2, Info, ArrowLeft, ArrowRight, Plus, Handshake } from 'lucide-react';
 import { mockUser, mockStrategies, mockLiveTrades, mockMarketData } from '../../../data/mockData';

@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import { Settings, Save, Database, Shield, Bell, DollarSign } from 'lucide-react';
 

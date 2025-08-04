@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import { User, Mail, Phone, MapPin, CreditCard, Settings, Save } from 'lucide-react';
 import { mockUser } from '../../../data/mockData';

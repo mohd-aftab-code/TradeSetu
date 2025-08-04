@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import { Users, Search, Filter, Edit, Trash2, Eye, Crown, Shield, Ban } from 'lucide-react';
 

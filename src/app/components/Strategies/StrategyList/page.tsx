@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Play, Pause, TrendingUp, Zap, Clock, BarChart3, Copy } from 'lucide-react';
 import { mockStrategies } from '../../../../data/mockData';
