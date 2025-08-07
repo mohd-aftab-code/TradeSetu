@@ -2,17 +2,22 @@
 
 import React, { useState } from 'react';
 import { Users, TrendingUp, DollarSign, Activity, Shield, LogOut, Settings, Bell } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import UserManagement from '../UserManagement/page';
 import AdminStats from '../AdminStats/page';
 import SystemSettings from '../SystemSettings/page';
 import AnalyticsPage from '../Analytics/page';
 
-interface AdminDashboardProps {
-  onLogout: () => void;
-}
-
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
+const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const router = useRouter();
+
+  const handleLogout = () => {
+    // Clear any admin session/tokens here
+    localStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminToken');
+    router.push('/admin/login');
+  };
 
   const menuItems = [
     { id: 'overview', icon: Activity, label: 'Overview' },
@@ -79,7 +84,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           
           <div className="absolute bottom-4 left-4 right-4">
             <button 
-              onClick={onLogout}
+              onClick={handleLogout}
               className="w-full flex items-center space-x-3 px-4 py-3 text-red-300 hover:text-red-200 hover:bg-red-500/10 rounded-lg transition-all duration-200"
             >
               <LogOut size={20} />

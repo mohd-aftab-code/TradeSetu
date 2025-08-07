@@ -149,7 +149,7 @@ const OnetapeTrade: React.FC = () => {
   };
 
   // Calculate proper strike prices based on underlying
-  const getQuickStrikes = () => {
+  const getQuickStrikes = React.useCallback(() => {
     let interval = 100; // Default interval
     
     // Set proper intervals based on underlying
@@ -178,10 +178,10 @@ const OnetapeTrade: React.FC = () => {
       baseStrike + interval,
       baseStrike + (interval * 2)
     ];
-  };
+  }, [selectedUnderlying, strikePrice]);
   
   // Use useMemo to recalculate when underlying or strike price changes
-  const quickStrikes = React.useMemo(() => getQuickStrikes(), [selectedUnderlying, strikePrice]);
+  const quickStrikes = React.useMemo(() => getQuickStrikes(), [getQuickStrikes]);
 
   return (
     <div className="flex min-h-screen w-full bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
