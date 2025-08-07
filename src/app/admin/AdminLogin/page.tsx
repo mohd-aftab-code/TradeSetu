@@ -2,19 +2,16 @@
 
 import React, { useState } from 'react';
 import { Shield, Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-interface AdminLoginProps {
-  onLogin: (credentials: { email: string; password: string }) => void;
-  onSwitchToRegister: () => void;
-}
-
-const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onSwitchToRegister }) => {
+const AdminLogin = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +19,10 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onSwitchToRegister }) 
     
     // Simulate login process
     setTimeout(() => {
-      onLogin(formData);
+      // Store admin token
+      localStorage.setItem('adminToken', 'demo-admin-token');
+      sessionStorage.setItem('adminToken', 'demo-admin-token');
+      router.push('/admin/dashboard');
       setIsLoading(false);
     }, 1000);
   };
@@ -32,6 +32,10 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onSwitchToRegister }) 
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleSwitchToRegister = () => {
+    router.push('/admin/register');
   };
 
   return (
@@ -108,7 +112,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin, onSwitchToRegister }) 
           <p className="text-purple-200 text-sm">
             Need admin access?{' '}
             <button
-              onClick={onSwitchToRegister}
+              onClick={handleSwitchToRegister}
               className="text-purple-400 hover:text-purple-300 font-medium"
             >
               Register Admin Account

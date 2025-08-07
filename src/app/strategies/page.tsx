@@ -52,9 +52,9 @@ const StrategiesPage = () => {
       <div className="flex-1 flex min-w-0 md:ml-64">
         <main className="flex-1 p-6 space-y-6 md:ml-0 overflow-x-hidden">
           {showCreateForm ? (
-            <CreateStrategy onBack={() => setShowCreateForm(false)} />
+            <CreateStrategy />
           ) : (
-            <StrategyList onCreateStrategy={() => setShowCreateForm(true)} />
+            <StrategyList />
           )}
         </main>
       </div>

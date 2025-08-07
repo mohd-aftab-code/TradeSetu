@@ -4,15 +4,13 @@ import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Play, Pause, TrendingUp, Zap, Clock, BarChart3, Copy } from 'lucide-react';
 import { mockStrategies } from '../../../../data/mockData';
 import { Strategy } from '../../../../types/database';
+import { useRouter } from 'next/navigation';
 
-interface StrategyListProps {
-  onCreateStrategy: () => void;
-}
-
-const StrategyList: React.FC<StrategyListProps> = ({ onCreateStrategy }) => {
+const StrategyList = () => {
   const [strategies, setStrategies] = useState<Strategy[]>(mockStrategies);
   const [showTimeBasedStrategy, setShowTimeBasedStrategy] = useState(false);
   const [deploymentStatus, setDeploymentStatus] = useState<string>('');
+  const router = useRouter();
 
   const toggleStrategy = (id: string) => {
     setStrategies(strategies.map(s => 
@@ -44,6 +42,10 @@ const StrategyList: React.FC<StrategyListProps> = ({ onCreateStrategy }) => {
       setDeploymentStatus(`Strategy ${strategyId} deployed successfully!`);
       setTimeout(() => setDeploymentStatus(''), 3000);
     }, 2000);
+  };
+
+  const handleCreateStrategy = () => {
+    router.push('/strategies/create');
   };
 
   // Time Based & Indicators Strategy Builder Component
@@ -890,7 +892,7 @@ const StrategyList: React.FC<StrategyListProps> = ({ onCreateStrategy }) => {
             <span>Time & Indicators</span>
           </button>
           <button
-            onClick={onCreateStrategy}
+            onClick={handleCreateStrategy}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center space-x-2"
           >
             <Plus size={20} />

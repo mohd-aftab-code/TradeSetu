@@ -2,13 +2,9 @@
 
 import React, { useState } from 'react';
 import { Shield, UserPlus, Eye, EyeOff } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-interface AdminRegisterProps {
-  onRegister: (data: any) => void;
-  onSwitchToLogin: () => void;
-}
-
-const AdminRegister: React.FC<AdminRegisterProps> = ({ onRegister, onSwitchToLogin }) => {
+const AdminRegister = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,6 +15,7 @@ const AdminRegister: React.FC<AdminRegisterProps> = ({ onRegister, onSwitchToLog
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +34,10 @@ const AdminRegister: React.FC<AdminRegisterProps> = ({ onRegister, onSwitchToLog
     
     // Simulate registration process
     setTimeout(() => {
-      onRegister(formData);
+      // Store admin token
+      localStorage.setItem('adminToken', 'demo-admin-token');
+      sessionStorage.setItem('adminToken', 'demo-admin-token');
+      router.push('/admin/dashboard');
       setIsLoading(false);
     }, 1000);
   };
@@ -47,6 +47,10 @@ const AdminRegister: React.FC<AdminRegisterProps> = ({ onRegister, onSwitchToLog
       ...formData,
       [e.target.name]: e.target.value
     });
+  };
+
+  const handleSwitchToLogin = () => {
+    router.push('/admin/login');
   };
 
   return (
@@ -102,7 +106,7 @@ const AdminRegister: React.FC<AdminRegisterProps> = ({ onRegister, onSwitchToLog
                 value={formData.password}
                 onChange={handleChange}
                 className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-12"
-                placeholder="Create password"
+                placeholder="Enter password"
                 required
               />
               <button
@@ -152,12 +156,13 @@ const AdminRegister: React.FC<AdminRegisterProps> = ({ onRegister, onSwitchToLog
               placeholder="Enter admin code"
               required
             />
+            <p className="text-purple-300 text-xs mt-1">Code: TRADESETU2024</p>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center justify-center space-x-2 disabled:opacity-50"
           >
             {isLoading ? (
               <>
@@ -175,19 +180,13 @@ const AdminRegister: React.FC<AdminRegisterProps> = ({ onRegister, onSwitchToLog
 
         <div className="mt-6 text-center">
           <p className="text-purple-200 text-sm">
-            Already have admin access?{' '}
+            Already have an account?{' '}
             <button
-              onClick={onSwitchToLogin}
+              onClick={handleSwitchToLogin}
               className="text-purple-400 hover:text-purple-300 font-medium"
             >
-              Sign In
+              Login to Admin Panel
             </button>
-          </p>
-        </div>
-
-        <div className="mt-6 p-3 bg-purple-500/10 rounded-lg border border-purple-500/20">
-          <p className="text-purple-200 text-xs text-center">
-            Demo Admin Code: TRADESETU2024
           </p>
         </div>
       </div>

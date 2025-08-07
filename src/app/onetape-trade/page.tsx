@@ -70,6 +70,7 @@ const OnetapeTrade: React.FC = () => {
     setStrikePrice(getDefaultStrike(selectedUnderlying));
     setLotSize(getLotSize(selectedUnderlying));
   }, [selectedUnderlying]);
+  
   const [optionPrice, setOptionPrice] = useState(150);
   const [showPositions, setShowPositions] = useState(true);
   const [positions, setPositions] = useState([
@@ -406,74 +407,73 @@ const OnetapeTrade: React.FC = () => {
                     Quick Execution
                   </h2>
 
-                                     {/* Price Display */}
-                   <div className="bg-white/5 rounded-lg p-3 mb-4">
-                     <div className="grid grid-cols-3 gap-4 text-sm">
-                       <div>
-                         <span className="text-blue-200">Underlying:</span>
-                         <div className="text-white font-semibold">₹{currentPrice.toFixed(2)}</div>
-                       </div>
-                       <div>
-                         <span className="text-blue-200">Selected Strike:</span>
-                         <div className="text-white font-semibold">₹{strikePrice}</div>
-                       </div>
-                       <div>
-                         <span className="text-blue-200">Option Price:</span>
-                         <div className="text-white font-semibold">₹{optionPrice.toFixed(2)}</div>
-                       </div>
-                     </div>
-                   </div>
+                  {/* Price Display */}
+                  <div className="bg-white/5 rounded-lg p-3 mb-4">
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <span className="text-blue-200">Underlying:</span>
+                        <div className="text-white font-semibold">₹{currentPrice.toFixed(2)}</div>
+                      </div>
+                      <div>
+                        <span className="text-blue-200">Selected Strike:</span>
+                        <div className="text-white font-semibold">₹{strikePrice}</div>
+                      </div>
+                      <div>
+                        <span className="text-blue-200">Option Price:</span>
+                        <div className="text-white font-semibold">₹{optionPrice.toFixed(2)}</div>
+                      </div>
+                    </div>
+                  </div>
 
-                     
-                     {/* Strategy Label */}
-                   <div className="mb-4">
-                     <label className="block text-blue-200 text-sm font-semibold mb-2">Strategy Label (Optional)</label>
-                     <input
-                       type="text"
-                       value={strategyLabel}
-                       onChange={(e) => setStrategyLabel(e.target.value)}
-                       className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white text-sm"
-                       placeholder="e.g., Scalping breakout, Trend follow"
-                     />
-                   </div>
+                  {/* Strategy Label */}
+                  <div className="mb-4">
+                    <label className="block text-blue-200 text-sm font-semibold mb-2">Strategy Label (Optional)</label>
+                    <input
+                      type="text"
+                      value={strategyLabel}
+                      onChange={(e) => setStrategyLabel(e.target.value)}
+                      className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white text-sm"
+                      placeholder="e.g., Scalping breakout, Trend follow"
+                    />
+                  </div>
 
-                                     {/* Lot Size & Quantity Input */}
-                   <div className="grid grid-cols-2 gap-4 mb-4">
-                     <div>
-                       <label className="block text-blue-200 text-sm font-semibold mb-2">
-                         Lots ({selectedUnderlying} standard: {lotSize})
-                       </label>
-                       <input
-                         type="number"
-                         value={quantity}
-                         onChange={(e) => setQuantity(Number(e.target.value))}
-                         className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white text-sm"
-                         placeholder="Enter lots"
-                       />
-                       <div className="text-blue-200 text-xs mt-1">
-                         Total: {quantity * lotSize} units
-                       </div>
-                     </div>
-                   </div>
+                  {/* Lot Size & Quantity Input */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-blue-200 text-sm font-semibold mb-2">
+                        Lots ({selectedUnderlying} standard: {lotSize})
+                      </label>
+                      <input
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => setQuantity(Number(e.target.value))}
+                        className="w-full bg-white/10 border border-white/20 rounded px-3 py-2 text-white text-sm"
+                        placeholder="Enter lots"
+                      />
+                      <div className="text-blue-200 text-xs mt-1">
+                        Total: {quantity * lotSize} units
+                      </div>
+                    </div>
+                  </div>
 
-                                     {/* Execution Buttons */}
-                   <div className="grid grid-cols-2 gap-4">
-                     <button
-                       onClick={() => confirmTrade("BUY")}
-                       className="py-4 rounded-lg font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl"
-                     >
-                       <TrendingUp size={20} />
-                       BUY (B)
-                     </button>
+                  {/* Execution Buttons */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={() => confirmTrade("BUY")}
+                      className="py-4 rounded-lg font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 text-white shadow-lg hover:shadow-xl"
+                    >
+                      <TrendingUp size={20} />
+                      BUY (B)
+                    </button>
 
-                     <button
-                       onClick={() => confirmTrade("SELL")}
-                       className="py-4 rounded-lg font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl"
-                     >
-                       <TrendingDown size={20} />
-                       SELL (S)
-                     </button>
-                   </div>
+                    <button
+                      onClick={() => confirmTrade("SELL")}
+                      className="py-4 rounded-lg font-bold text-lg transition-all duration-300 flex items-center justify-center gap-3 bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl"
+                    >
+                      <TrendingDown size={20} />
+                      SELL (S)
+                    </button>
+                  </div>
 
                   {/* Close All Button */}
                   <button
@@ -500,64 +500,64 @@ const OnetapeTrade: React.FC = () => {
                     </button>
                   </div>
 
-                                    {showPositions && (
+                  {showPositions && (
                     <div className="space-y-2 max-h-60 overflow-y-auto">
-                                             {positions.map((position) => (
-                         <div key={position.id} className="bg-white/5 rounded-lg p-3">
-                           <div className="flex items-center justify-between">
-                             <div>
-                               <div className="text-white font-semibold text-sm">{position.symbol}</div>
-                               <div className="text-blue-200 text-xs">
-                                 {position.side} {position.lots || 1} lots ({position.quantity} units) @ ₹{position.avgPrice}
-                               </div>
-                             </div>
-                             <div className="text-right">
-                               <div className={`font-semibold text-sm ${position.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                 ₹{position.pnl.toFixed(2)}
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                       ))}
-                     </div>
-                   )}
-                 </div>
+                      {positions.map((position) => (
+                        <div key={position.id} className="bg-white/5 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-white font-semibold text-sm">{position.symbol}</div>
+                              <div className="text-blue-200 text-xs">
+                                {position.side} {position.lots || 1} lots ({position.quantity} units) @ ₹{position.avgPrice}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className={`font-semibold text-sm ${position.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                ₹{position.pnl.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                 {/* Trade Logs Panel */}
-                 <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4 border border-white/20">
-                   <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                     <Clock size={20} />
-                     Recent Trades
-                   </h2>
-                   
-                   <div className="space-y-2 max-h-40 overflow-y-auto">
-                     {tradeLogs.length === 0 ? (
-                       <div className="text-blue-200 text-sm text-center py-4">
-                         No trades yet
-                       </div>
-                     ) : (
-                       tradeLogs.map((trade) => (
-                         <div key={trade.id} className="bg-white/5 rounded-lg p-3">
-                           <div className="flex items-center justify-between">
-                             <div>
-                               <div className="text-white font-semibold text-sm">{trade.symbol}</div>
-                               <div className="text-blue-200 text-xs">
-                                 {trade.side} {trade.quantity} units @ ₹{trade.price} | {trade.time}
-                               </div>
-                             </div>
-                             <div className="text-right">
-                               <div className={`font-semibold text-sm ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                 ₹{trade.pnl.toFixed(2)}
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                       ))
-                     )}
-                   </div>
-                 </div>
-               </div>
-             </div>
+                {/* Trade Logs Panel */}
+                <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4 border border-white/20">
+                  <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <Clock size={20} />
+                    Recent Trades
+                  </h2>
+                  
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {tradeLogs.length === 0 ? (
+                      <div className="text-blue-200 text-sm text-center py-4">
+                        No trades yet
+                      </div>
+                    ) : (
+                      tradeLogs.map((trade) => (
+                        <div key={trade.id} className="bg-white/5 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-white font-semibold text-sm">{trade.symbol}</div>
+                              <div className="text-blue-200 text-xs">
+                                {trade.side} {trade.quantity} units @ ₹{trade.price} | {trade.time}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className={`font-semibold text-sm ${trade.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                ₹{trade.pnl.toFixed(2)}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Advanced Risk Management Panel */}
             <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4 border border-white/20">
@@ -566,349 +566,349 @@ const OnetapeTrade: React.FC = () => {
                 Advanced Risk Management
               </h2>
 
-                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                 {/* Risk Mode Toggle */}
-                 <div className="lg:col-span-2 mb-4">
-                   <div className="flex items-center gap-4">
-                     <span className="text-blue-200 text-sm font-semibold">Risk Mode:</span>
-                     <div className="flex bg-white/10 rounded-lg p-1">
-                       <button
-                         onClick={() => setRiskMode("points")}
-                         className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                           riskMode === "points"
-                             ? "bg-blue-500 text-white"
-                             : "text-blue-200 hover:text-white"
-                         }`}
-                       >
-                         Points
-                       </button>
-                       <button
-                         onClick={() => setRiskMode("percentage")}
-                         className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                           riskMode === "percentage"
-                             ? "bg-blue-500 text-white"
-                             : "text-blue-200 hover:text-white"
-                         }`}
-                       >
-                         Percentage
-                       </button>
-                     </div>
-                   </div>
-                 </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Risk Mode Toggle */}
+                <div className="lg:col-span-2 mb-4">
+                  <div className="flex items-center gap-4">
+                    <span className="text-blue-200 text-sm font-semibold">Risk Mode:</span>
+                    <div className="flex bg-white/10 rounded-lg p-1">
+                      <button
+                        onClick={() => setRiskMode("points")}
+                        className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                          riskMode === "points"
+                            ? "bg-blue-500 text-white"
+                            : "text-blue-200 hover:text-white"
+                        }`}
+                      >
+                        Points
+                      </button>
+                      <button
+                        onClick={() => setRiskMode("percentage")}
+                        className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                          riskMode === "percentage"
+                            ? "bg-blue-500 text-white"
+                            : "text-blue-200 hover:text-white"
+                        }`}
+                      >
+                        Percentage
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
-                                   {/* Stop Loss & Take Profit */}
-                  <div className="space-y-4">
-                    <h3 className="text-white font-semibold text-sm border-b border-white/10 pb-2">
-                      Stop Loss & Take Profit
-                      <span className="text-blue-300 text-xs ml-2">(Auto exit at loss/profit levels)</span>
-                    </h3>
-                   
-                   <div className="grid grid-cols-2 gap-3">
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">
-                         Stop Loss ({riskMode === "points" ? "Points" : "%"})
-                       </label>
-                       <input
-                         type="number"
-                         defaultValue={riskMode === "points" ? 50 : 2}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder={riskMode === "points" ? "50" : "2"}
-                       />
-                     </div>
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">
-                         Take Profit ({riskMode === "points" ? "Points" : "%"})
-                       </label>
-                       <input
-                         type="number"
-                         defaultValue={riskMode === "points" ? 100 : 5}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder={riskMode === "points" ? "100" : "5"}
-                       />
-                     </div>
-                   </div>
-                 </div>
+                {/* Stop Loss & Take Profit */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-sm border-b border-white/10 pb-2">
+                    Stop Loss & Take Profit
+                    <span className="text-blue-300 text-xs ml-2">(Auto exit at loss/profit levels)</span>
+                  </h3>
+                 
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">
+                        Stop Loss ({riskMode === "points" ? "Points" : "%"})
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue={riskMode === "points" ? 50 : 2}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder={riskMode === "points" ? "50" : "2"}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">
+                        Take Profit ({riskMode === "points" ? "Points" : "%"})
+                      </label>
+                      <input
+                        type="number"
+                        defaultValue={riskMode === "points" ? 100 : 5}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder={riskMode === "points" ? "100" : "5"}
+                      />
+                    </div>
+                  </div>
+                </div>
 
-                                                                   {/* Dynamic SL/TP Settings */}
-                  <div className="space-y-4">
-                    <h3 className="text-white font-semibold text-sm border-b border-white/10 pb-2">
-                      Dynamic SL/TP Settings
-                      <span className="text-blue-300 text-xs ml-2">(Trailing stop loss and take profit that moves with price)</span>
-                    </h3>
-                   
-                   <div className="grid grid-cols-2 gap-3">
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">Trailing SL (Points)</label>
-                       <input
-                         type="number"
-                         value={trailingStopLossPoints}
-                         onChange={(e) => setTrailingStopLossPoints(Number(e.target.value))}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder="30"
-                       />
-                     </div>
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">Trailing SL (%)</label>
-                       <input
-                         type="number"
-                         value={trailingStopLossPercentage}
-                         onChange={(e) => setTrailingStopLossPercentage(Number(e.target.value))}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder="1.5"
-                       />
-                     </div>
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">Trailing Profit (Points)</label>
-                       <input
-                         type="number"
-                         value={trailingProfitPoints}
-                         onChange={(e) => setTrailingProfitPoints(Number(e.target.value))}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder="80"
-                       />
-                     </div>
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">Trailing Profit (%)</label>
-                       <input
-                         type="number"
-                         value={trailingProfitPercentage}
-                         onChange={(e) => setTrailingProfitPercentage(Number(e.target.value))}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder="4"
-                       />
-                     </div>
-                   </div>
-                   
-                   {/* Trailing Move Points Configuration */}
-                   <div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10">
-                     <h4 className="text-white font-semibold text-xs mb-3 border-b border-white/10 pb-2">
-                       Trailing Activation Points
-                       <span className="text-blue-300 text-xs ml-2">(How many points price should move to trigger trailing)</span>
-                     </h4>
-                     
-                     <div className="grid grid-cols-2 gap-3">
-                       <div>
-                         <label className="block text-blue-200 text-xs font-semibold mb-1">
-                           Trailing SL Move (Points)
-                           <span className="text-blue-300 text-xs ml-1">(Price moves X points → trail SL)</span>
-                         </label>
-                         <input
-                           type="number"
-                           value={trailingMovePoints}
-                           onChange={(e) => setTrailingMovePoints(Number(e.target.value))}
-                           className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                           placeholder="20"
-                         />
-                         <div className="text-blue-200 text-xs mt-1">
-                           When price moves {trailingMovePoints} points, trailing SL activates
-                         </div>
-                       </div>
-                       
-                       <div>
-                         <label className="block text-blue-200 text-xs font-semibold mb-1">
-                           Trailing Profit Move (Points)
-                           <span className="text-blue-300 text-xs ml-1">(Price moves X points → trail profit)</span>
-                         </label>
-                         <input
-                           type="number"
-                           value={trailingProfitMovePoints}
-                           onChange={(e) => setTrailingProfitMovePoints(Number(e.target.value))}
-                           className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                           placeholder="25"
-                         />
-                         <div className="text-blue-200 text-xs mt-1">
-                           When price moves {trailingProfitMovePoints} points, trailing profit activates
-                         </div>
-                       </div>
-                     </div>
-                     
-                     {/* Trailing Status Display */}
-                     <div className="mt-3 p-2 bg-white/5 rounded border border-white/10">
-                       <div className="grid grid-cols-2 gap-4 text-xs">
-                         <div>
-                           <span className="text-blue-200">Trailing SL Status:</span>
-                           <div className="text-green-400 font-semibold">Active ({trailingStopLossPoints} points behind)</div>
-                         </div>
-                         <div>
-                           <span className="text-blue-200">Trailing Profit Status:</span>
-                           <div className="text-yellow-400 font-semibold">Pending ({trailingProfitMovePoints} points to activate)</div>
-                         </div>
-                       </div>
-                     </div>
-                   </div>
-                 </div>
+                {/* Dynamic SL/TP Settings */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-sm border-b border-white/10 pb-2">
+                    Dynamic SL/TP Settings
+                    <span className="text-blue-300 text-xs ml-2">(Trailing stop loss and take profit that moves with price)</span>
+                  </h3>
+                 
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">Trailing SL (Points)</label>
+                      <input
+                        type="number"
+                        value={trailingStopLossPoints}
+                        onChange={(e) => setTrailingStopLossPoints(Number(e.target.value))}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder="30"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">Trailing SL (%)</label>
+                      <input
+                        type="number"
+                        value={trailingStopLossPercentage}
+                        onChange={(e) => setTrailingStopLossPercentage(Number(e.target.value))}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder="1.5"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">Trailing Profit (Points)</label>
+                      <input
+                        type="number"
+                        value={trailingProfitPoints}
+                        onChange={(e) => setTrailingProfitPoints(Number(e.target.value))}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder="80"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">Trailing Profit (%)</label>
+                      <input
+                        type="number"
+                        value={trailingProfitPercentage}
+                        onChange={(e) => setTrailingProfitPercentage(Number(e.target.value))}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder="4"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Trailing Move Points Configuration */}
+                  <div className="mt-4 p-3 bg-white/5 rounded-lg border border-white/10">
+                    <h4 className="text-white font-semibold text-xs mb-3 border-b border-white/10 pb-2">
+                      Trailing Activation Points
+                      <span className="text-blue-300 text-xs ml-2">(How many points price should move to trigger trailing)</span>
+                    </h4>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-blue-200 text-xs font-semibold mb-1">
+                          Trailing SL Move (Points)
+                          <span className="text-blue-300 text-xs ml-1">(Price moves X points → trail SL)</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={trailingMovePoints}
+                          onChange={(e) => setTrailingMovePoints(Number(e.target.value))}
+                          className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                          placeholder="20"
+                        />
+                        <div className="text-blue-200 text-xs mt-1">
+                          When price moves {trailingMovePoints} points, trailing SL activates
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-blue-200 text-xs font-semibold mb-1">
+                          Trailing Profit Move (Points)
+                          <span className="text-blue-300 text-xs ml-1">(Price moves X points → trail profit)</span>
+                        </label>
+                        <input
+                          type="number"
+                          value={trailingProfitMovePoints}
+                          onChange={(e) => setTrailingProfitMovePoints(Number(e.target.value))}
+                          className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                          placeholder="25"
+                        />
+                        <div className="text-blue-200 text-xs mt-1">
+                          When price moves {trailingProfitMovePoints} points, trailing profit activates
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Trailing Status Display */}
+                    <div className="mt-3 p-2 bg-white/5 rounded border border-white/10">
+                      <div className="grid grid-cols-2 gap-4 text-xs">
+                        <div>
+                          <span className="text-blue-200">Trailing SL Status:</span>
+                          <div className="text-green-400 font-semibold">Active ({trailingStopLossPoints} points behind)</div>
+                        </div>
+                        <div>
+                          <span className="text-blue-200">Trailing Profit Status:</span>
+                          <div className="text-yellow-400 font-semibold">Pending ({trailingProfitMovePoints} points to activate)</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                                                                   {/* Loss & Profit Limits */}
-                  <div className="space-y-4">
-                    <h3 className="text-white font-semibold text-sm border-b border-white/10 pb-2">
-                      Loss & Profit Limits
-                      <span className="text-blue-300 text-xs ml-2">(Daily & per-trade limits)</span>
-                    </h3>
-                   
-                   <div className="grid grid-cols-2 gap-3">
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">Max Loss per Trade (₹)</label>
-                       <input
-                         type="number"
-                         defaultValue={5000}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder="₹5000"
-                       />
-                       <div className="text-blue-200 text-xs mt-1">₹5,000</div>
-                     </div>
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">Max Profit per Trade (₹)</label>
-                       <input
-                         type="number"
-                         defaultValue={15000}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder="₹15000"
-                       />
-                       <div className="text-blue-200 text-xs mt-1">₹15,000</div>
-                     </div>
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">Daily Loss Limit (₹)</label>
-                       <input
-                         type="number"
-                         defaultValue={25000}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder="₹25000"
-                       />
-                       <div className="text-blue-200 text-xs mt-1">₹25,000</div>
-                     </div>
-                     <div>
-                       <label className="block text-blue-200 text-xs font-semibold mb-1">Daily Profit Target (₹)</label>
-                       <input
-                         type="number"
-                         defaultValue={50000}
-                         className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
-                         placeholder="₹50000"
-                       />
-                       <div className="text-blue-200 text-xs mt-1">₹50,000</div>
-                     </div>
-                   </div>
-                 </div>
+                {/* Loss & Profit Limits */}
+                <div className="space-y-4">
+                  <h3 className="text-white font-semibold text-sm border-b border-white/10 pb-2">
+                    Loss & Profit Limits
+                    <span className="text-blue-300 text-xs ml-2">(Daily & per-trade limits)</span>
+                  </h3>
+                 
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">Max Loss per Trade (₹)</label>
+                      <input
+                        type="number"
+                        defaultValue={5000}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder="₹5000"
+                      />
+                      <div className="text-blue-200 text-xs mt-1">₹5,000</div>
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">Max Profit per Trade (₹)</label>
+                      <input
+                        type="number"
+                        defaultValue={15000}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder="₹15000"
+                      />
+                      <div className="text-blue-200 text-xs mt-1">₹15,000</div>
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">Daily Loss Limit (₹)</label>
+                      <input
+                        type="number"
+                        defaultValue={25000}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder="₹25000"
+                      />
+                      <div className="text-blue-200 text-xs mt-1">₹25,000</div>
+                    </div>
+                    <div>
+                      <label className="block text-blue-200 text-xs font-semibold mb-1">Daily Profit Target (₹)</label>
+                      <input
+                        type="number"
+                        defaultValue={50000}
+                        className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-xs"
+                        placeholder="₹50000"
+                      />
+                      <div className="text-blue-200 text-xs mt-1">₹50,000</div>
+                    </div>
+                  </div>
+                </div>
 
-                                 
+                
               </div>
 
-                             {/* Advanced Controls */}
-               <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
-                 <div className="flex items-center gap-2">
-                   <input type="checkbox" className="rounded" defaultChecked />
-                   <label className="text-blue-200 text-xs">
-                     Auto Stop Loss
-                     <span className="text-blue-300 text-xs ml-1">(Auto exit on loss)</span>
-                   </label>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <input type="checkbox" className="rounded" defaultChecked />
-                   <label className="text-blue-200 text-xs">
-                     Trailing Stop Loss
-                     <span className="text-blue-300 text-xs ml-1">(Dynamic SL)</span>
-                   </label>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <input type="checkbox" className="rounded" defaultChecked />
-                   <label className="text-blue-200 text-xs">
-                     Trailing Profit
-                     <span className="text-blue-300 text-xs ml-1">(Dynamic TP)</span>
-                   </label>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <input type="checkbox" className="rounded" defaultChecked />
-                   <label className="text-blue-200 text-xs">
-                     Break Even
-                     <span className="text-blue-300 text-xs ml-1">(Exit at cost)</span>
-                   </label>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <input type="checkbox" className="rounded" defaultChecked />
-                   <label className="text-blue-200 text-xs">
-                     Position Monitoring
-                     <span className="text-blue-300 text-xs ml-1">(Track positions)</span>
-                   </label>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <input type="checkbox" className="rounded" />
-                   <label className="text-blue-200 text-xs">
-                     Auto Close
-                     <span className="text-blue-300 text-xs ml-1">(Time-based exit)</span>
-                   </label>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <input type="checkbox" className="rounded" />
-                   <label className="text-blue-200 text-xs">
-                     Risk Alert
-                     <span className="text-blue-300 text-xs ml-1">(Risk notifications)</span>
-                   </label>
-                 </div>
-                 <div className="flex items-center gap-2">
-                   <input type="checkbox" className="rounded" defaultChecked />
-                   <label className="text-blue-200 text-xs">
-                     Real-time P&L
-                     <span className="text-blue-300 text-xs ml-1">(Live profit/loss)</span>
-                   </label>
-                 </div>
-               </div>
+              {/* Advanced Controls */}
+              <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" className="rounded" defaultChecked />
+                  <label className="text-blue-200 text-xs">
+                    Auto Stop Loss
+                    <span className="text-blue-300 text-xs ml-1">(Auto exit on loss)</span>
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" className="rounded" defaultChecked />
+                  <label className="text-blue-200 text-xs">
+                    Trailing Stop Loss
+                    <span className="text-blue-300 text-xs ml-1">(Dynamic SL)</span>
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" className="rounded" defaultChecked />
+                  <label className="text-blue-200 text-xs">
+                    Trailing Profit
+                    <span className="text-blue-300 text-xs ml-1">(Dynamic TP)</span>
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" className="rounded" defaultChecked />
+                  <label className="text-blue-200 text-xs">
+                    Break Even
+                    <span className="text-blue-300 text-xs ml-1">(Exit at cost)</span>
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" className="rounded" defaultChecked />
+                  <label className="text-blue-200 text-xs">
+                    Position Monitoring
+                    <span className="text-blue-300 text-xs ml-1">(Track positions)</span>
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" className="rounded" />
+                  <label className="text-blue-200 text-xs">
+                    Auto Close
+                    <span className="text-blue-300 text-xs ml-1">(Time-based exit)</span>
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" className="rounded" />
+                  <label className="text-blue-200 text-xs">
+                    Risk Alert
+                    <span className="text-blue-300 text-xs ml-1">(Risk notifications)</span>
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" className="rounded" defaultChecked />
+                  <label className="text-blue-200 text-xs">
+                    Real-time P&L
+                    <span className="text-blue-300 text-xs ml-1">(Live profit/loss)</span>
+                  </label>
+                </div>
+              </div>
             </div>
 
-                         {/* Execution Feedback & Confirmation */}
-             {lastExecution && (
-               <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-                 <div className="flex items-center gap-2">
-                   <CheckCircle size={16} />
-                   <span>{lastExecution}</span>
-                 </div>
-               </div>
-             )}
+            {/* Execution Feedback & Confirmation */}
+            {lastExecution && (
+              <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+                <div className="flex items-center gap-2">
+                  <CheckCircle size={16} />
+                  <span>{lastExecution}</span>
+                </div>
+              </div>
+            )}
 
-             {/* Trade Confirmation Modal */}
-             {showConfirmation && (
-               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                 <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20 max-w-md w-full mx-4">
-                   <h3 className="text-white font-semibold text-lg mb-4">
-                     Confirm {pendingTrade?.side} Trade
-                   </h3>
-                   <div className="text-blue-200 text-sm mb-6">
-                     <div>Symbol: {selectedUnderlying} {strikePrice} {optionType}</div>
-                     <div>Quantity: {quantity} lots ({quantity * lotSize} units)</div>
-                     <div>Price: ₹{optionPrice.toFixed(2)}</div>
-                     {strategyLabel && <div>Strategy: {strategyLabel}</div>}
-                   </div>
-                   <div className="flex gap-3">
-                     <button
-                       onClick={handleTradeConfirmation}
-                       className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded font-semibold"
-                     >
-                       Confirm {pendingTrade?.side}
-                     </button>
-                     <button
-                       onClick={() => {
-                         setShowConfirmation(false);
-                         setPendingTrade(null);
-                       }}
-                       className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded font-semibold"
-                     >
-                       Cancel
-                     </button>
-                   </div>
-                 </div>
-               </div>
-             )}
+            {/* Trade Confirmation Modal */}
+            {showConfirmation && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white/10 backdrop-blur-lg rounded-lg p-6 border border-white/20 max-w-md w-full mx-4">
+                  <h3 className="text-white font-semibold text-lg mb-4">
+                    Confirm {pendingTrade?.side} Trade
+                  </h3>
+                  <div className="text-blue-200 text-sm mb-6">
+                    <div>Symbol: {selectedUnderlying} {strikePrice} {optionType}</div>
+                    <div>Quantity: {quantity} lots ({quantity * lotSize} units)</div>
+                    <div>Price: ₹{optionPrice.toFixed(2)}</div>
+                    {strategyLabel && <div>Strategy: {strategyLabel}</div>}
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleTradeConfirmation}
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded font-semibold"
+                    >
+                      Confirm {pendingTrade?.side}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowConfirmation(false);
+                        setPendingTrade(null);
+                      }}
+                      className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded font-semibold"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
-             {/* Undo Last Trade Button */}
-             {showUndo && (
-               <div className="fixed bottom-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
-                 <button
-                   onClick={undoLastTrade}
-                   className="flex items-center gap-2"
-                 >
-                   <Square size={16} />
-                   <span>Undo Last Trade</span>
-                 </button>
-               </div>
-             )}
+            {/* Undo Last Trade Button */}
+            {showUndo && (
+              <div className="fixed bottom-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg z-50">
+                <button
+                  onClick={undoLastTrade}
+                  className="flex items-center gap-2"
+                >
+                  <Square size={16} />
+                  <span>Undo Last Trade</span>
+                </button>
+              </div>
+            )}
           </main>
         </div>
       </div>

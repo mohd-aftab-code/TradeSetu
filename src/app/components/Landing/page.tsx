@@ -20,17 +20,14 @@ import {
   Facebook,
   Linkedin
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-interface LandingPageProps {
-  onPlanSelect: (plan: string) => void;
-  onGetStarted: () => void;
-}
-
-const LandingPage: React.FC<LandingPageProps> = ({ onPlanSelect, onGetStarted }) => {
+const LandingPage = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [animateStats, setAnimateStats] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setIsVisible(true);
@@ -98,13 +95,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onPlanSelect, onGetStarted })
       features: [
         'Everything in Premium',
         'White-label Solution',
-        'Dedicated Support',
         'Custom Development',
-        'Advanced Compliance',
-        'SLA Guarantee'
+        'Dedicated Support',
+        'Advanced Security',
+        'Multi-user Access',
+        'Custom Integrations'
       ],
       color: 'from-yellow-500 to-orange-600',
-      icon: Sparkles,
+      icon: Zap,
       popular: false
     }
   ];
@@ -118,9 +116,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onPlanSelect, onGetStarted })
 
   const handlePlanSelect = (planId: string) => {
     setSelectedPlan(planId);
-    setTimeout(() => {
-      onPlanSelect(planId);
-    }, 500);
+    // Store selected plan in localStorage
+    localStorage.setItem('selectedPlan', planId);
+    router.push('/auth/register');
+  };
+
+  const handleGetStarted = () => {
+    router.push('/auth/register');
   };
 
   return (
@@ -292,7 +294,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onPlanSelect, onGetStarted })
               {/* Get Started Button */}
               <div className="text-center mt-16">
                 <button
-                  onClick={onGetStarted}
+                  onClick={handleGetStarted}
                   className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-12 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-blue-700 transition-all duration-300 flex items-center space-x-3 mx-auto transform hover:scale-105 shadow-2xl"
                 >
                   <span>Continue to Dashboard</span>

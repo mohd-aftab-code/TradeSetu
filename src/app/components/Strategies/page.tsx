@@ -36,16 +36,14 @@ import {
   Copy,
   Trash2
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-interface CreateStrategyProps {
-  onBack: () => void;
-}
-
-const CreateStrategy: React.FC<CreateStrategyProps> = ({ onBack }) => {
+const CreateStrategy = () => {
   const [strategyCreationType, setStrategyCreationType] = useState<'selection' | 'price-action' | 'programming' | 'time-based'>('selection');
   const [showTimeBasedModal, setShowTimeBasedModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [deploymentStatus, setDeploymentStatus] = useState<string>('');
+  const router = useRouter();
   
   const [priceActionFormData, setPriceActionFormData] = useState({
     name: '',
@@ -120,13 +118,13 @@ const CreateStrategy: React.FC<CreateStrategyProps> = ({ onBack }) => {
   const handlePriceActionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Creating price action strategy:', priceActionFormData);
-    onBack();
+    router.back();
   };
 
   const handleProgrammingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Creating programming strategy:', programmingFormData);
-    onBack();
+    router.back();
   };
 
   const handlePriceActionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -234,7 +232,7 @@ const CreateStrategy: React.FC<CreateStrategyProps> = ({ onBack }) => {
   const handleTimeBasedDeploy = () => {
     setDeploymentStatus('Strategy deployed successfully! 🚀');
     setTimeout(() => {
-      onBack();
+      router.back();
     }, 2000);
   };
 
@@ -244,7 +242,7 @@ const CreateStrategy: React.FC<CreateStrategyProps> = ({ onBack }) => {
       <div className="p-6 space-y-8">
         <div className="flex items-center space-x-4">
           <button
-            onClick={onBack}
+            onClick={() => router.back()}
             className="p-3 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-all duration-300 hover:scale-105 backdrop-blur-lg"
           >
             <ArrowLeft size={20} />
