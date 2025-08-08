@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   };
 
   return (
-    <div className="w-64 bg-white/10 backdrop-blur-lg border-r border-white/20 h-full fixed left-0 top-0 z-50 overflow-y-auto">
+    <div className="w-64 bg-gradient-to-b from-slate-800/80 to-slate-900/80 backdrop-blur-lg border-r border-white/20 h-full fixed left-0 top-0 z-50 overflow-y-auto">
       <div className="p-6">
         <h1 className="text-2xl font-bold text-white">TradeSetu</h1>
         <p className="text-blue-200 text-sm mt-1">Trading Platform</p>
@@ -59,8 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
               href={routeMap[item.id] || '/dashboard'}
               className={`w-full flex items-center space-x-3 px-6 py-3 text-left transition-all duration-200 ${
                 activeTab === item.id
-                  ? 'bg-white/20 text-white border-r-4 border-blue-400'
-                  : 'text-blue-200 hover:bg-white/10 hover:text-white'
+                  ? 'bg-gradient-to-r from-blue-500/30 to-purple-500/30 text-white border-r-4 border-blue-400'
+                  : 'text-blue-200 hover:bg-gradient-to-r hover:from-slate-700/50 hover:to-slate-600/50 hover:text-white'
               }`}
             >
               <Icon size={20} />
