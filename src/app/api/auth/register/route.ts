@@ -5,7 +5,15 @@ import { ResultSetHeader } from 'mysql2'
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password, phone } = await request.json()
+    const { 
+      name, 
+      email, 
+      password, 
+      phone, 
+      city, 
+      state, 
+      pincode 
+    } = await request.json()
 
     // Basic validation
     if (!name || !email || !password) {
@@ -46,10 +54,36 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hash = await bcrypt.hash(password, 10)
 
-    // Insert user into database
+    // Insert user into database with all required fields
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO users (name, email, password_hash, phone) VALUES (?, ?, ?, ?)',
-      [name, email, hash, phone || null]
+      `INSERT INTO users (
+        id,
+        email,
+        password_hash,
+        name,
+        phone,
+        created_at,
+        updated_at,
+        is_active,
+        subscription_plan,
+        city,
+        state,
+        pincode
+      ) VALUES (
+        UUID(),
+        ?,
+        ?,
+        ?,
+        ?,
+        NOW(),
+        NOW(),
+        1,
+        'FREE',
+        ?,
+        ?,
+        ?
+      )`,
+      [email, hash, name, phone || null, city || null, state || null, pincode || null]
     )
 
     return NextResponse.json({
@@ -60,6 +94,11 @@ export async function POST(request: NextRequest) {
         name,
         email,
         phone: phone || null,
+        city: city || null,
+        state: state || null,
+        pincode: pincode || null,
+        subscription_plan: 'FREE',
+        is_active: true,
         createdAt: new Date().toISOString()
       }
     })

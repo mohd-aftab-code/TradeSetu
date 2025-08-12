@@ -11,7 +11,10 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess, onBack }
     email: '',
     password: '',
     confirmPassword: '',
-    phone: ''
+    phone: '',
+    city: '',
+    state: '',
+    pincode: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -37,7 +40,10 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess, onBack }
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          phone: formData.phone
+          phone: formData.phone,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode
         })
       });
       const data = await res.json();
@@ -104,6 +110,30 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess, onBack }
               onChange={handleChange}
               className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
               placeholder="Phone (optional)"
+            />
+            <input
+              type="text"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="City (optional)"
+            />
+            <input
+              type="text"
+              name="state"
+              value={formData.state}
+              onChange={handleChange}
+              className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="State (optional)"
+            />
+            <input
+              type="text"
+              name="pincode"
+              value={formData.pincode}
+              onChange={handleChange}
+              className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              placeholder="Pincode (optional)"
             />
             {error && <div className="text-red-400 text-sm text-center">{error}</div>}
             <button

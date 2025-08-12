@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowLeft, MapPin, Building, Hash } from 'lucide-react'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -11,7 +11,10 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    phone: ''
+    phone: '',
+    city: '',
+    state: '',
+    pincode: ''
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -48,7 +51,10 @@ export default function RegisterPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          phone: formData.phone
+          phone: formData.phone,
+          city: formData.city,
+          state: formData.state,
+          pincode: formData.pincode
         }),
       })
 
@@ -93,111 +99,177 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-purple-200 mb-2">
-                Full Name
-              </label>
-              <div className="relative">
-                <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
-                  placeholder="Enter your full name"
-                  required
-                />
+            {/* First Row - Name and Email */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-purple-200 mb-2">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <User size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-purple-200 mb-2">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-purple-200 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
-                  placeholder="Enter your email"
-                  required
-                />
+            {/* Second Row - Phone and City */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-purple-200 mb-2">
+                  Phone Number (Optional)
+                </label>
+                <div className="relative">
+                  <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
+                  <input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="city" className="block text-sm font-medium text-purple-200 mb-2">
+                  City (Optional)
+                </label>
+                <div className="relative">
+                  <Building size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
+                  <input
+                    id="city"
+                    name="city"
+                    type="text"
+                    value={formData.city}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
+                    placeholder="Enter your city"
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-purple-200 mb-2">
-                Phone Number (Optional)
-              </label>
-              <div className="relative">
-                <Phone size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
-                  placeholder="Enter your phone number"
-                />
+            {/* Third Row - State and Pincode */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="state" className="block text-sm font-medium text-purple-200 mb-2">
+                  State (Optional)
+                </label>
+                <div className="relative">
+                  <MapPin size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
+                  <input
+                    id="state"
+                    name="state"
+                    type="text"
+                    value={formData.state}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
+                    placeholder="Enter your state"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="pincode" className="block text-sm font-medium text-purple-200 mb-2">
+                  Pincode (Optional)
+                </label>
+                <div className="relative">
+                  <Hash size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
+                  <input
+                    id="pincode"
+                    name="pincode"
+                    type="text"
+                    value={formData.pincode}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
+                    placeholder="Enter your pincode"
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-purple-200 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
-                  placeholder="Enter your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+            {/* Fourth Row - Password and Confirm Password */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-purple-200 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-purple-200 mb-2">
-                Confirm Password
-              </label>
-              <div className="relative">
-                <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
-                  placeholder="Confirm your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
-                >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+              <div>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-purple-200 mb-2">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock size={20} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300" />
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 transition-colors"
+                    placeholder="Confirm your password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-purple-300 hover:text-white transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
               </div>
             </div>
 
