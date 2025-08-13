@@ -1,26 +1,98 @@
 'use client'
 
-import React, { useState } from 'react';
-import { User, Mail, Phone, MapPin, CreditCard, Settings, Save } from 'lucide-react';
-import { mockUser } from '../../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { User, Mail, Phone, MapPin, CreditCard, Settings, Save, Loader2 } from 'lucide-react';
+import { User as UserType } from '../../../types/database';
 
 const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [user, setUser] = useState<UserType | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
-    name: mockUser.name,
-    email: mockUser.email,
-    phone: mockUser.phone,
-    address: mockUser.address,
-    city: mockUser.city,
-    state: mockUser.state,
-    pincode: mockUser.pincode
+    name: '',
+    email: '',
+    phone: '',
+    city: '',
+    state: '',
+    pincode: ''
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Fetch user profile on component mount
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/user/profile');
+      const result = await response.json();
+      
+      if (result.success) {
+        setUser(result.data);
+        const formDataToSet = {
+          name: result.data.name,
+          email: result.data.email,
+          phone: result.data.phone,
+          city: result.data.city,
+          state: result.data.state,
+          pincode: result.data.pincode
+        };
+        
+        setFormData(formDataToSet);
+      } else {
+        setError(result.error || 'Failed to fetch profile');
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      setError('Failed to fetch profile');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle profile update
-    console.log('Updating profile:', formData);
-    setIsEditing(false);
+    
+    try {
+      setIsUpdating(true);
+      setError(null);
+      setSuccessMessage(null);
+      
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setUser(result.data);
+        setSuccessMessage(result.message || 'Profile updated successfully');
+        setIsEditing(false);
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setSuccessMessage(null);
+        }, 3000);
+      } else {
+        setError(result.error || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      setError('Failed to update profile');
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,13 +112,49 @@ const ProfilePage: React.FC = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex items-center space-x-3 text-white">
+          <Loader2 className="animate-spin" size={24} />
+          <span>Loading profile...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-red-400">
+          {error || 'Failed to load profile'}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-500/20 border border-green-500/50 rounded-lg p-4 text-green-400">
+          {successMessage}
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-4 text-red-400">
+          {error}
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Profile</h1>
         <button
           onClick={() => setIsEditing(!isEditing)}
-          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center space-x-2"
+          disabled={isUpdating}
+          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Settings size={20} />
           <span>{isEditing ? 'Cancel' : 'Edit Profile'}</span>
@@ -60,12 +168,12 @@ const ProfilePage: React.FC = () => {
             <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
               <User size={40} className="text-white" />
             </div>
-            <h2 className="text-2xl font-bold text-white">{mockUser.name}</h2>
-            <p className="text-blue-200">{mockUser.email}</p>
+            <h2 className="text-2xl font-bold text-white">{user.name}</h2>
+            <p className="text-blue-200">{user.email}</p>
             
             <div className="mt-4">
-              <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getSubscriptionColor(mockUser.subscription_plan)}`}>
-                {mockUser.subscription_plan} Plan
+              <span className={`px-4 py-2 rounded-full text-sm font-semibold ${getSubscriptionColor(user.subscription_plan)}`}>
+                {user.subscription_plan} Plan
               </span>
             </div>
           </div>
@@ -73,22 +181,22 @@ const ProfilePage: React.FC = () => {
           <div className="mt-6 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-blue-200">Account Balance</span>
-              <span className="text-white font-semibold">₹{mockUser.balance.toLocaleString()}</span>
+              <span className="text-white font-semibold">₹{user.balance.toLocaleString()}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-blue-200">KYC Status</span>
               <span className={`px-2 py-1 rounded-full text-xs ${
-                mockUser.kyc_status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : 
-                mockUser.kyc_status === 'REJECTED' ? 'bg-red-500/20 text-red-400' : 
+                user.kyc_status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : 
+                user.kyc_status === 'REJECTED' ? 'bg-red-500/20 text-red-400' : 
                 'bg-yellow-500/20 text-yellow-400'
               }`}>
-                {mockUser.kyc_status}
+                {user.kyc_status}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-blue-200">Member Since</span>
               <span className="text-white font-semibold">
-                {mockUser.created_at.toLocaleDateString()}
+                {new Date(user.created_at).toLocaleDateString()}
               </span>
             </div>
           </div>
@@ -107,7 +215,7 @@ const ProfilePage: React.FC = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isUpdating}
                   className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 />
               </div>
@@ -119,7 +227,7 @@ const ProfilePage: React.FC = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isUpdating}
                   className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 />
               </div>
@@ -132,19 +240,7 @@ const ProfilePage: React.FC = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                disabled={!isEditing}
-                className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-blue-200 text-sm mb-2">Address</label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                disabled={!isEditing}
+                disabled={!isEditing || isUpdating}
                 className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
               />
             </div>
@@ -157,7 +253,7 @@ const ProfilePage: React.FC = () => {
                   name="city"
                   value={formData.city}
                   onChange={handleChange}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isUpdating}
                   className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 />
               </div>
@@ -169,7 +265,7 @@ const ProfilePage: React.FC = () => {
                   name="state"
                   value={formData.state}
                   onChange={handleChange}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isUpdating}
                   className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 />
               </div>
@@ -181,7 +277,7 @@ const ProfilePage: React.FC = () => {
                   name="pincode"
                   value={formData.pincode}
                   onChange={handleChange}
-                  disabled={!isEditing}
+                  disabled={!isEditing || isUpdating}
                   className="w-full p-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                 />
               </div>
@@ -191,15 +287,21 @@ const ProfilePage: React.FC = () => {
               <div className="flex items-center space-x-4 pt-4">
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-700 transition-all duration-200 flex items-center space-x-2"
+                  disabled={isUpdating}
+                  className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-700 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Save size={20} />
-                  <span>Save Changes</span>
+                  {isUpdating ? (
+                    <Loader2 className="animate-spin" size={20} />
+                  ) : (
+                    <Save size={20} />
+                  )}
+                  <span>{isUpdating ? 'Saving...' : 'Save Changes'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="bg-white/10 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/20 transition-all duration-200"
+                  disabled={isUpdating}
+                  className="bg-white/10 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/20 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
