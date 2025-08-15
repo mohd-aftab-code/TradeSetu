@@ -97,8 +97,8 @@ const CreateStrategyPage = () => {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+    const token = localStorage.getItem('userToken');
+    const userData = localStorage.getItem('userData');
 
     if (!token || !userData) {
       router.push('/auth/login');
