@@ -24,10 +24,12 @@ const AdminDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    // Clear any admin session/tokens here
-    localStorage.removeItem('adminToken');
-    sessionStorage.removeItem('adminToken');
-    router.push('/admin/login');
+    // Clear user session/tokens
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userData');
+    sessionStorage.removeItem('userToken');
+    sessionStorage.removeItem('userData');
+    router.push('/');
   };
 
   const menuItems = [
