@@ -1,3 +1,78 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global CSS for One Tape Trade Interface */
+@layer base {
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6, #06b6d4);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #7c3aed, #2563eb, #0891b2);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+  }
+  
+  /* Select dropdown styling */
+  select option {
+    background-color: #10b981 !important;
+    color: white !important;
+  }
+  
+  select option:checked {
+    background-color: #059669 !important;
+    color: white !important;
+  }
+  
+  select option:hover {
+    background-color: #047857 !important;
+    color: white !important;
+  }
+  
+  /* Ensure proper focus states */
+  select:focus {
+    outline: none !important;
+    border-color: #8b5cf6 !important;
+  }
+  
+  /* Custom scrollbar for specific elements */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #8b5cf6, #3b82f6, #06b6d4);
+    border-radius: 10px;
+    border: 1px solid rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #7c3aed, #2563eb, #0891b2);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+  }
+}
