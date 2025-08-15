@@ -31,7 +31,18 @@ const ProfilePage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
-      const response = await fetch('/api/user/profile');
+      const token = localStorage.getItem('userToken');
+      if (!token) {
+        setError('Authentication token not found');
+        return;
+      }
+      
+      const response = await fetch('/api/user/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       const result = await response.json();
       
       if (result.success) {
@@ -65,9 +76,16 @@ const ProfilePage: React.FC = () => {
       setError(null);
       setSuccessMessage(null);
       
+      const token = localStorage.getItem('userToken');
+      if (!token) {
+        setError('Authentication token not found');
+        return;
+      }
+      
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(formData),

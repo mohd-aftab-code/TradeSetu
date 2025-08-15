@@ -27,11 +27,27 @@ const LandingPage = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [animateStats, setAnimateStats] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string>('');
   const router = useRouter();
 
   useEffect(() => {
     setIsVisible(true);
     setTimeout(() => setAnimateStats(true), 1000);
+    
+    // Check if user is logged in
+    const userToken = localStorage.getItem('userToken');
+    const userData = localStorage.getItem('userData');
+    
+    if (userToken && userData) {
+      try {
+        const user = JSON.parse(userData);
+        setIsLoggedIn(true);
+        setUserRole(user.role || 'USER');
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
   }, []);
 
   const plans = [
@@ -122,7 +138,38 @@ const LandingPage = () => {
   };
 
   const handleGetStarted = () => {
-    router.push('/auth/register');
+    // Check if user is already logged in
+    const userToken = localStorage.getItem('userToken');
+    const userData = localStorage.getItem('userData');
+    
+    if (userToken && userData) {
+      try {
+        const user = JSON.parse(userData);
+        
+        // Route based on user role
+        if (user.role === 'ADMIN') {
+          router.push('/admin');
+        } else if (user.role === 'SALES_EXECUTIVE') {
+          router.push('/sales-dashboard'); // Future sales dashboard
+        } else {
+          router.push('/dashboard'); // Regular user dashboard
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        router.push('/auth/login');
+      }
+    } else {
+      // Not logged in, go to login page
+      router.push('/auth/login');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userData');
+    setIsLoggedIn(false);
+    setUserRole('');
+    router.push('/');
   };
 
   return (
@@ -136,6 +183,31 @@ const LandingPage = () => {
         </div>
 
         <div className="relative z-10">
+          {/* User Info Section - Only show if logged in */}
+          {isLoggedIn && (
+            <div className="absolute top-6 right-6 z-20">
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-2 rounded-full">
+                    <Users size={16} className="text-white" />
+                  </div>
+                  <div className="text-white">
+                    <p className="text-sm font-semibold">
+                      {userRole === 'ADMIN' ? 'Admin' : userRole === 'SALES_EXECUTIVE' ? 'Sales Executive' : 'User'}
+                    </p>
+                    <p className="text-xs text-purple-200">Logged In</p>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 px-3 py-1 rounded-lg text-xs font-medium transition-all duration-200"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Hero Section */}
           <div className={`text-center py-20 px-6 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="max-w-4xl mx-auto">
@@ -297,11 +369,14 @@ const LandingPage = () => {
                   onClick={handleGetStarted}
                   className="bg-gradient-to-r from-green-500 to-blue-600 text-white px-12 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-blue-700 transition-all duration-300 flex items-center space-x-3 mx-auto transform hover:scale-105 shadow-2xl"
                 >
-                  <span>Continue to Dashboard</span>
+                  <span>{isLoggedIn ? 'Continue to Dashboard' : 'Get Started'}</span>
                   <ArrowRight size={24} />
                 </button>
                 <p className="text-purple-200 text-sm mt-4">
-                  No credit card required • Start trading in minutes
+                  {isLoggedIn 
+                    ? `Welcome back! Continue to your ${userRole === 'ADMIN' ? 'Admin' : userRole === 'SALES_EXECUTIVE' ? 'Sales' : 'Trading'} Dashboard`
+                    : 'No credit card required • Start trading in minutes'
+                  }
                 </p>
               </div>
             </div>

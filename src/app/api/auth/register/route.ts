@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import pool from '@/lib/db'
 import { ResultSetHeader } from 'mysql2'
+import { generateUserId } from '@/lib/id-generator'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,8 @@ export async function POST(request: NextRequest) {
       phone, 
       city, 
       state, 
-      pincode 
+      pincode,
+      role = 'USER' // Default role for direct registration
     } = await request.json()
 
     // Basic validation
@@ -40,16 +42,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // For demo purposes, simulate database operations
-    // In production, you would use the actual database queries below:
+    // Check if user already exists
+    const [existingUsers] = await pool.query(
+      'SELECT id FROM users WHERE email = ?',
+      [email]
+    );
     
-    // Check if user already exists (demo: only check for demo@tradesetu.com)
-    if (email === 'demo@tradesetu.com') {
+    if (Array.isArray(existingUsers) && existingUsers.length > 0) {
       return NextResponse.json(
         { success: false, error: 'User with this email already exists' },
         { status: 409 }
       )
     }
+
+    // Get the next user ID
+    const [userCountResult] = await pool.query('SELECT COUNT(*) as count FROM users');
+    const userCount = Array.isArray(userCountResult) && userCountResult.length > 0 
+      ? (userCountResult[0] as any).count 
+      : 0;
+    
+    const customUserId = generateUserId(userCount + 1);
 
     // Hash password
     const hash = await bcrypt.hash(password, 10)
@@ -68,9 +80,10 @@ export async function POST(request: NextRequest) {
         subscription_plan,
         city,
         state,
-        pincode
+        pincode,
+        role
       ) VALUES (
-        UUID(),
+        ?,
         ?,
         ?,
         ?,
@@ -81,16 +94,17 @@ export async function POST(request: NextRequest) {
         'FREE',
         ?,
         ?,
+        ?,
         ?
       )`,
-      [email, hash, name, phone || null, city || null, state || null, pincode || null]
+      [customUserId, email, hash, name, phone || null, city || null, state || null, pincode || null, role]
     )
 
     return NextResponse.json({
       success: true,
       message: 'Registration successful',
       user: {
-        id: result.insertId,
+        id: customUserId,
         name,
         email,
         phone: phone || null,
@@ -99,6 +113,7 @@ export async function POST(request: NextRequest) {
         pincode: pincode || null,
         subscription_plan: 'FREE',
         is_active: true,
+        role: role,
         createdAt: new Date().toISOString()
       }
     })

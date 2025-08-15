@@ -12,6 +12,17 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const router = useRouter();
 
+  // Check for tab parameter in URL
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      if (tabParam && ['overview', 'users', 'analytics', 'settings', 'notifications'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, []);
+
   const handleLogout = () => {
     // Clear any admin session/tokens here
     localStorage.removeItem('adminToken');

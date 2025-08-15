@@ -1,7 +1,7 @@
 // Database Schema Types for TradeSetu Platform
 
 export interface User {
-  id: string;
+  id: string; // Now in format: tradesetu001, tradesetu002, etc.
   email: string;
   name: string;
   phone: string;
@@ -17,6 +17,7 @@ export interface User {
   city: string;
   state: string;
   pincode: string;
+  role: 'USER' | 'SALES_EXECUTIVE' | 'ADMIN';
 }
 
 export interface Strategy {

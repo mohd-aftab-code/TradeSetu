@@ -1,24 +1,44 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '../../../../lib/db';
+import jwt from 'jsonwebtoken';
 
 // GET /api/user/profile - Get user profile
 export async function GET(request: NextRequest) {
   try {
-    // In a real application, you would:
-    // 1. Verify the user's authentication token
-    // 2. Get the user ID from the token
+    // Get the authorization header
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '') || request.cookies.get('token')?.value;
     
-    // For now, we'll get the first user from the database
-    // In production, you'd get the user ID from the authenticated session
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication token required' },
+        { status: 401 }
+      );
+    }
+
+    // Verify the token and get user ID
+    let userId;
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+      userId = decoded.userId;
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    // Get the specific user by ID
     const [rows] = await pool.execute(
-      'SELECT id, email, name, phone, created_at, updated_at, is_active, subscription_plan, city, state, pincode FROM users LIMIT 1'
+      'SELECT id, email, name, phone, created_at, updated_at, is_active, subscription_plan, city, state, pincode FROM users WHERE id = ?',
+      [userId]
     );
     
     const users = rows as any[];
     
     if (users.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'No user found' },
+        { success: false, error: 'User not found' },
         { status: 404 }
       );
     }
@@ -74,27 +94,30 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // In a real application, you would:
-    // 1. Verify the user's authentication token
-    // 2. Get the user ID from the token
+    // Get the authorization header
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '') || request.cookies.get('token')?.value;
     
-    // First, get the first user's ID
-    const [userRows] = await pool.execute(
-      'SELECT id FROM users LIMIT 1'
-    );
-    
-    const users = userRows as any[];
-    
-    if (users.length === 0) {
+    if (!token) {
       return NextResponse.json(
-        { success: false, error: 'No user found' },
-        { status: 404 }
+        { success: false, error: 'Authentication token required' },
+        { status: 401 }
+      );
+    }
+
+    // Verify the token and get user ID
+    let userId;
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+      userId = decoded.userId;
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid token' },
+        { status: 401 }
       );
     }
     
-    const userId = users[0].id;
-    
-    // Now update the specific user by ID
+    // Update the specific user by ID
     await pool.execute(
       'UPDATE users SET name = ?, email = ?, phone = ?, city = ?, state = ?, pincode = ?, updated_at = NOW() WHERE id = ?',
       [name, email, phone, city || null, state || null, pincode || null, userId]

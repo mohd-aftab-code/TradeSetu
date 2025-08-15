@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Users, Search, Filter, Edit, Trash2, Eye, Crown, Shield, Ban } from 'lucide-react';
+import { Users, Search, Filter, Edit, Trash2, Eye, Crown, Shield, Ban, UserPlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const UserManagement: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,11 +10,12 @@ const UserManagement: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState('ALL');
   const [filterKyc, setFilterKyc] = useState('ALL');
   const [filterTradesMin, setFilterTradesMin] = useState('');
+  const router = useRouter();
 
   // Mock user data for admin panel
   const mockUsers = [
     {
-      id: '1',
+      id: 'tradesetu001',
       name: 'John Doe',
       email: 'john.doe@example.com',
       phone: '+91 9876543210',
@@ -27,9 +29,10 @@ const UserManagement: React.FC = () => {
       total_pnl: 45000,
       emailVerified: true,
       status: 'Active',
+      role: 'USER',
     },
     {
-      id: '2',
+      id: 'tradesetu002',
       name: 'Jane Smith',
       email: 'jane.smith@example.com',
       phone: '+91 9876543211',
@@ -43,9 +46,10 @@ const UserManagement: React.FC = () => {
       total_pnl: 12000,
       emailVerified: false,
       status: 'Inactive',
+      role: 'SALES_EXECUTIVE',
     },
     {
-      id: '3',
+      id: 'tradesetu003',
       name: 'Mike Johnson',
       email: 'mike.johnson@example.com',
       phone: '+91 9876543212',
@@ -59,9 +63,10 @@ const UserManagement: React.FC = () => {
       total_pnl: 125000,
       emailVerified: true,
       status: 'Suspended',
+      role: 'ADMIN',
     },
     {
-      id: '4',
+      id: 'tradesetu004',
       name: 'Sarah Wilson',
       email: 'sarah.wilson@example.com',
       phone: '+91 9876543213',
@@ -75,6 +80,7 @@ const UserManagement: React.FC = () => {
       total_pnl: 0,
       emailVerified: false,
       status: 'Deleted',
+      role: 'USER',
     }
   ];
 
@@ -108,6 +114,16 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  // Add helper for role color
+  const getRoleColor = (role: string) => {
+    switch (role) {
+      case 'ADMIN': return 'text-red-400 bg-red-500/20';
+      case 'SALES_EXECUTIVE': return 'text-blue-400 bg-blue-500/20';
+      case 'USER': return 'text-green-400 bg-green-500/20';
+      default: return 'text-gray-400 bg-gray-500/20';
+    }
+  };
+
   const filteredUsers = mockUsers.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -132,9 +148,19 @@ const UserManagement: React.FC = () => {
           <Users size={32} className="text-purple-400" />
           <h1 className="text-3xl font-bold text-white">User Management</h1>
         </div>
-        <div className="text-right">
-          <p className="text-purple-200">Total Users</p>
-          <p className="text-2xl font-bold text-white">{mockUsers.length}</p>
+        <div className="flex items-center space-x-4">
+          <div className="text-right">
+            <p className="text-purple-200">Total Users</p>
+            <p className="text-2xl font-bold text-white">{mockUsers.length}</p>
+          </div>
+          <button
+            onClick={() => router.push('/admin/AdminRegister')}
+            className="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200"
+            title="Create new user with custom role"
+          >
+            <UserPlus size={20} />
+            <span>Create User</span>
+          </button>
         </div>
       </div>
 
@@ -214,7 +240,9 @@ const UserManagement: React.FC = () => {
         <table className="w-full">
             <thead className="bg-white/5">
               <tr>
+                <th className="text-left p-4 text-purple-200 font-semibold">User ID</th>
                 <th className="text-left p-4 text-purple-200 font-semibold">User</th>
+                <th className="text-left p-4 text-purple-200 font-semibold">Role</th>
                 <th className="text-left p-4 text-purple-200 font-semibold">Plan</th>
                 <th className="text-left p-4 text-purple-200 font-semibold">KYC Status</th>
                 <th className="text-left p-4 text-purple-200 font-semibold">Account Status</th>
@@ -229,10 +257,18 @@ const UserManagement: React.FC = () => {
               {filteredUsers.map((user) => (
                 <tr key={user.id} className="border-t border-white/10 hover:bg-white/5">
                   <td className="p-4">
+                    <span className="text-purple-300 font-mono text-sm">{user.id}</span>
+                  </td>
+                  <td className="p-4">
                     <div>
                       <p className="text-white font-semibold">{user.name}</p>
                       <p className="text-purple-200 text-sm">{user.email}</p>
                     </div>
+                  </td>
+                  <td className="p-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getRoleColor(user.role)}`}>
+                      {user.role}
+                    </span>
                   </td>
                   <td className="p-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getSubscriptionColor(user.subscription_plan)}`}>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, TrendingUp, ArrowLeft, Mail, Lock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface LoginPageProps {
-  onLogin: (credentials: { email: string; password: string }) => void;
-  onBack: () => void;
+  onLogin?: (credentials: { email: string; password: string }) => void;
+  onBack?: () => void;
   selectedPlan?: string;
   onShowRegister?: () => void;
 }
@@ -15,13 +16,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, selectedPlan, on
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      const res = await fetch('http://localhost:3001/login', {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -30,15 +33,28 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, selectedPlan, on
       const data = await res.json();
       
       if (data.success) {
-        onLogin(formData);
+        // Store user data
+        localStorage.setItem('userToken', data.token || 'demo-token');
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        
+        // Route based on user role
+        if (data.user.role === 'ADMIN') {
+          router.push('/admin');
+        } else if (data.user.role === 'SALES_EXECUTIVE') {
+          router.push('/sales-dashboard'); // Future sales dashboard
+        } else {
+          router.push('/dashboard'); // Regular user dashboard
+        }
+        
+        // Call onLogin callback if provided
+        onLogin && onLogin(formData);
       } else {
         // Handle login error
-        console.error('Login failed:', data.error);
-        alert(data.error || 'Login failed');
+        setError(data.error || 'Login failed');
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Network error. Please try again.');
+      setError('Network error. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -159,6 +175,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, selectedPlan, on
               </button>
             </div>
 
+            {error && (
+              <div className="text-red-400 text-sm text-center bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                {error}
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={isLoading}
@@ -187,19 +209,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, selectedPlan, on
             )}
           </form>
 
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
-            <p className="text-purple-200 text-sm text-center mb-2">Demo Credentials:</p>
-            <p className="text-purple-300 text-xs text-center">
-              Email: demo@tradesetu.com | Password: demo123
-            </p>
-          </div>
-
           {/* Sign Up Link */}
           <div className="mt-6 text-center">
             <p className="text-purple-200 text-sm">
               Don&apos;t have an account?{' '}
-              <button className="text-purple-400 hover:text-purple-300 font-medium transition-colors duration-200">
+              <button 
+                onClick={() => router.push('/auth/register')}
+                className="text-purple-400 hover:text-purple-300 font-medium transition-colors duration-200"
+              >
                 Sign up for free
               </button>
             </p>

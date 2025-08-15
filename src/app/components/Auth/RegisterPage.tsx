@@ -33,7 +33,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess, onBack }
     }
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/register', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -43,7 +43,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ onRegisterSuccess, onBack }
           phone: formData.phone,
           city: formData.city,
           state: formData.state,
-          pincode: formData.pincode
+          pincode: formData.pincode,
+          role: 'USER' // Default role for direct registration
         })
       });
       const data = await res.json();

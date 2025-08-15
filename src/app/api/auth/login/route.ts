@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role || 'USER',
         lastLogin: new Date().toISOString()
       },
       token
