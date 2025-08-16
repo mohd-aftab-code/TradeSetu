@@ -16,6 +16,10 @@ const Dashboard: React.FC = () => {
   // User data state
   const [userName, setUserName] = useState<string>('User');
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+  // Market data state
+  const [marketData, setMarketData] = useState<any[]>([]);
+  const [isLoadingMarketData, setIsLoadingMarketData] = useState(true);
+  const [dataSource, setDataSource] = useState<string>('Loading...');
   // Replace brokers array with array of objects
   const brokers = [
     { name: 'Zerodha', id: 'Z12345' },
@@ -83,6 +87,42 @@ const Dashboard: React.FC = () => {
     };
 
     fetchUserProfile();
+  }, []);
+
+  // Fetch real-time market data
+  const fetchMarketData = async () => {
+    try {
+      setIsLoadingMarketData(true);
+      const response = await fetch('/api/market-data');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data) {
+          setMarketData(data.data);
+          setDataSource(data.source || 'Unknown');
+        } else {
+          setMarketData(mockMarketData);
+          setDataSource('Mock data (fallback)');
+        }
+      } else {
+        setMarketData(mockMarketData);
+        setDataSource('Mock data (fallback)');
+      }
+    } catch (error) {
+      console.error('Error fetching market data:', error);
+      setMarketData(mockMarketData);
+      setDataSource('Mock data (fallback)');
+    } finally {
+      setIsLoadingMarketData(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMarketData();
+
+    // Set up real-time updates every 30 seconds
+    const interval = setInterval(fetchMarketData, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
     return (
@@ -282,25 +322,69 @@ const Dashboard: React.FC = () => {
 
             {/* Market Overview */}
             <div className="bg-white/10 backdrop-blur-lg rounded-lg p-3 lg:p-4 border border-white/20">
-              <h2 className="text-base lg:text-lg font-semibold text-white mb-3">Market Overview</h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base lg:text-lg font-semibold text-white">Market Overview</h2>
+                <div className="flex items-center gap-2">
+                  {isLoadingMarketData && (
+                    <div className="flex items-center gap-1 text-blue-300 text-sm">
+                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                      <span>Live</span>
+                    </div>
+                  )}
+                  <div className="text-xs text-blue-300 bg-white/5 px-2 py-1 rounded">
+                    {dataSource}
+                  </div>
+                  <button
+                    onClick={fetchMarketData}
+                    disabled={isLoadingMarketData}
+                    className="p-1.5 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg text-blue-300 hover:text-blue-200 transition-colors disabled:opacity-50"
+                    title="Refresh market data"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </button>
+                  <span className="text-xs text-blue-300 bg-white/5 px-2 py-1 rounded">
+                    {new Date().toLocaleTimeString()}
+                  </span>
+                </div>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3">
-                {mockMarketData.map((data) => (
-                  <div key={data.symbol} className="bg-white/5 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold text-white">{data.symbol}</h3>
-                        <p className="text-2xl font-bold text-white">₹{data.price.toLocaleString()}</p>
-                      </div>
-                      <div className="text-right">
-                        <div className={`flex items-center space-x-1 ${data.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {data.change >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                          <span className="font-semibold">{data.change_percent.toFixed(2)}%</span>
+                {isLoadingMarketData ? (
+                  // Loading skeleton
+                  Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="bg-white/5 rounded-lg p-4 animate-pulse">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="h-4 bg-white/20 rounded w-16 mb-2"></div>
+                          <div className="h-6 bg-white/20 rounded w-20"></div>
                         </div>
-                        <p className="text-sm text-blue-200">₹{data.change.toFixed(2)}</p>
+                        <div className="text-right">
+                          <div className="h-4 bg-white/20 rounded w-12 mb-1"></div>
+                          <div className="h-3 bg-white/20 rounded w-16"></div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  marketData.map((data) => (
+                    <div key={data.symbol} className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-white">{data.symbol}</h3>
+                          <p className="text-2xl font-bold text-white">₹{data.price.toLocaleString()}</p>
+                        </div>
+                        <div className="text-right">
+                          <div className={`flex items-center space-x-1 ${data.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {data.change >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                            <span className="font-semibold">{data.change_percent.toFixed(2)}%</span>
+                          </div>
+                          <p className="text-sm text-blue-200">₹{data.change.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -354,43 +438,49 @@ const Dashboard: React.FC = () => {
 
             {/* Watchlist Items */}
             <div className="space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto pr-2 custom-scrollbar">
-              {[
-                { symbol: 'NIFTY', price: 21567.45, change: 125.30, changePercent: 0.58, volume: '2.5M' },
-                { symbol: 'BANKNIFTY', price: 46892.80, change: -89.20, changePercent: -0.19, volume: '1.8M' },
-                { symbol: 'FINNIFTY', price: 20123.60, change: 67.45, changePercent: 0.34, volume: '950K' },
-                { symbol: 'SENSEX', price: 71234.67, change: 234.12, changePercent: 0.33, volume: '3.2M' },
-                { symbol: 'RELIANCE', price: 2456.78, change: -12.34, changePercent: -0.50, volume: '1.2M' },
-                { symbol: 'TCS', price: 3890.45, change: 45.67, changePercent: 1.19, volume: '890K' },
-                { symbol: 'INFY', price: 1567.89, change: 23.45, changePercent: 1.52, volume: '1.1M' },
-                { symbol: 'HDFC', price: 1678.90, change: -34.56, changePercent: -2.02, volume: '750K' },
-                { symbol: 'ICICIBANK', price: 987.65, change: 15.78, changePercent: 1.62, volume: '2.1M' },
-                { symbol: 'AXISBANK', price: 1123.45, change: -8.90, changePercent: -0.79, volume: '1.3M' }
-              ].map((item, index) => (
-                <div key={index} className="bg-gradient-to-r from-white/10 to-white/5 rounded-lg p-3 border border-white/20 hover:from-white/20 hover:to-white/10 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl group">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-white text-sm group-hover:text-blue-200 transition">{item.symbol}</span>
-                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${item.change >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                      {item.change >= 0 ? '+' : ''}{item.changePercent.toFixed(2)}%
-                    </span>
+              {isLoadingMarketData ? (
+                // Loading skeleton for watchlist
+                Array.from({ length: 8 }).map((_, index) => (
+                  <div key={index} className="bg-gradient-to-r from-white/10 to-white/5 rounded-lg p-3 border border-white/20 animate-pulse">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="h-4 bg-white/20 rounded w-16"></div>
+                      <div className="h-4 bg-white/20 rounded w-12"></div>
+                    </div>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="h-5 bg-white/20 rounded w-20"></div>
+                      <div className="h-4 bg-white/20 rounded w-16"></div>
+                    </div>
+                    <div className="h-3 bg-white/20 rounded w-16"></div>
                   </div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-white font-bold text-lg">₹{item.price.toLocaleString()}</span>
-                    <div className="flex items-center gap-1">
-                      {item.change >= 0 ? (
-                        <TrendingUp size={14} className="text-green-400" />
-                      ) : (
-                        <TrendingDown size={14} className="text-red-400" />
-                      )}
-                      <span className={`text-sm font-semibold ${item.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {item.change >= 0 ? '+' : ''}{item.change.toFixed(2)}
+                ))
+              ) : (
+                marketData.map((item, index) => (
+                  <div key={index} className="bg-gradient-to-r from-white/10 to-white/5 rounded-lg p-3 border border-white/20 hover:from-white/20 hover:to-white/10 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl group">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-white text-sm group-hover:text-blue-200 transition">{item.symbol}</span>
+                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${item.change >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                        {item.change >= 0 ? '+' : ''}{item.change_percent.toFixed(2)}%
                       </span>
                     </div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-white font-bold text-lg">₹{item.price.toLocaleString()}</span>
+                      <div className="flex items-center gap-1">
+                        {item.change >= 0 ? (
+                          <TrendingUp size={14} className="text-green-400" />
+                        ) : (
+                          <TrendingDown size={14} className="text-red-400" />
+                        )}
+                        <span className={`text-sm font-semibold ${item.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {item.change >= 0 ? '+' : ''}{item.change.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-xs text-blue-300 bg-white/5 px-2 py-1 rounded inline-block">
+                      Vol: {(item.volume / 1000000).toFixed(1)}M
+                    </div>
                   </div>
-                  <div className="text-xs text-blue-300 bg-white/5 px-2 py-1 rounded inline-block">
-                    Vol: {item.volume}
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
             {/* Quick Actions */}
