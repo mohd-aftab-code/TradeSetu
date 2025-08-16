@@ -12,6 +12,8 @@ import {
   Zap
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { removeUserAuth } from '@/lib/cookies';
 
 interface SidebarProps {
   activeTab: string;
@@ -19,6 +21,13 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    removeUserAuth();
+    router.push('/');
+  };
+
   const menuItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard' },
     { id: 'strategies', icon: Target, label: 'Strategies' },
@@ -71,7 +80,10 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       </nav>
       
       <div className="absolute bottom-4 left-4 right-4">
-        <button className="w-full flex items-center space-x-3 px-4 py-3 text-red-300 hover:text-red-200 hover:bg-red-500/10 rounded-lg transition-all duration-200">
+        <button 
+          onClick={handleLogout}
+          className="w-full flex items-center space-x-3 px-4 py-3 text-red-300 hover:text-red-200 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+        >
           <LogOut size={20} />
           <span>Logout</span>
         </button>
@@ -80,4 +92,4 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   );
 };
 
-export default Sidebar;
+export default Sidebar;      
