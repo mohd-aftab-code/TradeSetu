@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Target, DollarSign, Activity, Users, UserCircle2, Info, ArrowLeft, ArrowRight, Plus, Handshake } from 'lucide-react';
 import { mockUser, mockStrategies, mockLiveTrades, mockMarketData } from '../../../data/mockData';
 import Sidebar from '../Layout/Sidebar';
+import { getUserToken } from '@/lib/cookies';
 
 const Dashboard: React.FC = () => {
   // header ke liye state
@@ -12,6 +13,9 @@ const Dashboard: React.FC = () => {
   const [showBrokerModal, setShowBrokerModal] = useState(false);
   // Update selectedBroker type to match broker object or null
   const [selectedBroker, setSelectedBroker] = useState<null | { name: string; id: string }>(null);
+  // User data state
+  const [userName, setUserName] = useState<string>('User');
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
   // Replace brokers array with array of objects
   const brokers = [
     { name: 'Zerodha', id: 'Z12345' },
@@ -41,6 +45,45 @@ const Dashboard: React.FC = () => {
   const totalPnL = mockStrategies.reduce((sum, strategy) => sum + strategy.performance_metrics.total_pnl, 0);
   const totalTrades = mockStrategies.reduce((sum, strategy) => sum + strategy.performance_metrics.total_trades, 0);
   const winRate = mockStrategies.reduce((sum, strategy) => sum + (strategy.performance_metrics.winning_trades / strategy.performance_metrics.total_trades), 0) / mockStrategies.length;
+
+  // Fetch user profile data
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = getUserToken();
+        if (!token) {
+          setUserName('User');
+          setIsLoadingUser(false);
+          return;
+        }
+
+        const response = await fetch('/api/user/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setUserName(data.data.name || 'User');
+          } else {
+            setUserName('User');
+          }
+        } else {
+          setUserName('User');
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        setUserName('User');
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
     return (
     <>
@@ -77,7 +120,9 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                  <h2 className="text-xl lg:text-2xl font-bold text-white mb-1">Hello Pravin Yadav,</h2>
+                  <h2 className="text-xl lg:text-2xl font-bold text-white mb-1">
+                    Hello {isLoadingUser ? 'Loading...' : userName},
+                  </h2>
                 </div>
                 <div className="text-right">
                   <span className="text-blue-200 text-sm">Total P&L</span>

@@ -75,6 +75,8 @@ const BacktestingPage = () => {
   const [timeframe, setTimeframe] = useState('1D')
   const [isRunning, setIsRunning] = useState(false)
   const [selectedStrategy, setSelectedStrategy] = useState('RSI Strategy')
+  const [userName, setUserName] = useState<string>('User')
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
@@ -87,6 +89,45 @@ const BacktestingPage = () => {
     setUser(userData)
     setIsLoading(false)
   }, [router])
+
+  // Fetch user profile data for name
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = getUserToken();
+        if (!token) {
+          setUserName('User');
+          setIsLoadingUser(false);
+          return;
+        }
+
+        const response = await fetch('/api/user/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setUserName(data.data.name || 'User');
+          } else {
+            setUserName('User');
+          }
+        } else {
+          setUserName('User');
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        setUserName('User');
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-white text-xl">Loading...</div>;
@@ -125,7 +166,7 @@ const BacktestingPage = () => {
         {/* Header/Card */}
         <div className="bg-[#0d0e3f] rounded-2xl p-8 mb-8 text-white flex flex-col md:flex-row md:items-center md:justify-between shadow">
           <div>
-            <h1 className="text-2xl font-bold mb-2">Hello Pravin Yadav,</h1>
+            <h1 className="text-2xl font-bold mb-2">Hello {isLoadingUser ? 'Loading...' : userName},</h1>
             {/* ...other header content... */}
           </div>
           <div className="text-right">

@@ -20,6 +20,8 @@ import {
 export default function SalesDashboardPage() {
   const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [userName, setUserName] = useState<string>('User')
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
@@ -46,6 +48,45 @@ export default function SalesDashboardPage() {
     setUser(userData)
     setIsLoading(false)
   }, [router])
+
+  // Fetch user profile data for name
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const token = getUserToken();
+        if (!token) {
+          setUserName('User');
+          setIsLoadingUser(false);
+          return;
+        }
+
+        const response = await fetch('/api/user/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setUserName(data.data.name || 'User');
+          } else {
+            setUserName('User');
+          }
+        } else {
+          setUserName('User');
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        setUserName('User');
+      } finally {
+        setIsLoadingUser(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   if (isLoading) {
     return (
@@ -113,7 +154,7 @@ export default function SalesDashboardPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Sales Executive Dashboard</h1>
-          <p className="text-gray-300">Welcome back, {user.name}</p>
+          <p className="text-gray-300">Welcome back, {isLoadingUser ? 'Loading...' : userName}</p>
         </div>
 
         {/* Stats Grid */}
