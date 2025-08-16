@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Target, DollarSign, Activity, Users, UserCircle2, Info, ArrowLeft, ArrowRight, Plus, Handshake } from 'lucide-react';
 import { mockUser, mockStrategies, mockLiveTrades, mockMarketData } from '../../../data/mockData';
 import Sidebar from '../Layout/Sidebar';
-import { getUserToken } from '@/lib/cookies';
+import { getUserToken, getUserData } from '@/lib/cookies';
 
 const Dashboard: React.FC = () => {
   // header ke liye state
@@ -20,18 +20,27 @@ const Dashboard: React.FC = () => {
   const [marketData, setMarketData] = useState<any[]>([]);
   const [isLoadingMarketData, setIsLoadingMarketData] = useState(true);
   const [dataSource, setDataSource] = useState<string>('Loading...');
-  // Replace brokers array with array of objects
-  const brokers = [
-    { name: 'Zerodha', id: 'Z12345' },
-    { name: 'Upstox', id: 'U67890' },
-    { name: 'Angel One', id: 'A11223' },
-    { name: 'Fyers', id: 'F44556' },
-    { name: 'Alice Blue', id: 'AB7788' },
-    { name: '5paisa', id: '5P9911' },
-    { name: 'Dhan', id: 'D22334' },
-    { name: 'ProStocks', id: 'PS5566' },
-    { name: 'Motilal Oswal', id: 'MO7788' },
-  ];
+  // Broker state
+  const [brokers, setBrokers] = useState<any[]>([]);
+  const [userConnections, setUserConnections] = useState<any[]>([]);
+  const [isLoadingBrokers, setIsLoadingBrokers] = useState(true);
+  const [connectingBroker, setConnectingBroker] = useState<string | null>(null);
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [showApiSetupModal, setShowApiSetupModal] = useState(false);
+  const [selectedBrokerForOTP, setSelectedBrokerForOTP] = useState<any>(null);
+  const [selectedBrokerForSetup, setSelectedBrokerForSetup] = useState<any>(null);
+  const [apiSetupInstructions, setApiSetupInstructions] = useState<any>(null);
+  const [isLoadingSetup, setIsLoadingSetup] = useState(false);
+  const [accountDetails, setAccountDetails] = useState({
+    userId: '',
+    password: '',
+    apiKey: '',
+    apiSecret: ''
+  });
+  const [otp, setOtp] = useState('');
+  const [isVerifyingOTP, setIsVerifyingOTP] = useState(false);
+  const [isSendingOTP, setIsSendingOTP] = useState(false);
 
   // Add color array for avatars
   const brokerColors = [
@@ -45,6 +54,176 @@ const Dashboard: React.FC = () => {
     'bg-teal-500',
     'bg-orange-500',
   ];
+
+  // Fetch brokers data
+  useEffect(() => {
+    const fetchBrokers = async () => {
+      try {
+        setIsLoadingBrokers(true);
+        const token = getUserToken();
+        const userData = getUserData();
+        
+        if (!token || !userData) {
+          setBrokers([]);
+          setUserConnections([]);
+          return;
+        }
+
+        const response = await fetch(`/api/broker/connect?userId=${userData.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setBrokers(data.data.availableBrokers);
+            setUserConnections(data.data.userConnections);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching brokers:', error);
+      } finally {
+        setIsLoadingBrokers(false);
+      }
+    };
+
+    fetchBrokers();
+  }, []);
+
+  // Function to show API setup instructions
+  const showApiSetup = async (brokerId: string) => {
+    try {
+      setIsLoadingSetup(true);
+      const broker = brokers.find(b => b.id === brokerId);
+      setSelectedBrokerForSetup(broker);
+      
+      const response = await fetch(`/api/broker/connect?brokerId=${brokerId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          setApiSetupInstructions(data.data);
+          setShowApiSetupModal(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching API setup instructions:', error);
+      alert('Error loading API setup instructions');
+    } finally {
+      setIsLoadingSetup(false);
+    }
+  };
+
+  // Function to connect to broker
+  const connectToBroker = async (brokerId: string) => {
+    try {
+      setConnectingBroker(brokerId);
+      const userData = getUserData();
+      
+      if (!userData) {
+        alert('Please login to connect broker');
+        return;
+      }
+
+      // Show account details modal first
+      const broker = brokers.find(b => b.id === brokerId);
+      setSelectedBrokerForOTP(broker);
+      setShowAccountModal(true);
+      setConnectingBroker(null);
+    } catch (error) {
+      console.error('Error connecting to broker:', error);
+      alert('Error connecting to broker');
+      setConnectingBroker(null);
+    }
+  };
+
+  // Function to send OTP after account details
+  const sendOTP = async () => {
+    try {
+      setIsSendingOTP(true);
+      const userData = getUserData();
+      
+      if (!userData || !selectedBrokerForOTP) {
+        alert('Please login to connect broker');
+        return;
+      }
+
+      // Validate account details
+      if (!accountDetails.userId || !accountDetails.password) {
+        alert('Please enter User ID and Password');
+        return;
+      }
+
+      // Simulate sending OTP to mobile
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Close account modal and show OTP modal
+      setShowAccountModal(false);
+      setShowOTPModal(true);
+      
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      alert('Error sending OTP');
+    } finally {
+      setIsSendingOTP(false);
+    }
+  };
+
+  // Function to verify OTP and complete connection
+  const verifyOTPAndConnect = async () => {
+    try {
+      setIsVerifyingOTP(true);
+      const userData = getUserData();
+      
+      if (!userData || !selectedBrokerForOTP) {
+        alert('Please login to connect broker');
+        return;
+      }
+
+      if (!otp || otp.length !== 6) {
+        alert('Please enter a valid 6-digit OTP');
+        return;
+      }
+
+             // Verify OTP and connect
+       const response = await fetch('/api/broker/connect', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json',
+         },
+         body: JSON.stringify({
+           brokerId: selectedBrokerForOTP.id,
+           userId: userData.id,
+           connectionType: 'otp_verification',
+           otp: otp,
+           credentials: {
+             apiKey: accountDetails.apiKey || `demo_api_key_${selectedBrokerForOTP.id}`,
+             apiSecret: accountDetails.apiSecret || `demo_api_secret_${selectedBrokerForOTP.id}`,
+             username: accountDetails.userId,
+             password: accountDetails.password
+           }
+         })
+       });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+                     alert(`Successfully connected to ${data.connection.broker_name}!`);
+           setShowOTPModal(false);
+           setOtp('');
+           setAccountDetails({ userId: '', password: '', apiKey: '', apiSecret: '' });
+           setSelectedBrokerForOTP(null);
+          // Refresh broker connections
+          window.location.reload();
+        } else {
+          alert(`Connection failed: ${data.error}`);
+        }
+      } else {
+        alert('Failed to connect to broker');
+      }
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      alert('Error verifying OTP');
+    } finally {
+      setIsVerifyingOTP(false);
+    }
+  };
 
   const totalPnL = mockStrategies.reduce((sum, strategy) => sum + strategy.performance_metrics.total_pnl, 0);
   const totalTrades = mockStrategies.reduce((sum, strategy) => sum + strategy.performance_metrics.total_trades, 0);
@@ -551,33 +730,129 @@ const Dashboard: React.FC = () => {
 
             {/* Modal Content */}
             <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-              <div className="grid gap-4">
-                {brokers.map((broker, idx) => (
-                  <div
-                    key={broker.name}
-                    className="flex items-center justify-between bg-gradient-to-r from-white/10 to-white/5 rounded-xl p-4 border border-white/20 hover:from-white/20 hover:to-white/10 transition-all duration-300 group cursor-pointer shadow-lg hover:shadow-xl"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg ${brokerColors[idx % brokerColors.length]}`}>
-                        {broker.name[0]}
+              {isLoadingBrokers ? (
+                // Loading skeleton
+                <div className="grid gap-4">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <div key={index} className="flex items-center justify-between bg-gradient-to-r from-white/10 to-white/5 rounded-xl p-4 border border-white/20 animate-pulse">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-white/20 rounded-full"></div>
+                        <div>
+                          <div className="h-4 bg-white/20 rounded w-24 mb-2"></div>
+                          <div className="h-3 bg-white/20 rounded w-16"></div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="font-bold text-white group-hover:text-blue-200 transition">{broker.name}</div>
-                        <div className="text-xs text-blue-300">ID: {broker.id}</div>
+                      <div className="h-8 bg-white/20 rounded w-20"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* User's Connected Brokers */}
+                  {userConnections.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        Connected Brokers
+                      </h3>
+                      <div className="grid gap-3">
+                        {userConnections.map((connection) => (
+                          <div
+                            key={connection.id}
+                            className="flex items-center justify-between bg-gradient-to-r from-green-500/10 to-green-600/5 rounded-xl p-4 border border-green-500/20"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                {connection.broker_name[0]}
+                              </div>
+                              <div>
+                                <div className="font-bold text-white">{connection.broker_name}</div>
+                                <div className="text-xs text-green-300">Balance: ₹{connection.account_balance?.toLocaleString() || '0'}</div>
+                                <div className="text-xs text-blue-300">Last sync: {new Date(connection.last_sync).toLocaleString()}</div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-xs text-green-400 bg-green-500/20 px-2 py-1 rounded-full">
+                                Connected
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <button
-                      className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full font-semibold shadow-lg hover:from-purple-600 hover:to-blue-500 transition-all duration-300 transform hover:scale-105"
-                      onClick={() => {
-                        setSelectedBroker(broker);
-                        setShowBrokerModal(false);
-                      }}
-                    >
-                      Connect
-                    </button>
+                  )}
+
+                  {/* Available Brokers */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      Available Brokers
+                    </h3>
+                    <div className="grid gap-3">
+                      {brokers.map((broker, idx) => {
+                        const isConnected = userConnections.some(conn => conn.broker_id === broker.id);
+                        const isConnecting = connectingBroker === broker.id;
+                        
+                        return (
+                          <div
+                            key={broker.id}
+                            className="flex items-center justify-between bg-gradient-to-r from-white/10 to-white/5 rounded-xl p-4 border border-white/20 hover:from-white/20 hover:to-white/10 transition-all duration-300 group shadow-lg hover:shadow-xl"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg" style={{ backgroundImage: `url(${broker.logo})` }}>
+                                {broker.name[0]}
+                              </div>
+                              <div>
+                                <div className="font-bold text-white group-hover:text-blue-200 transition">{broker.name}</div>
+                                <div className="text-xs text-blue-300">{broker.commission}</div>
+                                <div className="text-xs text-gray-400">{broker.features.join(', ')}</div>
+                              </div>
+                            </div>
+                                                         <div className="flex items-center gap-2">
+                               {isConnected ? (
+                                 <div className="text-xs text-green-400 bg-green-500/20 px-2 py-1 rounded-full">
+                                   Connected
+                                 </div>
+                               ) : (
+                                 <div className="flex flex-col gap-2">
+                                   <button
+                                     className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-1.5 rounded-full font-semibold shadow-lg hover:from-red-600 hover:to-orange-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
+                                     onClick={() => showApiSetup(broker.id)}
+                                     disabled={isLoadingSetup}
+                                   >
+                                     {isLoadingSetup ? (
+                                       <div className="flex items-center gap-1">
+                                         <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                         <span>Loading...</span>
+                                       </div>
+                                     ) : (
+                                       'API Setup'
+                                     )}
+                                   </button>
+                                   <button
+                                     className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-full font-semibold shadow-lg hover:from-purple-600 hover:to-blue-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                                     onClick={() => connectToBroker(broker.id)}
+                                     disabled={isConnecting}
+                                   >
+                                     {isConnecting ? (
+                                       <div className="flex items-center gap-2">
+                                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                         <span>Connecting...</span>
+                                       </div>
+                                     ) : (
+                                       'Connect'
+                                     )}
+                                   </button>
+                                 </div>
+                               )}
+                             </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </div>
 
             {/* Modal Footer */}
@@ -590,10 +865,401 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
-      </div>
-    </>
-  );
-};
+             )}
+
+       {/* Account Details Modal */}
+       {showAccountModal && selectedBrokerForOTP && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+           <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-blue-100 rounded-2xl shadow-2xl max-w-md w-full mx-4 relative overflow-hidden border border-white/20">
+             {/* Modal Header */}
+             <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6 border-b border-white/10">
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                   <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-full">
+                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                     </svg>
+                   </div>
+                   <div>
+                     <h2 className="text-xl font-bold text-white">Account Details</h2>
+                     <p className="text-blue-200 text-sm">Enter your {selectedBrokerForOTP.name} credentials</p>
+                   </div>
+                 </div>
+                 <button
+                   className="text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all duration-300"
+                   onClick={() => {
+                     setShowAccountModal(false);
+                     setAccountDetails({ userId: '', password: '', apiKey: '', apiSecret: '' });
+                     setSelectedBrokerForOTP(null);
+                   }}
+                 >
+                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                   </svg>
+                 </button>
+               </div>
+             </div>
+
+             {/* Modal Content */}
+             <div className="p-6">
+               <div className="text-center mb-6">
+                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                   <span className="text-2xl font-bold text-blue-300">{selectedBrokerForOTP.name[0]}</span>
+                 </div>
+                 <h3 className="text-lg font-semibold text-white mb-2">Connect to {selectedBrokerForOTP.name}</h3>
+                 <p className="text-blue-200 text-sm">Enter your trading account credentials</p>
+               </div>
+
+               <div className="space-y-4">
+                 <div>
+                   <label className="block text-blue-200 text-sm font-medium mb-2">User ID / Client ID</label>
+                   <input
+                     type="text"
+                     value={accountDetails.userId}
+                     onChange={(e) => setAccountDetails({...accountDetails, userId: e.target.value})}
+                     placeholder="Enter your User ID"
+                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   />
+                 </div>
+
+                 <div>
+                   <label className="block text-blue-200 text-sm font-medium mb-2">Password</label>
+                   <input
+                     type="password"
+                     value={accountDetails.password}
+                     onChange={(e) => setAccountDetails({...accountDetails, password: e.target.value})}
+                     placeholder="Enter your password"
+                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   />
+                 </div>
+
+                 <div>
+                   <label className="block text-blue-200 text-sm font-medium mb-2">API Key (Optional)</label>
+                   <input
+                     type="text"
+                     value={accountDetails.apiKey}
+                     onChange={(e) => setAccountDetails({...accountDetails, apiKey: e.target.value})}
+                     placeholder="Enter API Key if available"
+                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   />
+                 </div>
+
+                 <div>
+                   <label className="block text-blue-200 text-sm font-medium mb-2">API Secret (Optional)</label>
+                   <input
+                     type="password"
+                     value={accountDetails.apiSecret}
+                     onChange={(e) => setAccountDetails({...accountDetails, apiSecret: e.target.value})}
+                     placeholder="Enter API Secret if available"
+                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                   />
+                 </div>
+
+                 <div className="flex gap-3">
+                   <button
+                     onClick={() => {
+                       setShowAccountModal(false);
+                       setAccountDetails({ userId: '', password: '', apiKey: '', apiSecret: '' });
+                       setSelectedBrokerForOTP(null);
+                     }}
+                     className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-colors"
+                   >
+                     Cancel
+                   </button>
+                   <button
+                     onClick={sendOTP}
+                     disabled={isSendingOTP || !accountDetails.userId || !accountDetails.password}
+                     className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-blue-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                   >
+                     {isSendingOTP ? (
+                       <div className="flex items-center justify-center gap-2">
+                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                         <span>Sending OTP...</span>
+                       </div>
+                     ) : (
+                       'Send OTP'
+                     )}
+                   </button>
+                 </div>
+               </div>
+             </div>
+
+             {/* Modal Footer */}
+             <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4 border-t border-white/10">
+               <div className="text-center">
+                 <p className="text-blue-200 text-xs">
+                   OTP will be sent to your registered mobile number
+                 </p>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
+
+       {/* OTP Verification Modal */}
+       {showOTPModal && selectedBrokerForOTP && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+           <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-blue-100 rounded-2xl shadow-2xl max-w-md w-full mx-4 relative overflow-hidden border border-white/20">
+             {/* Modal Header */}
+             <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6 border-b border-white/10">
+               <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                   <div className="bg-gradient-to-r from-green-500 to-green-600 p-3 rounded-full">
+                     <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                     </svg>
+                   </div>
+                   <div>
+                     <h2 className="text-xl font-bold text-white">OTP Verification</h2>
+                     <p className="text-blue-200 text-sm">Enter OTP sent to your mobile</p>
+                   </div>
+                 </div>
+                 <button
+                   className="text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all duration-300"
+                                        onClick={() => {
+                       setShowOTPModal(false);
+                       setOtp('');
+                       setAccountDetails({ userId: '', password: '', apiKey: '', apiSecret: '' });
+                       setSelectedBrokerForOTP(null);
+                     }}
+                 >
+                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                   </svg>
+                 </button>
+               </div>
+             </div>
+
+             {/* Modal Content */}
+             <div className="p-6">
+               <div className="text-center mb-6">
+                 <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                   <span className="text-2xl font-bold text-blue-300">{selectedBrokerForOTP.name[0]}</span>
+                 </div>
+                 <h3 className="text-lg font-semibold text-white mb-2">Connect to {selectedBrokerForOTP.name}</h3>
+                 <p className="text-blue-200 text-sm">We've sent a 6-digit OTP to your registered mobile number</p>
+                 <p className="text-blue-300 text-xs mt-1">Account: {accountDetails.userId}</p>
+               </div>
+
+               <div className="space-y-4">
+                 <div>
+                   <label className="block text-blue-200 text-sm font-medium mb-2">Enter OTP</label>
+                   <input
+                     type="text"
+                     value={otp}
+                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                     placeholder="Enter 6-digit OTP"
+                     className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                     maxLength={6}
+                   />
+                 </div>
+
+                 <div className="flex items-center justify-between text-sm">
+                   <span className="text-blue-300">Didn't receive OTP?</span>
+                   <button className="text-blue-400 hover:text-blue-300 underline">Resend OTP</button>
+                 </div>
+
+                 <div className="flex gap-3">
+                   <button
+                     onClick={() => {
+                       setShowOTPModal(false);
+                       setOtp('');
+                       setAccountDetails({ userId: '', password: '', apiKey: '', apiSecret: '' });
+                       setSelectedBrokerForOTP(null);
+                     }}
+                     className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-colors"
+                   >
+                     Cancel
+                   </button>
+                   <button
+                     onClick={verifyOTPAndConnect}
+                     disabled={isVerifyingOTP || otp.length !== 6}
+                     className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-semibold hover:from-purple-600 hover:to-blue-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                   >
+                     {isVerifyingOTP ? (
+                       <div className="flex items-center justify-center gap-2">
+                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                         <span>Verifying...</span>
+                       </div>
+                     ) : (
+                       'Verify & Connect'
+                     )}
+                   </button>
+                 </div>
+               </div>
+             </div>
+
+             {/* Modal Footer */}
+             <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4 border-t border-white/10">
+               <div className="text-center">
+                 <p className="text-blue-200 text-xs">
+                   For security, OTP expires in 5 minutes
+                 </p>
+               </div>
+             </div>
+           </div>
+         </div>
+               )}
+
+        {/* API Setup Modal */}
+        {showApiSetupModal && selectedBrokerForSetup && apiSetupInstructions && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 text-blue-100 rounded-2xl shadow-2xl max-w-2xl w-full mx-4 relative overflow-hidden border border-white/20">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 p-6 border-b border-white/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-gradient-to-r from-orange-500 to-red-600 p-3 rounded-full">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-white">API Setup Guide</h2>
+                      <p className="text-blue-200 text-sm">{apiSetupInstructions.brokerName} Integration</p>
+                    </div>
+                  </div>
+                  <button
+                    className="text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all duration-300"
+                    onClick={() => {
+                      setShowApiSetupModal(false);
+                      setSelectedBrokerForSetup(null);
+                      setApiSetupInstructions(null);
+                    }}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="space-y-6">
+                  {/* Setup URL */}
+                  <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4 rounded-lg border border-white/20">
+                    <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      Setup URL
+                    </h3>
+                    <a 
+                      href={apiSetupInstructions.setupUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300 underline break-all"
+                    >
+                      {apiSetupInstructions.setupUrl}
+                    </a>
+                    <p className="text-blue-200 text-sm mt-2">Click to open in new tab</p>
+                  </div>
+
+                  {/* Instructions */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Step-by-Step Instructions
+                    </h3>
+                    <div className="space-y-3">
+                      {apiSetupInstructions.instructions.map((instruction: string, index: number) => (
+                        <div key={index} className="flex items-start gap-3 bg-white/5 p-3 rounded-lg border border-white/10">
+                          <div className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] text-center">
+                            {index + 1}
+                          </div>
+                          <p className="text-blue-100 text-sm leading-relaxed">{instruction}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Required Fields */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      Required Fields
+                    </h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      {apiSetupInstructions.requiredFields.map((field: string) => (
+                        <div key={field} className="bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-lg">
+                          <span className="text-red-400 text-sm font-semibold">{field}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                                     {/* Optional Fields */}
+                   {apiSetupInstructions.optionalFields.length > 0 && (
+                     <div>
+                       <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                         <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                         </svg>
+                         Optional Fields
+                       </h3>
+                       <div className="grid grid-cols-2 gap-2">
+                         {apiSetupInstructions.optionalFields.map((field: string) => (
+                           <div key={field} className="bg-yellow-500/10 border border-yellow-500/20 px-3 py-2 rounded-lg">
+                             <span className="text-yellow-400 text-sm font-semibold">{field}</span>
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+
+                   {/* Additional Notes */}
+                   {apiSetupInstructions.additionalNotes && apiSetupInstructions.additionalNotes.length > 0 && (
+                     <div>
+                       <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                         <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                         </svg>
+                         Important Notes
+                       </h3>
+                       <div className="space-y-2">
+                         {apiSetupInstructions.additionalNotes.map((note: string, index: number) => (
+                           <div key={index} className="bg-orange-500/10 border border-orange-500/20 px-3 py-2 rounded-lg">
+                             <span className="text-orange-300 text-sm">{note}</span>
+                           </div>
+                         ))}
+                       </div>
+                     </div>
+                   )}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 p-4 border-t border-white/10">
+                <div className="flex items-center justify-between">
+                  <div className="text-center">
+                    <p className="text-blue-200 text-sm">
+                      After setting up API credentials, click "Connect" to proceed
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowApiSetupModal(false);
+                      setSelectedBrokerForSetup(null);
+                      setApiSetupInstructions(null);
+                    }}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:from-purple-600 hover:to-blue-500 transition-all duration-300"
+                  >
+                    Got it!
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        </div>
+      </>
+    );
+  };
 
 export default Dashboard;
