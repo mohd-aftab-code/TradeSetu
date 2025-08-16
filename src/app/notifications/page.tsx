@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Sidebar from '../components/Layout/Sidebar';
 import NotificationsPage from '../components/Notifications/page';
+import { getUserToken, getUserData } from '@/lib/cookies';
 
 const Notifications = () => {
   const [user, setUser] = useState(null)
@@ -11,19 +12,14 @@ const Notifications = () => {
   const router = useRouter()
 
   useEffect(() => {
-    const token = localStorage.getItem('userToken')
-    const userData = localStorage.getItem('userData')
+    const token = getUserToken()
+    const userData = getUserData()
     if (!token || !userData) {
       router.push('/auth/login')
       return
     }
-    try {
-      setUser(JSON.parse(userData))
-    } catch (error) {
-      router.push('/auth/login')
-    } finally {
-      setIsLoading(false)
-    }
+    setUser(userData)
+    setIsLoading(false)
   }, [router])
 
   if (isLoading) {

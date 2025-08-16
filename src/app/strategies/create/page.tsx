@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, BarChart3, Code, TrendingUp, Cpu, Zap, Target, Shield, Brain, Rocket, Palette, Database, Globe, Clock, DollarSign, AlertTriangle, CheckCircle, Sparkles, Layers, BarChart2, Activity, PieChart, LineChart, Settings, Play, Pause, RotateCcw, X, Sun, Plus, Copy, Trash2 } from 'lucide-react';
 import Sidebar from '../../components/Layout/Sidebar';
+import { getUserToken, getUserData } from '@/lib/cookies';
 
 const CreateStrategyPage = () => {
   const [user, setUser] = useState(null);
@@ -97,22 +98,16 @@ const CreateStrategyPage = () => {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = localStorage.getItem('userToken');
-    const userData = localStorage.getItem('userData');
+    const token = getUserToken();
+    const userData = getUserData();
 
     if (!token || !userData) {
       router.push('/auth/login');
       return;
     }
 
-    try {
-      setUser(JSON.parse(userData));
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      router.push('/auth/login');
-    } finally {
-      setIsLoading(false);
-    }
+    setUser(userData);
+    setIsLoading(false);
   }, [router]);
 
   if (isLoading) {

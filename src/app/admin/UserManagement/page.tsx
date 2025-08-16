@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Filter, Edit, Crown, Shield, Ban, UserPlus, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getUserToken } from '@/lib/cookies';
 
 interface User {
   id: string;
@@ -45,7 +46,7 @@ const UserManagement: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
-      const token = localStorage.getItem('userToken');
+      const token = getUserToken();
       if (!token) {
         setError('Authentication token not found');
         return;

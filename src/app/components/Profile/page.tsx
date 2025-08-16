@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, CreditCard, Settings, Save, Loader2 } from 'lucide-react';
 import { User as UserType } from '../../../types/database';
+import { getUserToken } from '@/lib/cookies';
 
 const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -31,7 +32,7 @@ const ProfilePage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
-      const token = localStorage.getItem('userToken');
+      const token = getUserToken();
       if (!token) {
         setError('Authentication token not found');
         return;
@@ -76,7 +77,7 @@ const ProfilePage: React.FC = () => {
       setError(null);
       setSuccessMessage(null);
       
-      const token = localStorage.getItem('userToken');
+      const token = getUserToken();
       if (!token) {
         setError('Authentication token not found');
         return;

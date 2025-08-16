@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { UserPlus, Eye, EyeOff, Users, Shield, LogOut, TrendingUp, Activity, Settings, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { removeCookie } from '@/lib/cookies';
 
 const AdminUserCreate = () => {
   const [formData, setFormData] = useState({
@@ -80,8 +81,7 @@ const AdminUserCreate = () => {
 
   const handleLogout = () => {
     // Clear any admin session/tokens here
-    localStorage.removeItem('adminToken');
-    sessionStorage.removeItem('adminToken');
+    removeCookie('adminToken');
     router.push('/admin/login');
   };
 

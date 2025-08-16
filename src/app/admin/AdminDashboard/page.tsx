@@ -7,6 +7,7 @@ import UserManagement from '../UserManagement/page';
 import AdminStats from '../AdminStats/page';
 import SystemSettings from '../SystemSettings/page';
 import AnalyticsPage from '../Analytics/page';
+import { removeUserAuth } from '@/lib/cookies';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -25,10 +26,7 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     // Clear user session/tokens
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userData');
-    sessionStorage.removeItem('userToken');
-    sessionStorage.removeItem('userData');
+    removeUserAuth();
     router.push('/');
   };
 

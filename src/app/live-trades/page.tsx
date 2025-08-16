@@ -6,6 +6,7 @@ import Sidebar from '../components/Layout/Sidebar';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { mockLiveTrades } from '../../data/mockData';
 import { mockStrategies } from '../../data/mockData';
+import { getUserToken, getUserData } from '@/lib/cookies';
 
 const LiveTradesPage = () => {
   const [user, setUser] = useState(null)
@@ -13,19 +14,14 @@ const LiveTradesPage = () => {
   const router = useRouter()
 
   useEffect(() => {
-    const token = localStorage.getItem('userToken')
-    const userData = localStorage.getItem('userData')
+    const token = getUserToken()
+    const userData = getUserData()
     if (!token || !userData) {
       router.push('/auth/login')
       return
     }
-    try {
-      setUser(JSON.parse(userData))
-    } catch (error) {
-      router.push('/auth/login')
-    } finally {
-      setIsLoading(false)
-    }
+    setUser(userData)
+    setIsLoading(false)
   }, [router])
 
   if (isLoading) {

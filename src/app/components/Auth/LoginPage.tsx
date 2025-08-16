@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, TrendingUp, ArrowLeft, Mail, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { setUserToken, setUserData } from '../../../lib/cookies';
 
 interface LoginPageProps {
   onLogin?: (credentials: { email: string; password: string }) => void;
@@ -33,9 +34,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, selectedPlan, on
       const data = await res.json();
       
       if (data.success) {
-        // Store user data
-        localStorage.setItem('userToken', data.token || 'demo-token');
-        localStorage.setItem('userData', JSON.stringify(data.user));
+        // Store user data in cookies
+        setUserToken(data.token || 'demo-token');
+        setUserData(data.user);
         
         // Route based on user role
         if (data.user.role === 'ADMIN') {

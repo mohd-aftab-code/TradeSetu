@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Dashboard from '@/app/components/Dashboard/page'
+import { getUserToken, getUserData } from '@/lib/cookies'
 
 export default function DashboardPage() {
   const [user, setUser] = useState(null)
@@ -11,22 +12,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = localStorage.getItem('userToken')
-    const userData = localStorage.getItem('userData')
+    const token = getUserToken()
+    const userData = getUserData()
 
     if (!token || !userData) {
       router.push('/auth/login')
       return
     }
 
-    try {
-      setUser(JSON.parse(userData))
-    } catch (error) {
-      console.error('Error parsing user data:', error)
-      router.push('/auth/login')
-    } finally {
-      setIsLoading(false)
-    }
+    setUser(userData)
+    setIsLoading(false)
   }, [router])
 
   if (isLoading) {

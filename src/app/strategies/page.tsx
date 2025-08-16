@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Sidebar from '../components/Layout/Sidebar';
 import StrategyList from '../components/Strategies/StrategyList/page';
 import CreateStrategy from '../components/Strategies/page';
+import { getUserToken, getUserData } from '@/lib/cookies';
 
 const StrategiesPage = () => {
   const [user, setUser] = useState(null)
@@ -14,22 +15,16 @@ const StrategiesPage = () => {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = localStorage.getItem('userToken')
-    const userData = localStorage.getItem('userData')
+    const token = getUserToken()
+    const userData = getUserData()
 
     if (!token || !userData) {
       router.push('/auth/login')
       return
     }
 
-    try {
-      setUser(JSON.parse(userData))
-    } catch (error) {
-      console.error('Error parsing user data:', error)
-      router.push('/auth/login')
-    } finally {
-      setIsLoading(false)
-    }
+    setUser(userData)
+    setIsLoading(false)
   }, [router])
 
   if (isLoading) {

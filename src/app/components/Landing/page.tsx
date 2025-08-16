@@ -21,6 +21,7 @@ import {
   Linkedin
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { getUserToken, getUserData, setSelectedPlan, removeUserAuth } from '../../../lib/cookies';
 
 const LandingPage = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -36,17 +37,12 @@ const LandingPage = () => {
     setTimeout(() => setAnimateStats(true), 1000);
     
     // Check if user is logged in
-    const userToken = localStorage.getItem('userToken');
-    const userData = localStorage.getItem('userData');
+    const userToken = getUserToken();
+    const userData = getUserData();
     
     if (userToken && userData) {
-      try {
-        const user = JSON.parse(userData);
-        setIsLoggedIn(true);
-        setUserRole(user.role || 'USER');
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-      }
+      setIsLoggedIn(true);
+      setUserRole(userData.role || 'USER');
     }
   }, []);
 
@@ -132,31 +128,24 @@ const LandingPage = () => {
 
   const handlePlanSelect = (planId: string) => {
     setSelectedPlan(planId);
-    // Store selected plan in localStorage
-    localStorage.setItem('selectedPlan', planId);
+    // Store selected plan in cookies
+    setSelectedPlan(planId);
     router.push('/auth/register');
   };
 
   const handleGetStarted = () => {
     // Check if user is already logged in
-    const userToken = localStorage.getItem('userToken');
-    const userData = localStorage.getItem('userData');
+    const userToken = getUserToken();
+    const userData = getUserData();
     
     if (userToken && userData) {
-      try {
-        const user = JSON.parse(userData);
-        
-        // Route based on user role
-        if (user.role === 'ADMIN') {
-          router.push('/admin');
-        } else if (user.role === 'SALES_EXECUTIVE') {
-          router.push('/sales-dashboard'); // Future sales dashboard
-        } else {
-          router.push('/dashboard'); // Regular user dashboard
-        }
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        router.push('/auth/login');
+      // Route based on user role
+      if (userData.role === 'ADMIN') {
+        router.push('/admin');
+      } else if (userData.role === 'SALES_EXECUTIVE') {
+        router.push('/sales-dashboard'); // Future sales dashboard
+      } else {
+        router.push('/dashboard'); // Regular user dashboard
       }
     } else {
       // Not logged in, go to login page
@@ -165,8 +154,7 @@ const LandingPage = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userData');
+    removeUserAuth();
     setIsLoggedIn(false);
     setUserRole('');
     router.push('/');

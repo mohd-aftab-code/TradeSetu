@@ -78,7 +78,30 @@ export async function POST(request: NextRequest) {
       },
       token
     });
-    response.headers.set('Set-Cookie', `token=${token}; Path=/; Max-Age=86400; SameSite=Lax`);
+    
+    // Set both userToken and userData cookies
+    const userData = JSON.stringify({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role || 'USER',
+      lastLogin: new Date().toISOString()
+    });
+    
+    response.cookies.set('userToken', token, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 // 7 days
+    });
+    
+    response.cookies.set('userData', userData, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 // 7 days
+    });
+    
     return response;
 
   } catch (error) {
