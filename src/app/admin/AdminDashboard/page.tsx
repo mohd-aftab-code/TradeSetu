@@ -1,17 +1,42 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, TrendingUp, DollarSign, Activity, Shield, LogOut, Settings, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import UserManagement from '../UserManagement/page';
 import AdminStats from '../AdminStats/page';
 import SystemSettings from '../SystemSettings/page';
 import AnalyticsPage from '../Analytics/page';
-import { removeUserAuth } from '@/lib/cookies';
+import { removeUserAuth, getUserToken, getUserData } from '@/lib/cookies';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+
+  // Check authentication and role
+  useEffect(() => {
+    const token = getUserToken();
+    const userData = getUserData();
+
+    if (!token || !userData) {
+      router.push('/auth/login');
+      return;
+    }
+
+    // Check if user has ADMIN role
+    if (userData.role !== 'ADMIN') {
+      // Redirect to appropriate dashboard based on role
+      if (userData.role === 'SALES_EXECUTIVE') {
+        router.push('/sales-dashboard');
+      } else {
+        router.push('/dashboard');
+      }
+      return;
+    }
+
+    setIsLoading(false);
+  }, [router]);
 
   // Check for tab parameter in URL
   React.useEffect(() => {
@@ -54,6 +79,14 @@ const AdminDashboard = () => {
         return <AdminStats />;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">

@@ -6,17 +6,28 @@ import Dashboard from '@/app/components/Dashboard/page'
 import { getUserToken, getUserData } from '@/lib/cookies'
 
 export default function DashboardPage() {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is authenticated
+    // Check if user is authenticated and has correct role
     const token = getUserToken()
     const userData = getUserData()
 
     if (!token || !userData) {
       router.push('/auth/login')
+      return
+    }
+
+    // Check if user has USER role (regular user)
+    if (userData.role !== 'USER') {
+      // Redirect to appropriate dashboard based on role
+      if (userData.role === 'ADMIN') {
+        router.push('/admin')
+      } else if (userData.role === 'SALES_EXECUTIVE') {
+        router.push('/sales-dashboard')
+      }
       return
     }
 

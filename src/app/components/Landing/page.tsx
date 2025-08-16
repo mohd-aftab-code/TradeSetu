@@ -143,7 +143,7 @@ const LandingPage = () => {
       if (userData.role === 'ADMIN') {
         router.push('/admin');
       } else if (userData.role === 'SALES_EXECUTIVE') {
-        router.push('/sales-dashboard'); // Future sales dashboard
+        router.push('/sales-dashboard');
       } else {
         router.push('/dashboard'); // Regular user dashboard
       }
