@@ -25,7 +25,7 @@ const OneTapeTradeInterface: React.FC = () => {
   const [selectedExpiry, setSelectedExpiry] = useState('28-Aug-2025')
   const [selectedCallStrike, setSelectedCallStrike] = useState('55100')
   const [selectedPutStrike, setSelectedPutStrike] = useState('55100')
-  const [selectedLotSize, setSelectedLotSize] = useState('25')
+  const [selectedLotSize, setSelectedLotSize] = useState('35')
   const [selectedProductType, setSelectedProductType] = useState('MIS')
   const [trailingProfit, setTrailingProfit] = useState(false)
   const [trailingStopLoss, setTrailingStopLoss] = useState(false)
@@ -122,9 +122,9 @@ const OneTapeTradeInterface: React.FC = () => {
   useEffect(() => {
     const lotSizes = getLotSizes()
     if (!lotSizes.includes(selectedLotSize)) {
-      setSelectedLotSize(lotSizes[0]) // First lot size
+      setSelectedLotSize(lotSizes[0])
     }
-  }, [selectedSymbol])
+  }, [selectedSymbol, selectedLotSize])
 
   return (
     <>
@@ -233,7 +233,7 @@ const OneTapeTradeInterface: React.FC = () => {
         </div>
         <div className="flex-1 flex min-w-0 md:ml-64">
           <div className="flex-1 flex flex-col min-w-0">
-            <main className="flex-1 p-1 lg:p-2 space-y-1 lg:space-y-2 md:ml-0 overflow-x-hidden">
+            <main className="flex-1 p-2 lg:p-4 space-y-3 lg:space-y-4 md:ml-0 overflow-x-hidden">
               {/* Top Control Panel */}
               <div className="bg-white/10 backdrop-blur-lg rounded-xl p-3 border border-white/20">
                 {/* Header */}
@@ -243,11 +243,11 @@ const OneTapeTradeInterface: React.FC = () => {
                 </div>
 
                 {/* Order Parameters Grid - 3 Rows as per image */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {/* Row 1: Exchange, Segment, Symbol, Expiry Date, Call Strike, Put Strike */}
-                  <div className="grid grid-cols-6 gap-2">
+                  <div className="grid grid-cols-6 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-purple-200 mb-1">Exchange</label>
+                      <label className="block text-sm font-medium text-purple-200 mb-2">Exchange</label>
                       <div className="relative">
                         <select 
                           value={selectedExchange}
@@ -407,48 +407,29 @@ const OneTapeTradeInterface: React.FC = () => {
                   </div>
 
                   {/* Row 3: Position Type, Position View, Trailing Profit, Trailing Stop Loss, Lock Profit */}
-                  <div className="grid grid-cols-6 gap-2">
-                    <div>
-                      <label className="block text-sm font-medium text-purple-200 mb-2">Position Type</label>
-                      <div className="relative">
-                        <select className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white appearance-none text-sm">
-                          <option value="DAY">Day</option>
-                          <option value="CARRY">Carry</option>
-                        </select>
-                        <ChevronDown size={14} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-purple-300" />
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-6 gap-4">
 
-                    <div>
-                      <label className="block text-sm font-medium text-purple-200 mb-2">Position View</label>
-                      <div className="relative">
-                        <select className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white appearance-none text-sm">
-                          <option value="NET">Net</option>
-                          <option value="BUY">Buy</option>
-                          <option value="SELL">Sell</option>
-                        </select>
-                        <ChevronDown size={14} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-purple-300" />
-                      </div>
-                    </div>
+
+
 
                     <div>
                       <label className="block text-sm font-medium text-purple-200 mb-2">Trailing Profit</label>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setTrailingProfit(!trailingProfit)}
-                          className="p-1 bg-white/10 border border-white/20 rounded text-purple-300 hover:bg-white/20 transition-colors"
+                          className="p-2 bg-white/10 border border-white/20 rounded-lg text-purple-300 hover:bg-white/20 transition-all duration-200 hover:border-purple-400"
                         >
-                          {trailingProfit ? <CheckSquare size={12} /> : <Square size={12} />}
+                          {trailingProfit ? <CheckSquare size={14} /> : <Square size={14} />}
                         </button>
                         <input
                           type="text"
                           placeholder="X"
-                          className="flex-1 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          className="w-16 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 text-center transition-all duration-200"
                         />
                         <input
                           type="text"
                           placeholder="Y"
-                          className="flex-1 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          className="w-16 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 text-center transition-all duration-200"
                         />
                       </div>
                     </div>
@@ -458,19 +439,19 @@ const OneTapeTradeInterface: React.FC = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => setTrailingStopLoss(!trailingStopLoss)}
-                          className="p-1 bg-white/10 border border-white/20 rounded text-purple-300 hover:bg-white/20 transition-colors"
+                          className="p-2 bg-white/10 border border-white/20 rounded-lg text-purple-300 hover:bg-white/20 transition-all duration-200 hover:border-purple-400"
                         >
-                          {trailingStopLoss ? <CheckSquare size={12} /> : <Square size={12} />}
+                          {trailingStopLoss ? <CheckSquare size={14} /> : <Square size={14} />}
                         </button>
                         <input
                           type="text"
                           placeholder="X"
-                          className="flex-1 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          className="w-16 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 text-center transition-all duration-200"
                         />
                         <input
                           type="text"
                           placeholder="Y"
-                          className="flex-1 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          className="w-16 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 text-center transition-all duration-200"
                         />
                       </div>
                     </div>
@@ -480,28 +461,23 @@ const OneTapeTradeInterface: React.FC = () => {
                       <div className="flex gap-2">
                         <button
                           onClick={() => setLockProfit(!lockProfit)}
-                          className="p-1 bg-white/10 border border-white/20 rounded text-purple-300 hover:bg-white/20 transition-colors"
+                          className="p-2 bg-white/10 border border-white/20 rounded-lg text-purple-300 hover:bg-white/20 transition-all duration-200 hover:border-purple-400"
                         >
-                          {lockProfit ? <CheckSquare size={12} /> : <Square size={12} />}
+                          {lockProfit ? <CheckSquare size={14} /> : <Square size={14} />}
                         </button>
                         <input
                           type="text"
                           placeholder="X"
-                          className="flex-1 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          className="w-16 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 text-center transition-all duration-200"
                         />
                         <input
                           type="text"
                           placeholder="Y"
-                          className="flex-1 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
+                          className="w-16 p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 text-center transition-all duration-200"
                         />
                       </div>
                     </div>
 
-                    <div></div> {/* Empty div for spacing */}
-                  </div>
-
-                  {/* Row 4: Maximum Loss and Maximum Profit */}
-                  <div className="grid grid-cols-6 gap-2">
                     <div>
                       <label className="block text-sm font-medium text-purple-200 mb-2">Maximum Loss</label>
                       <input
@@ -518,18 +494,16 @@ const OneTapeTradeInterface: React.FC = () => {
                         className="w-full p-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-1 focus:ring-purple-400"
                       />
                     </div>
-                    <div></div> {/* Empty div for spacing */}
-                    <div></div> {/* Empty div for spacing */}
-                    <div></div> {/* Empty div for spacing */}
-                    <div></div> {/* Empty div for spacing */}
                   </div>
+
+
                 </div>
               </div>
 
               {/* Central Trading Area */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Call Options Column */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-3 border border-white/20">
+                <div className="bg-gradient-to-br from-yellow-600/40 to-yellow-500/30 backdrop-blur-lg rounded-xl p-4 border border-yellow-300/50">
                   <div className="text-center mb-4">
                     <h3 className="text-lg font-bold text-white">{selectedSymbol} 250828 {selectedCallStrike} CE</h3>
                     <div className="flex justify-between text-sm text-purple-200 mt-2">
@@ -561,7 +535,7 @@ const OneTapeTradeInterface: React.FC = () => {
                 </div>
 
                 {/* Index Column */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-3 border border-white/20">
+                <div className="bg-gradient-to-br from-blue-900/30 to-blue-800/20 backdrop-blur-lg rounded-xl p-4 border border-blue-400/30">
                   <div className="text-center mb-4">
                     <h3 className="text-lg font-bold text-white">{selectedSymbol}</h3>
                     <div className="flex justify-between text-sm text-purple-200 mt-2">
@@ -596,7 +570,7 @@ const OneTapeTradeInterface: React.FC = () => {
                 </div>
 
                 {/* Put Options Column */}
-                <div className="bg-white/10 backdrop-blur-lg rounded-xl p-3 border border-white/20">
+                <div className="bg-gradient-to-br from-red-900/30 to-red-800/20 backdrop-blur-lg rounded-xl p-4 border border-red-400/30">
                   <div className="text-center mb-4">
                     <h3 className="text-lg font-bold text-white">{selectedSymbol} 250828 {selectedPutStrike} PE</h3>
                     <div className="flex justify-between text-sm text-purple-200 mt-2">
@@ -629,13 +603,13 @@ const OneTapeTradeInterface: React.FC = () => {
               </div>
 
               {/* Bottom Tabs */}
-              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-3 border border-white/20">
-                <div className="flex space-x-4 mb-4">
+              <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 border border-white/20">
+                <div className="flex space-x-2 mb-4 overflow-x-auto">
                   {tabs.map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                         activeTab === tab
                           ? 'bg-purple-500 text-white'
                           : 'text-purple-200 hover:text-white hover:bg-white/10'
