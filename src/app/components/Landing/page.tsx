@@ -41,7 +41,7 @@ const LandingPage = () => {
     const userData = getUserData();
     
     if (userToken && userData) {
-      setIsLoggedIn(true);
+        setIsLoggedIn(true);
       setUserRole(userData.role || 'USER');
     }
   }, []);
@@ -139,13 +139,13 @@ const LandingPage = () => {
     const userData = getUserData();
     
     if (userToken && userData) {
-      // Route based on user role
+        // Route based on user role
       if (userData.role === 'ADMIN') {
-        router.push('/admin');
+          router.push('/admin');
       } else if (userData.role === 'SALES_EXECUTIVE') {
         router.push('/sales-dashboard');
-      } else {
-        router.push('/dashboard'); // Regular user dashboard
+        } else {
+          router.push('/dashboard'); // Regular user dashboard
       }
     } else {
       // Not logged in, go to login page

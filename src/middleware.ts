@@ -70,7 +70,7 @@ export function middleware(request: NextRequest) {
     } else if (userRole === 'SALES_EXECUTIVE') {
       return NextResponse.redirect(new URL('/sales-dashboard', request.url))
     } else {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }
 

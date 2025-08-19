@@ -548,20 +548,20 @@ const Dashboard: React.FC = () => {
                 ) : (
                   marketData.map((data) => (
                     <div key={data.symbol} className="bg-white/5 rounded-lg p-4 hover:bg-white/10 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold text-white">{data.symbol}</h3>
-                          <p className="text-2xl font-bold text-white">₹{data.price.toLocaleString()}</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold text-white">{data.symbol}</h3>
+                        <p className="text-2xl font-bold text-white">₹{data.price.toLocaleString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`flex items-center space-x-1 ${data.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                          {data.change >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
+                          <span className="font-semibold">{data.change_percent.toFixed(2)}%</span>
                         </div>
-                        <div className="text-right">
-                          <div className={`flex items-center space-x-1 ${data.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {data.change >= 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                            <span className="font-semibold">{data.change_percent.toFixed(2)}%</span>
-                          </div>
-                          <p className="text-sm text-blue-200">₹{data.change.toFixed(2)}</p>
-                        </div>
+                        <p className="text-sm text-blue-200">₹{data.change.toFixed(2)}</p>
                       </div>
                     </div>
+                  </div>
                   ))
                 )}
               </div>
@@ -634,30 +634,30 @@ const Dashboard: React.FC = () => {
                 ))
               ) : (
                 marketData.map((item, index) => (
-                  <div key={index} className="bg-gradient-to-r from-white/10 to-white/5 rounded-lg p-3 border border-white/20 hover:from-white/20 hover:to-white/10 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl group">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-white text-sm group-hover:text-blue-200 transition">{item.symbol}</span>
-                      <span className={`text-xs font-bold px-2 py-1 rounded-full ${item.change >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                <div key={index} className="bg-gradient-to-r from-white/10 to-white/5 rounded-lg p-3 border border-white/20 hover:from-white/20 hover:to-white/10 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-white text-sm group-hover:text-blue-200 transition">{item.symbol}</span>
+                    <span className={`text-xs font-bold px-2 py-1 rounded-full ${item.change >= 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                         {item.change >= 0 ? '+' : ''}{item.change_percent.toFixed(2)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white font-bold text-lg">₹{item.price.toLocaleString()}</span>
+                    <div className="flex items-center gap-1">
+                      {item.change >= 0 ? (
+                        <TrendingUp size={14} className="text-green-400" />
+                      ) : (
+                        <TrendingDown size={14} className="text-red-400" />
+                      )}
+                      <span className={`text-sm font-semibold ${item.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {item.change >= 0 ? '+' : ''}{item.change.toFixed(2)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-white font-bold text-lg">₹{item.price.toLocaleString()}</span>
-                      <div className="flex items-center gap-1">
-                        {item.change >= 0 ? (
-                          <TrendingUp size={14} className="text-green-400" />
-                        ) : (
-                          <TrendingDown size={14} className="text-red-400" />
-                        )}
-                        <span className={`text-sm font-semibold ${item.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {item.change >= 0 ? '+' : ''}{item.change.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-xs text-blue-300 bg-white/5 px-2 py-1 rounded inline-block">
-                      Vol: {(item.volume / 1000000).toFixed(1)}M
-                    </div>
                   </div>
+                  <div className="text-xs text-blue-300 bg-white/5 px-2 py-1 rounded inline-block">
+                      Vol: {(item.volume / 1000000).toFixed(1)}M
+                  </div>
+                </div>
                 ))
               )}
             </div>
@@ -732,7 +732,7 @@ const Dashboard: React.FC = () => {
             <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
               {isLoadingBrokers ? (
                 // Loading skeleton
-                <div className="grid gap-4">
+              <div className="grid gap-4">
                   {Array.from({ length: 6 }).map((_, index) => (
                     <div key={index} className="flex items-center justify-between bg-gradient-to-r from-white/10 to-white/5 rounded-xl p-4 border border-white/20 animate-pulse">
                       <div className="flex items-center gap-4">
@@ -760,14 +760,29 @@ const Dashboard: React.FC = () => {
                           <div
                             key={connection.id}
                             className="flex items-center justify-between bg-gradient-to-r from-green-500/10 to-green-600/5 rounded-xl p-4 border border-green-500/20"
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                {connection.broker_name[0]}
+                  >
+                    <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg overflow-hidden relative">
+                                <img 
+                                  src={connection.broker_logo || `https://via.placeholder.com/60x60/10b981/ffffff?text=${connection.broker_name[0]}`} 
+                                  alt={connection.broker_name}
+                                  className="w-full h-full object-contain p-1"
+                                  onError={(e) => {
+                                    // Fallback to text if image fails to load
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const fallback = target.parentElement?.querySelector('.fallback-text');
+                                    if (fallback) {
+                                      fallback.classList.remove('hidden');
+                                    }
+                                  }}
+                                />
+                                <div className="fallback-text hidden absolute inset-0 flex items-center justify-center text-white font-bold text-lg bg-gradient-to-br from-green-500 to-green-600">
+                                  {connection.broker_name[0]}
+                                </div>
                               </div>
                               <div>
                                 <div className="font-bold text-white">{connection.broker_name}</div>
-                                <div className="text-xs text-green-300">Balance: ₹{connection.account_balance?.toLocaleString() || '0'}</div>
                                 <div className="text-xs text-blue-300">Last sync: {new Date(connection.last_sync).toLocaleString()}</div>
                               </div>
                             </div>
@@ -799,15 +814,31 @@ const Dashboard: React.FC = () => {
                             className="flex items-center justify-between bg-gradient-to-r from-white/10 to-white/5 rounded-xl p-4 border border-white/20 hover:from-white/20 hover:to-white/10 transition-all duration-300 group shadow-lg hover:shadow-xl"
                           >
                             <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg" style={{ backgroundImage: `url(${broker.logo})` }}>
-                                {broker.name[0]}
-                              </div>
-                              <div>
-                                <div className="font-bold text-white group-hover:text-blue-200 transition">{broker.name}</div>
-                                <div className="text-xs text-blue-300">{broker.commission}</div>
+                              <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white/10 shadow-lg overflow-hidden relative">
+                                <img 
+                                  src={broker.logo} 
+                                  alt={broker.name}
+                                  className="w-full h-full object-contain p-1"
+                                  onError={(e) => {
+                                    // Fallback to text if image fails to load
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    const fallback = target.parentElement?.querySelector('.fallback-text');
+                                    if (fallback) {
+                                      fallback.classList.remove('hidden');
+                                    }
+                                  }}
+                                />
+                                <div className="fallback-text hidden absolute inset-0 flex items-center justify-center text-white font-bold text-lg bg-gradient-to-br from-blue-500 to-purple-600">
+                        {broker.name[0]}
+                                </div>
+                      </div>
+                      <div>
+                        <div className="font-bold text-white group-hover:text-blue-200 transition">{broker.name}</div>
                                 <div className="text-xs text-gray-400">{broker.features.join(', ')}</div>
-                              </div>
-                            </div>
+                                <div className="text-xs text-purple-300 font-medium">{broker.apiName}</div>
+                      </div>
+                    </div>
                                                          <div className="flex items-center gap-2">
                                {isConnected ? (
                                  <div className="text-xs text-green-400 bg-green-500/20 px-2 py-1 rounded-full">
@@ -815,7 +846,7 @@ const Dashboard: React.FC = () => {
                                  </div>
                                ) : (
                                  <div className="flex flex-col gap-2">
-                                   <button
+                    <button
                                      className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-1.5 rounded-full font-semibold shadow-lg hover:from-red-600 hover:to-orange-500 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-xs"
                                      onClick={() => showApiSetup(broker.id)}
                                      disabled={isLoadingSetup}
@@ -887,17 +918,17 @@ const Dashboard: React.FC = () => {
                  </div>
                  <button
                    className="text-gray-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition-all duration-300"
-                   onClick={() => {
+                      onClick={() => {
                      setShowAccountModal(false);
                      setAccountDetails({ userId: '', password: '', apiKey: '', apiSecret: '' });
                      setSelectedBrokerForOTP(null);
-                   }}
-                 >
+                      }}
+                    >
                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                    </svg>
-                 </button>
-               </div>
+                    </button>
+                  </div>
              </div>
 
              {/* Modal Content */}
@@ -981,11 +1012,11 @@ const Dashboard: React.FC = () => {
                      )}
                    </button>
                  </div>
-               </div>
-             </div>
+              </div>
+            </div>
 
-             {/* Modal Footer */}
-             <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4 border-t border-white/10">
+            {/* Modal Footer */}
+            <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4 border-t border-white/10">
                <div className="text-center">
                  <p className="text-blue-200 text-xs">
                    OTP will be sent to your registered mobile number
@@ -1117,7 +1148,7 @@ const Dashboard: React.FC = () => {
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-white">API Setup Guide</h2>
-                      <p className="text-blue-200 text-sm">{apiSetupInstructions.brokerName} Integration</p>
+                      <p className="text-blue-200 text-sm">{apiSetupInstructions.brokerName} ({apiSetupInstructions.apiName}) Integration</p>
                     </div>
                   </div>
                   <button
@@ -1237,8 +1268,8 @@ const Dashboard: React.FC = () => {
               {/* Modal Footer */}
               <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 p-4 border-t border-white/10">
                 <div className="flex items-center justify-between">
-                  <div className="text-center">
-                    <p className="text-blue-200 text-sm">
+              <div className="text-center">
+                <p className="text-blue-200 text-sm">
                       After setting up API credentials, click "Connect" to proceed
                     </p>
                   </div>
@@ -1252,14 +1283,14 @@ const Dashboard: React.FC = () => {
                   >
                     Got it!
                   </button>
-                </div>
               </div>
             </div>
           </div>
-        )}
         </div>
-      </>
-    );
-  };
+      )}
+      </div>
+    </>
+  );
+};
 
 export default Dashboard;

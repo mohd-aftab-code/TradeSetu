@@ -12,7 +12,8 @@ const BROKER_CONFIGS = {
     features: ['Equity', 'F&O', 'Currency', 'Commodity'],
     commission: '₹20 or 0.05% (whichever is lower)',
     status: 'active',
-    logo: 'https://via.placeholder.com/60x60/3b82f6/ffffff?text=Z'
+    logo: 'https://zerodha.com/static/images/logo.svg',
+    apiName: 'Kite Connect API'
   },
   upstox: {
     name: 'Upstox',
@@ -21,7 +22,8 @@ const BROKER_CONFIGS = {
     features: ['Equity', 'F&O', 'Currency'],
     commission: '₹20 per trade',
     status: 'active',
-    logo: 'https://via.placeholder.com/60x60/10b981/ffffff?text=U'
+    logo: 'https://assets.upstox.com/web/images/logo.svg',
+    apiName: 'Upstox API'
   },
   angelone: {
     name: 'Angel One',
@@ -30,16 +32,28 @@ const BROKER_CONFIGS = {
     features: ['Equity', 'F&O', 'Currency', 'Commodity'],
     commission: '₹20 per trade',
     status: 'active',
-    logo: 'https://via.placeholder.com/60x60/f59e0b/ffffff?text=A'
+    logo: 'https://www.angelone.in/assets/images/logo.svg',
+    apiName: 'SmartAPI'
+  },
+  finvasia: {
+    name: 'Finvasia',
+    apiUrl: 'https://api.shoonya.com',
+    authUrl: 'https://api.shoonya.com/oauth2/authorize',
+    features: ['Equity', 'F&O', 'Currency'],
+    commission: '₹0 per trade',
+    status: 'active',
+    logo: 'https://finvasia.com/assets/images/logo.png',
+    apiName: 'Shoonya API'
   },
   fyers: {
-    name: 'Fyers',
+    name: 'FYERS',
     apiUrl: 'https://api.fyers.in',
     authUrl: 'https://api.fyers.in/api/v2/generate-authcode',
     features: ['Equity', 'F&O', 'Currency'],
     commission: '₹20 per trade',
     status: 'active',
-    logo: 'https://via.placeholder.com/60x60/8b5cf6/ffffff?text=F'
+    logo: 'https://fyers.in/assets/images/logo.svg',
+    apiName: 'FYERS API'
   },
   aliceblue: {
     name: 'Alice Blue',
@@ -48,16 +62,18 @@ const BROKER_CONFIGS = {
     features: ['Equity', 'F&O', 'Currency'],
     commission: '₹15 per trade',
     status: 'active',
-    logo: 'https://via.placeholder.com/60x60/ec4899/ffffff?text=AB'
+    logo: 'https://aliceblueonline.com/assets/images/logo.png',
+    apiName: 'ANT API'
   },
   fivepaisa: {
-    name: '5paisa',
+    name: '5Paisa (IIFL)',
     apiUrl: 'https://openapi.5paisa.com',
     authUrl: 'https://login.5paisa.com',
     features: ['Equity', 'F&O', 'Currency'],
     commission: '₹10 per trade',
     status: 'active',
-    logo: 'https://via.placeholder.com/60x60/ef4444/ffffff?text=5P'
+    logo: 'https://5paisa.com/assets/images/logo.svg',
+    apiName: '5Paisa API'
   },
   dhan: {
     name: 'Dhan',
@@ -66,25 +82,58 @@ const BROKER_CONFIGS = {
     features: ['Equity', 'F&O'],
     commission: '₹18 per trade',
     status: 'active',
-    logo: 'https://via.placeholder.com/60x60/06b6d4/ffffff?text=D'
+    logo: 'https://dhan.co/assets/images/logo.png',
+    apiName: 'Dhan API'
   },
-  prostocks: {
-    name: 'ProStocks',
-    apiUrl: 'https://api.prostocks.com',
-    authUrl: 'https://login.prostocks.com',
+  kotak: {
+    name: 'Kotak Securities',
+    apiUrl: 'https://api.kotaksecurities.com',
+    authUrl: 'https://api.kotaksecurities.com/oauth2/authorize',
+    features: ['Equity', 'F&O', 'Currency'],
+    commission: '₹25 per trade',
+    status: 'active',
+    logo: 'https://www.kotaksecurities.com/assets/images/logo.svg',
+    apiName: 'Kotak Neo API'
+  },
+  icicidirect: {
+    name: 'ICICI Direct',
+    apiUrl: 'https://api.icicidirect.com',
+    authUrl: 'https://api.icicidirect.com/oauth2/authorize',
+    features: ['Equity', 'F&O', 'Currency'],
+    commission: '₹30 per trade',
+    status: 'active',
+    logo: 'https://www.icicidirect.com/assets/images/logo.svg',
+    apiName: 'ICE API'
+  },
+  mastertrust: {
+    name: 'Master Trust',
+    apiUrl: 'https://api.mastertrust.co.in',
+    authUrl: 'https://api.mastertrust.co.in/oauth2/authorize',
     features: ['Equity', 'F&O'],
     commission: '₹20 per trade',
     status: 'active',
-    logo: 'https://via.placeholder.com/60x60/84cc16/ffffff?text=PS'
+    logo: 'https://mastertrust.co.in/assets/images/logo.png',
+    apiName: 'Master Trust API'
   },
-  motilaloswal: {
-    name: 'Motilal Oswal',
-    apiUrl: 'https://api.motilaloswal.com',
-    authUrl: 'https://login.motilaloswal.com',
-    features: ['Equity', 'F&O', 'Currency', 'Commodity'],
+  xts: {
+    name: 'XTS',
+    apiUrl: 'https://api.xts.com',
+    authUrl: 'https://api.xts.com/oauth2/authorize',
+    features: ['Equity', 'F&O', 'Currency'],
     commission: '₹25 per trade',
     status: 'active',
-    logo: 'https://via.placeholder.com/60x60/f97316/ffffff?text=MO'
+    logo: 'https://xts.com/assets/images/logo.png',
+    apiName: 'XTS5 API'
+  },
+  stoxxart: {
+    name: 'STOXXART',
+    apiUrl: 'https://api.stoxxart.com',
+    authUrl: 'https://api.stoxxart.com/oauth2/authorize',
+    features: ['Equity', 'F&O'],
+    commission: '₹20 per trade',
+    status: 'active',
+    logo: 'https://stoxxart.com/assets/images/logo.png',
+    apiName: 'STOXXART API'
   }
 };
 
@@ -148,6 +197,7 @@ function getApiSetupInstructions(brokerId: string) {
     case 'zerodha':
       return {
         brokerName: broker.name,
+        apiName: broker.apiName,
         setupUrl: 'https://kite.trade/connect/login',
         instructions: [
           '1. Go to Zerodha Kite Connect',
@@ -167,6 +217,7 @@ function getApiSetupInstructions(brokerId: string) {
     case 'angelone':
       return {
         brokerName: broker.name,
+        apiName: broker.apiName,
         setupUrl: 'https://smartapi.angelbroking.com/publisher-login',
         instructions: [
           '1. Go to Angel One SmartAPI',
@@ -186,6 +237,7 @@ function getApiSetupInstructions(brokerId: string) {
     default:
       return {
         brokerName: broker.name,
+        apiName: broker.apiName,
         setupUrl: broker.authUrl,
         instructions: [
           '1. Visit the broker\'s developer portal',

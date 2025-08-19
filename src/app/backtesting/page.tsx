@@ -77,6 +77,8 @@ const BacktestingPage = () => {
   const [selectedStrategy, setSelectedStrategy] = useState('RSI Strategy')
   const [userName, setUserName] = useState<string>('User')
   const [isLoadingUser, setIsLoadingUser] = useState(true)
+  const [availableStrategies, setAvailableStrategies] = useState(mockStrategies)
+  const [newStrategyNotification, setNewStrategyNotification] = useState<any>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -88,6 +90,39 @@ const BacktestingPage = () => {
     }
     setUser(userData)
     setIsLoading(false)
+    
+    // Check for new strategy in URL parameters
+    const urlParams = new URLSearchParams(window.location.search)
+    const newStrategyParam = urlParams.get('newStrategy')
+    
+    if (newStrategyParam) {
+      try {
+        const newStrategy = JSON.parse(decodeURIComponent(newStrategyParam))
+        
+        // Load existing strategies from localStorage
+        const existingStrategies = JSON.parse(localStorage.getItem('userStrategies') || '[]')
+        const allStrategies = [...mockStrategies, ...existingStrategies]
+        
+        setAvailableStrategies(allStrategies)
+        setSelectedStrategy(newStrategy.name)
+        setNewStrategyNotification(newStrategy)
+        
+        // Clear the URL parameter
+        window.history.replaceState({}, document.title, window.location.pathname)
+        
+        // Auto-show success message
+        setTimeout(() => {
+          setNewStrategyNotification(null)
+        }, 5000)
+      } catch (error) {
+        console.error('Error parsing new strategy:', error)
+      }
+    } else {
+      // Load existing strategies from localStorage
+      const existingStrategies = JSON.parse(localStorage.getItem('userStrategies') || '[]')
+      const allStrategies = [...mockStrategies, ...existingStrategies]
+      setAvailableStrategies(allStrategies)
+    }
   }, [router])
 
   // Fetch user profile data for name
@@ -118,12 +153,12 @@ const BacktestingPage = () => {
         } else {
           setUserName('User');
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Error fetching user profile:', error);
         setUserName('User');
-      } finally {
+    } finally {
         setIsLoadingUser(false);
-      }
+    }
     };
 
     fetchUserProfile();
@@ -163,6 +198,21 @@ const BacktestingPage = () => {
       </div>
       {/* Main Content */}
       <main className="ml-60 p-8">
+        {/* Success Notification */}
+        {newStrategyNotification && (
+          <div className="mb-6 bg-gradient-to-r from-green-500/20 to-green-600/20 backdrop-blur-lg rounded-xl p-6 border border-green-400/30 animate-pulse">
+            <div className="flex items-center space-x-3">
+              <CheckCircle size={24} className="text-green-400" />
+              <div>
+                <h3 className="text-lg font-semibold text-green-400">Strategy Created Successfully!</h3>
+                <p className="text-green-200">
+                  "{newStrategyNotification.name}" has been saved and is ready for backtesting.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header/Card */}
         <div className="bg-[#0d0e3f] rounded-2xl p-8 mb-8 text-white flex flex-col md:flex-row md:items-center md:justify-between shadow">
           <div>
@@ -186,7 +236,7 @@ const BacktestingPage = () => {
               onChange={(e) => setSelectedStrategy(e.target.value)}
               className="w-full p-3 bg-slate-800/60 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {mockStrategies.map((strategy) => (
+              {availableStrategies.map((strategy) => (
                 <option key={strategy.id} value={strategy.name}>{strategy.name}</option>
               ))}
             </select>
@@ -196,10 +246,17 @@ const BacktestingPage = () => {
             <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
               <Calendar size={20} className="text-green-400" />
               <span>Date Range</span>
-              <span className="flex items-center space-x-1 bg-green-500/10 px-3 py-1 rounded-lg ml-2 animate-pulse text-green-400 font-semibold text-sm cursor-pointer hover:bg-green-500/20 transition">
-                <Play size={18} className="text-green-400" />
-                <span>Run Backtesting</span>
-              </span>
+              <button 
+                onClick={() => setIsRunning(!isRunning)}
+                className={`flex items-center space-x-1 px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-300 ${
+                  newStrategyNotification 
+                    ? 'bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-500/25' 
+                    : 'bg-green-500/10 text-green-400 hover:bg-green-500/20'
+                }`}
+              >
+                {isRunning ? <Pause size={18} /> : <Play size={18} />}
+                <span>{isRunning ? 'Stop' : 'Run'} Backtesting</span>
+              </button>
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -230,7 +287,7 @@ const BacktestingPage = () => {
             <div className="mb-4">
               <label className="block text-blue-200 text-sm mb-2">Select strategies to compare</label>
               <div className="flex flex-col gap-2">
-                {mockStrategies.map((strategy) => (
+                {availableStrategies.map((strategy) => (
                   <label key={strategy.id} className="flex items-center gap-2 text-white">
                     <input type="checkbox" className="accent-blue-500" />
                     <span>{strategy.name}</span>
@@ -295,6 +352,42 @@ const BacktestingPage = () => {
             {/* Overview Tab */}
             {activeTab === 'overview' && (
               <div className="space-y-6">
+                {/* Strategy Details */}
+                {newStrategyNotification && (
+                  <div className="bg-white/5 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
+                      <Target size={20} className="text-blue-400" />
+                      <span>Strategy Details</span>
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <div className="text-blue-200 text-sm mb-1">Strategy Type</div>
+                        <div className="text-white font-semibold">{newStrategyNotification.strategy_type}</div>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <div className="text-blue-200 text-sm mb-1">Symbol</div>
+                        <div className="text-white font-semibold">{newStrategyNotification.symbol}</div>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <div className="text-blue-200 text-sm mb-1">Entry Conditions</div>
+                        <div className="text-white font-semibold">{newStrategyNotification.entry_conditions}</div>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <div className="text-blue-200 text-sm mb-1">Stop Loss</div>
+                        <div className="text-white font-semibold">{newStrategyNotification.risk_management?.stop_loss}</div>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <div className="text-blue-200 text-sm mb-1">Take Profit</div>
+                        <div className="text-white font-semibold">{newStrategyNotification.risk_management?.take_profit}</div>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <div className="text-blue-200 text-sm mb-1">Position Size</div>
+                        <div className="text-white font-semibold">{newStrategyNotification.risk_management?.position_size}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Key Metrics */}
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   <div className="bg-gradient-to-br from-green-500/20 to-green-600/20 backdrop-blur-lg rounded-xl p-4 border border-green-400/30">

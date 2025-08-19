@@ -90,6 +90,9 @@ const MarketInsight: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Add error handling for empty sectors
+  const validSectors = sectors.filter(sector => sector && sector.price > 0);
+
   // Search functions
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -117,12 +120,12 @@ const MarketInsight: React.FC = () => {
   const getSensexData = () => indices.find(item => item.symbol === 'SENSEX') || {};
 
   // Get top gainers and losers from sectors (not stocks)
-  const topGainers = sectors
+  const topGainers = validSectors
     .filter(item => item.change > 0)
     .sort((a, b) => b.change_percent - a.change_percent)
     .slice(0, 5);
 
-  const topLosers = sectors
+  const topLosers = validSectors
     .filter(item => item.change < 0)
     .sort((a, b) => a.change_percent - b.change_percent)
     .slice(0, 5);
@@ -144,7 +147,7 @@ const MarketInsight: React.FC = () => {
     .slice(0, 5);
 
   // Get sector performance (direct from sectors array)
-  const sectorPerformance = sectors.map(sector => ({
+  const sectorPerformance = validSectors.map(sector => ({
     sector: sector.symbol,
     change: sector.change_percent,
     status: sector.change_percent >= 0 ? 'positive' : 'negative'
@@ -169,23 +172,23 @@ const MarketInsight: React.FC = () => {
         }
       `}</style>
       <div className="flex min-h-screen w-full bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900">
-        <div className="hidden md:block fixed left-0 top-0 h-full z-10">
-          <Sidebar activeTab="market-insight" onTabChange={() => {}} />
-        </div>
-        
-        <div className="flex-1 flex min-w-0 md:ml-64">
-          <div className="flex-1 flex flex-col min-w-0">
-            {/* Header */}
-            <div className="bg-gradient-to-br from-slate-800 via-blue-900 to-purple-800 p-6 border-b border-white/20">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                    <BarChart3 className="text-purple-400" size={32} />
-                    Market Insight
-                  </h1>
-                  <p className="text-blue-200 mt-2">Comprehensive market analysis and technical indicators</p>
-                </div>
-                <div className="flex items-center gap-4">
+      <div className="hidden md:block fixed left-0 top-0 h-full z-10">
+        <Sidebar activeTab="market-insight" onTabChange={() => {}} />
+      </div>
+      
+      <div className="flex-1 flex min-w-0 md:ml-64">
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Header */}
+          <div className="bg-gradient-to-br from-slate-800 via-blue-900 to-purple-800 p-6 border-b border-white/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                  <BarChart3 className="text-purple-400" size={32} />
+                  Market Insight
+                </h1>
+                <p className="text-blue-200 mt-2">Comprehensive market analysis and technical indicators</p>
+              </div>
+              <div className="flex items-center gap-4">
                   {/* Market Data Status */}
                   <div className="flex items-center gap-3">
                     {isLoadingMarketData && (
@@ -210,57 +213,57 @@ const MarketInsight: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Search Button/Input */}
-                  <div className="relative">
-                    {showSearchInput ? (
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                          <input
-                            type="text"
-                            placeholder="Search instruments..."
-                            value={searchQuery}
-                            onChange={(e) => handleSearch(e.target.value)}
-                            className="bg-white/10 border border-white/20 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 w-64"
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => setShowSearchInput(false)}
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
+                {/* Search Button/Input */}
+                <div className="relative">
+                  {showSearchInput ? (
+                    <div className="flex items-center gap-2">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                        <input
+                          type="text"
+                          placeholder="Search instruments..."
+                          value={searchQuery}
+                          onChange={(e) => handleSearch(e.target.value)}
+                          className="bg-white/10 border border-white/20 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300 w-64"
+                          autoFocus
+                        />
+                        <button
+                          onClick={() => setShowSearchInput(false)}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                        >
+                          <X size={16} />
+                        </button>
                       </div>
-                    ) : (
-                      <button
-                        onClick={toggleSearchInput}
-                        className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-lg transition-all duration-300"
-                        title="Search instruments"
-                      >
-                        <Search size={16} />
-                      </button>
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={toggleSearchInput}
+                      className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-lg transition-all duration-300"
+                      title="Search instruments"
+                    >
+                      <Search size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Main Content */}
-            <div className="flex-1 p-6 space-y-6">
+          {/* Main Content */}
+          <div className="flex-1 p-6 space-y-6">
               {/* Market Overview - Indices */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* NIFTY Card */}
-                <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white">NIFTY 50</h3>
-                    <div className="flex items-center gap-2">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* NIFTY Card */}
+              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white">NIFTY 50</h3>
+                  <div className="flex items-center gap-2">
                       {isLoadingMarketData ? (
                         <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
                       ) : (
                         <>
                           {getNiftyData().change >= 0 ? (
-                            <TrendingUp className="text-green-400" size={20} />
+                    <TrendingUp className="text-green-400" size={20} />
                           ) : (
                             <TrendingDown className="text-red-400" size={20} />
                           )}
@@ -271,9 +274,9 @@ const MarketInsight: React.FC = () => {
                           </span>
                         </>
                       )}
-                    </div>
                   </div>
-                  <div className="space-y-3">
+                </div>
+                <div className="space-y-3">
                     <div className="text-3xl font-bold text-white">
                       {isLoadingMarketData ? (
                         <div className="h-8 bg-white/20 rounded animate-pulse"></div>
@@ -281,48 +284,48 @@ const MarketInsight: React.FC = () => {
                         `₹${getNiftyData().price?.toLocaleString() || '0'}`
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm">
-                      <div>
-                        <span className="text-blue-300">Change:</span>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div>
+                      <span className="text-blue-300">Change:</span>
                         <span className={`font-bold ml-1 ${
                           getNiftyData().change >= 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
                           {getNiftyData().change >= 0 ? '+' : ''}
                           {getNiftyData().change?.toFixed(2) || '0.00'}
                         </span>
-                      </div>
-                      <div>
-                        <span className="text-blue-300">Volume:</span>
+                    </div>
+                    <div>
+                      <span className="text-blue-300">Volume:</span>
                         <span className="text-white font-bold ml-1">
                           {getNiftyData().volume ? 
                             `${(getNiftyData().volume / 1000000).toFixed(1)}M` : 
                             '0M'
                           }
                         </span>
-                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-blue-300">High:</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-blue-300">High:</span>
                         <span className="text-white font-bold ml-1">
                           ₹{getNiftyData().high?.toLocaleString() || '0'}
                         </span>
-                      </div>
-                      <div>
-                        <span className="text-blue-300">Low:</span>
+                    </div>
+                    <div>
+                      <span className="text-blue-300">Low:</span>
                         <span className="text-white font-bold ml-1">
                           ₹{getNiftyData().low?.toLocaleString() || '0'}
                         </span>
-                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* BANKNIFTY Card */}
-                <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white">BANK NIFTY</h3>
-                    <div className="flex items-center gap-2">
+              {/* BANKNIFTY Card */}
+              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-white">BANK NIFTY</h3>
+                  <div className="flex items-center gap-2">
                       {isLoadingMarketData ? (
                         <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
                       ) : (
@@ -330,7 +333,7 @@ const MarketInsight: React.FC = () => {
                           {getBankNiftyData().change >= 0 ? (
                             <TrendingUp className="text-green-400" size={20} />
                           ) : (
-                            <TrendingDown className="text-red-400" size={20} />
+                    <TrendingDown className="text-red-400" size={20} />
                           )}
                           <span className={`font-bold ${
                             getBankNiftyData().change >= 0 ? 'text-green-400' : 'text-red-400'
@@ -339,9 +342,9 @@ const MarketInsight: React.FC = () => {
                           </span>
                         </>
                       )}
-                    </div>
                   </div>
-                  <div className="space-y-3">
+                </div>
+                <div className="space-y-3">
                     <div className="text-3xl font-bold text-white">
                       {isLoadingMarketData ? (
                         <div className="h-8 bg-white/20 rounded animate-pulse"></div>
@@ -349,45 +352,45 @@ const MarketInsight: React.FC = () => {
                         `₹${getBankNiftyData().price?.toLocaleString() || '0'}`
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm">
-                      <div>
-                        <span className="text-blue-300">Change:</span>
+                  <div className="flex items-center gap-4 text-sm">
+                    <div>
+                      <span className="text-blue-300">Change:</span>
                         <span className={`font-bold ml-1 ${
                           getBankNiftyData().change >= 0 ? 'text-green-400' : 'text-red-400'
                         }`}>
                           {getBankNiftyData().change >= 0 ? '+' : ''}
                           {getBankNiftyData().change?.toFixed(2) || '0.00'}
                         </span>
-                      </div>
-                      <div>
-                        <span className="text-blue-300">Volume:</span>
+                    </div>
+                    <div>
+                      <span className="text-blue-300">Volume:</span>
                         <span className="text-white font-bold ml-1">
                           {getBankNiftyData().volume ? 
                             `${(getBankNiftyData().volume / 1000000).toFixed(1)}M` : 
                             '0M'
                           }
                         </span>
-                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-blue-300">High:</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-blue-300">High:</span>
                         <span className="text-white font-bold ml-1">
                           ₹{getBankNiftyData().high?.toLocaleString() || '0'}
                         </span>
-                      </div>
-                      <div>
-                        <span className="text-blue-300">Low:</span>
+                    </div>
+                    <div>
+                      <span className="text-blue-300">Low:</span>
                         <span className="text-white font-bold ml-1">
                           ₹{getBankNiftyData().low?.toLocaleString() || '0'}
                         </span>
-                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
 
                 {/* SENSEX Card */}
-                <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300">
+              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20 hover:border-white/30 transition-all duration-300">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-xl font-bold text-white">SENSEX</h3>
                     <div className="flex items-center gap-2">
@@ -435,8 +438,8 @@ const MarketInsight: React.FC = () => {
                             '0M'
                           }
                         </span>
-                      </div>
                     </div>
+                  </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-blue-300">High:</span>
@@ -449,21 +452,21 @@ const MarketInsight: React.FC = () => {
                         <span className="text-white font-bold ml-1">
                           {getSensexData().low?.toLocaleString() || '0'}
                         </span>
-                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Top Gainers & Losers */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Top Gainers */}
-                <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20">
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <TrendingUp className="text-green-400" size={24} />
+                         {/* Top Gainers & Losers */}
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+               {/* Top Gainers */}
+               <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20">
+                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                   <TrendingUp className="text-green-400" size={24} />
                     Top Sector Gainers
-                  </h3>
-                  <div className="space-y-3">
+                 </h3>
+                 <div className="space-y-3">
                     {isLoadingMarketData ? (
                       Array.from({ length: 5 }).map((_, index) => (
                         <div key={index} className="flex items-center justify-between bg-white/5 p-3 rounded-lg animate-pulse">
@@ -480,29 +483,29 @@ const MarketInsight: React.FC = () => {
                     ) : (
                                            topGainers.map((sector, index) => (
                        <div key={index} className="flex items-center justify-between bg-white/5 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                         <div className="flex items-center gap-3">
+                       <div className="flex items-center gap-3">
                            <span className="text-white font-semibold">{sector.symbol}</span>
                            <span className="text-blue-300 text-sm">
                              Sector
                            </span>
-                         </div>
-                         <div className="text-right">
+                       </div>
+                       <div className="text-right">
                            <div className="text-green-400 font-bold">+{sector.change_percent.toFixed(2)}%</div>
                            <div className="text-white text-sm">₹{sector.price.toLocaleString()}</div>
-                         </div>
                        </div>
+                     </div>
                      ))
                     )}
-                  </div>
-                </div>
+                 </div>
+               </div>
 
-                {/* Top Losers */}
-                <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20">
-                  <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                    <TrendingDown className="text-red-400" size={24} />
+               {/* Top Losers */}
+               <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20">
+                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                   <TrendingDown className="text-red-400" size={24} />
                     Top Sector Losers
-                  </h3>
-                  <div className="space-y-3">
+                 </h3>
+                 <div className="space-y-3">
                     {isLoadingMarketData ? (
                       Array.from({ length: 5 }).map((_, index) => (
                         <div key={index} className="flex items-center justify-between bg-white/5 p-3 rounded-lg animate-pulse">
@@ -519,24 +522,24 @@ const MarketInsight: React.FC = () => {
                     ) : (
                                            topLosers.map((sector, index) => (
                        <div key={index} className="flex items-center justify-between bg-white/5 p-3 rounded-lg hover:bg-white/10 transition-colors">
-                         <div className="flex items-center gap-3">
+                       <div className="flex items-center gap-3">
                            <span className="text-white font-semibold">{sector.symbol}</span>
                            <span className="text-blue-300 text-sm">
                              Sector
                            </span>
-                         </div>
-                         <div className="text-right">
+                       </div>
+                       <div className="text-right">
                            <div className="text-red-400 font-bold">{sector.change_percent.toFixed(2)}%</div>
                            <div className="text-white text-sm">₹{sector.price.toLocaleString()}</div>
-                         </div>
                        </div>
+                     </div>
                      ))
                     )}
-                  </div>
-                </div>
-              </div>
+                 </div>
+               </div>
+             </div>
 
-              {/* OI Data Grid */}
+                           {/* OI Data Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Top OI Gainers */}
                 <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20">
@@ -623,13 +626,13 @@ const MarketInsight: React.FC = () => {
               </div>
 
               {/* All Sectors Performance */}
-              <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20">
+            <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-xl p-6 border border-white/20">
                 <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                   <BarChart3 className="text-blue-400" size={24} />
                   All Sectors Performance
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                     {sectors.map((sector, index) => (
+                                     {validSectors.map((sector, index) => (
                      <div 
                        key={index} 
                        className="bg-white/5 p-4 rounded-lg hover:bg-white/10 transition-colors cursor-pointer group"
@@ -663,11 +666,11 @@ const MarketInsight: React.FC = () => {
                        </div>
                        <div className="mt-2 text-xs text-purple-300 opacity-0 group-hover:opacity-100 transition-opacity">
                          Click to view live chart →
-                       </div>
-                     </div>
-                   ))}
-                </div>
+                    </div>
+                  </div>
+                ))}
               </div>
+            </div>
 
 
 
@@ -697,14 +700,14 @@ const MarketInsight: React.FC = () => {
                     <div className="text-blue-300 text-sm mb-2">Total Symbols</div>
                     <div className="text-white font-semibold">{marketData.length}</div>
                   </div>
-                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </>
-  );
+                 </div>
+       </div>
+     </div>
+     </>
+   );
 };
 
 export default MarketInsight; 
