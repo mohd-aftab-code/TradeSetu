@@ -6,6 +6,29 @@ import { ArrowLeft, Save, BarChart3, Code, TrendingUp, Cpu, Zap, Target, Shield,
 import Sidebar from '../../components/Layout/Sidebar';
 import { getUserToken, getUserData } from '@/lib/cookies';
 
+// Indicator data interface
+interface IndicatorParameter {
+  name: string;
+  label: string;
+  type: 'number' | 'select';
+  default: number | string;
+  min?: number;
+  max?: number;
+  step?: number;
+  options?: { value: string; label: string }[];
+}
+
+interface Indicator {
+  value: string;
+  label: string;
+  category: string;
+  parameters: IndicatorParameter[];
+}
+
+interface IndicatorGroup {
+  [category: string]: Indicator[];
+}
+
 const CreateStrategyPage = () => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,6 +114,19 @@ const CreateStrategyPage = () => {
   const [longComparator, setLongComparator] = useState('');
   const [shortComparator, setShortComparator] = useState('');
 
+  // Indicator data state
+  const [indicators, setIndicators] = useState<Indicator[]>([]);
+  const [groupedIndicators, setGroupedIndicators] = useState<IndicatorGroup>({});
+  const [isLoadingIndicators, setIsLoadingIndicators] = useState(true);
+  
+  // Selected indicators and their parameters
+  const [selectedIndicators, setSelectedIndicators] = useState<{
+    long1?: { indicator: string; parameters: Record<string, any> };
+    long2?: { indicator: string; parameters: Record<string, any> };
+    short1?: { indicator: string; parameters: Record<string, any> };
+    short2?: { indicator: string; parameters: Record<string, any> };
+  }>({});
+
   // Instrument search state
   const [instrumentSearch, setInstrumentSearch] = useState<{
     searchQuery: string;
@@ -119,6 +155,65 @@ const CreateStrategyPage = () => {
   // State for validation errors
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
+  // Fetch indicators from API
+  const fetchIndicators = async () => {
+    try {
+      setIsLoadingIndicators(true);
+      const response = await fetch('/api/indicators');
+      if (response.ok) {
+        const data = await response.json();
+        setIndicators(data.indicators);
+        setGroupedIndicators(data.grouped);
+      } else {
+        console.error('Failed to fetch indicators');
+      }
+    } catch (error) {
+      console.error('Error fetching indicators:', error);
+    } finally {
+      setIsLoadingIndicators(false);
+    }
+  };
+
+  // Handle indicator selection
+  const handleIndicatorChange = (position: 'long1' | 'long2' | 'short1' | 'short2', indicatorValue: string) => {
+    const selectedIndicator = indicators.find(ind => ind.value === indicatorValue);
+    if (selectedIndicator) {
+      const defaultParameters = selectedIndicator.parameters.reduce((acc, param) => {
+        acc[param.name] = param.default;
+        return acc;
+      }, {} as Record<string, any>);
+
+      setSelectedIndicators(prev => ({
+        ...prev,
+        [position]: {
+          indicator: indicatorValue,
+          parameters: defaultParameters
+        }
+      }));
+    }
+  };
+
+  // Handle parameter change
+  const handleParameterChange = (position: 'long1' | 'long2' | 'short1' | 'short2', paramName: string, value: any) => {
+    setSelectedIndicators(prev => ({
+      ...prev,
+      [position]: {
+        ...prev[position],
+        parameters: {
+          ...prev[position]?.parameters,
+          [paramName]: value
+        }
+      }
+    }));
+  };
+
+  // Get selected indicator details
+  const getSelectedIndicator = (position: 'long1' | 'long2' | 'short1' | 'short2') => {
+    const selected = selectedIndicators[position];
+    if (!selected) return null;
+    return indicators.find(ind => ind.value === selected.indicator);
+  };
+
   useEffect(() => {
     // Check if user is authenticated
     const token = getUserToken();
@@ -131,6 +226,9 @@ const CreateStrategyPage = () => {
 
     setUser(userData);
       setIsLoading(false);
+    
+    // Fetch indicators
+    fetchIndicators();
   }, [router]);
 
   if (isLoading) {
@@ -145,7 +243,7 @@ const CreateStrategyPage = () => {
     return null;
   }
 
-  const handleTimeIndicatorSubmit = (e: React.FormEvent) => {
+  const handleTimeIndicatorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Comprehensive validation for all required fields
@@ -248,22 +346,41 @@ const CreateStrategyPage = () => {
       }
     };
 
-    // Save to localStorage
+    // Save to database
     try {
-      const existingStrategies = JSON.parse(localStorage.getItem('userStrategies') || '[]');
-      existingStrategies.push(newStrategy);
-      localStorage.setItem('userStrategies', JSON.stringify(existingStrategies));
-      console.log('Strategy saved successfully:', newStrategy);
-      
-      // Redirect to Strategies page
-      router.push('/strategies');
+      const response = await fetch('/api/strategies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: (user as any)?.id || 'tradesetu001',
+          name: newStrategy.name,
+          description: newStrategy.description,
+          strategy_type: newStrategy.strategy_type,
+          symbol: newStrategy.symbol,
+          entry_conditions: newStrategy.entry_conditions,
+          exit_conditions: newStrategy.exit_conditions,
+          risk_management: newStrategy.risk_management,
+          is_paper_trading: true
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Strategy saved successfully');
+        router.push('/strategies');
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to save strategy:', errorData);
+        alert(`Error saving strategy: ${errorData.error || 'Unknown error'}`);
+      }
     } catch (error) {
       console.error('Error saving strategy:', error);
-      alert('Error saving strategy. Please try again.');
+      alert(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
-  const handleProgrammingSubmit = (e: React.FormEvent) => {
+  const handleProgrammingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Comprehensive validation for programming strategy
@@ -338,18 +455,37 @@ const CreateStrategyPage = () => {
       }
     };
 
-    // Save to localStorage
+    // Save to database
     try {
-      const existingStrategies = JSON.parse(localStorage.getItem('userStrategies') || '[]');
-      existingStrategies.push(newStrategy);
-      localStorage.setItem('userStrategies', JSON.stringify(existingStrategies));
-      console.log('Programming strategy saved successfully:', newStrategy);
-      
-      // Redirect to Strategies page
-      router.push('/strategies');
+      const response = await fetch('/api/strategies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: (user as any)?.id || 'tradesetu001',
+          name: newStrategy.name,
+          description: newStrategy.description,
+          strategy_type: newStrategy.strategy_type,
+          symbol: newStrategy.symbol,
+          entry_conditions: newStrategy.entry_conditions,
+          exit_conditions: newStrategy.exit_conditions,
+          risk_management: newStrategy.risk_management,
+          is_paper_trading: true
+        }),
+      });
+
+      if (response.ok) {
+        console.log('Programming strategy saved successfully');
+        router.push('/strategies');
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to save programming strategy:', errorData);
+        alert(`Error saving strategy: ${errorData.error || 'Unknown error'}`);
+      }
     } catch (error) {
       console.error('Error saving programming strategy:', error);
-      alert('Error saving strategy. Please try again.');
+      alert(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
@@ -1683,17 +1819,26 @@ const CreateStrategyPage = () => {
                 {(timeIndicatorFormData.transaction_type === 'Both Side' || timeIndicatorFormData.transaction_type === 'Only Long') && (
                   <div>
                     <span className="text-green-400 font-semibold text-sm">Long Entry condition</span>
-                    <div className="mt-2 grid grid-cols-3 gap-2">
-                      <select className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-green-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none appearance-none">
+                    <div className="mt-2 space-y-3">
+                      {/* First Indicator */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <select 
+                          value={selectedIndicators.long1?.indicator || ''}
+                          onChange={(e) => handleIndicatorChange('long1', e.target.value)}
+                          className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-green-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none appearance-none"
+                        >
                         <option value="">Select Indicator</option>
-                        <option value="RSI">RSI</option>
-                        <option value="MACD">MACD</option>
-                        <option value="MA">Moving Average</option>
-                        <option value="BB">Bollinger Bands</option>
-                        <option value="VWAP">VWAP</option>
-                        <option value="SUPERTREND">SuperTrend</option>
-                        <option value="ADX">ADX</option>
+                          {Object.entries(groupedIndicators).map(([category, categoryIndicators]) => (
+                            <optgroup key={category} label={category}>
+                              {categoryIndicators.map((indicator) => (
+                                <option key={indicator.value} value={indicator.value}>
+                                  {indicator.label}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
                       </select>
+                        
                       <select 
                         value={longComparator}
                         onChange={handleLongComparatorChange}
@@ -1706,16 +1851,105 @@ const CreateStrategyPage = () => {
                         <option value="less_than">Less than</option>
                         <option value="equal">Equal</option>
                       </select>
-                      <select className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-green-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none appearance-none">
+                        
+                        <select 
+                          value={selectedIndicators.long2?.indicator || ''}
+                          onChange={(e) => handleIndicatorChange('long2', e.target.value)}
+                          className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-green-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none appearance-none"
+                        >
                         <option value="">Select Indicator</option>
-                        <option value="RSI">RSI</option>
-                        <option value="MACD">MACD</option>
-                        <option value="MA">Moving Average</option>
-                        <option value="BB">Bollinger Bands</option>
-                        <option value="VWAP">VWAP</option>
-                        <option value="SUPERTREND">SuperTrend</option>
-                        <option value="ADX">ADX</option>
+                          {Object.entries(groupedIndicators).map(([category, categoryIndicators]) => (
+                            <optgroup key={category} label={category}>
+                              {categoryIndicators.map((indicator) => (
+                                <option key={indicator.value} value={indicator.value}>
+                                  {indicator.label}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
                       </select>
+                      </div>
+
+                      {/* Parameter Controls for Long Entry */}
+                      {(selectedIndicators.long1?.indicator || selectedIndicators.long2?.indicator) && (
+                        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 space-y-3">
+                          <h4 className="text-green-400 text-xs font-semibold">Indicator Parameters</h4>
+                          
+                          {/* Long1 Parameters */}
+                          {selectedIndicators.long1?.indicator && (
+                            <div className="space-y-2">
+                              <h5 className="text-green-300 text-xs">First Indicator: {getSelectedIndicator('long1')?.label}</h5>
+                              <div className="grid grid-cols-2 gap-2">
+                                {getSelectedIndicator('long1')?.parameters.map((param) => (
+                                  <div key={param.name} className="space-y-1">
+                                    <label className="text-green-200 text-xs">{param.label}</label>
+                                    {param.type === 'number' ? (
+                                      <input
+                                        type="number"
+                                        value={selectedIndicators.long1?.parameters[param.name] || param.default}
+                                        onChange={(e) => handleParameterChange('long1', param.name, parseFloat(e.target.value))}
+                                        min={param.min}
+                                        max={param.max}
+                                        step={param.step}
+                                        className="w-full p-1 bg-slate-800/50 border border-green-500/30 rounded text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none"
+                                      />
+                                    ) : param.type === 'select' ? (
+                                      <select
+                                        value={selectedIndicators.long1?.parameters[param.name] || param.default}
+                                        onChange={(e) => handleParameterChange('long1', param.name, e.target.value)}
+                                        className="w-full p-1 bg-slate-800/50 border border-green-500/30 rounded text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none"
+                                      >
+                                        {param.options?.map((option) => (
+                                          <option key={option.value} value={option.value}>
+                                            {option.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    ) : null}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Long2 Parameters */}
+                          {selectedIndicators.long2?.indicator && (
+                            <div className="space-y-2">
+                              <h5 className="text-green-300 text-xs">Second Indicator: {getSelectedIndicator('long2')?.label}</h5>
+                              <div className="grid grid-cols-2 gap-2">
+                                {getSelectedIndicator('long2')?.parameters.map((param) => (
+                                  <div key={param.name} className="space-y-1">
+                                    <label className="text-green-200 text-xs">{param.label}</label>
+                                    {param.type === 'number' ? (
+                                      <input
+                                        type="number"
+                                        value={selectedIndicators.long2?.parameters[param.name] || param.default}
+                                        onChange={(e) => handleParameterChange('long2', param.name, parseFloat(e.target.value))}
+                                        min={param.min}
+                                        max={param.max}
+                                        step={param.step}
+                                        className="w-full p-1 bg-slate-800/50 border border-green-500/30 rounded text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none"
+                                      />
+                                    ) : param.type === 'select' ? (
+                                      <select
+                                        value={selectedIndicators.long2?.parameters[param.name] || param.default}
+                                        onChange={(e) => handleParameterChange('long2', param.name, e.target.value)}
+                                        className="w-full p-1 bg-slate-800/50 border border-green-500/30 rounded text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none"
+                                      >
+                                        {param.options?.map((option) => (
+                                          <option key={option.value} value={option.value}>
+                                            {option.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    ) : null}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
               </div>
             </div>
                 )}
@@ -1724,17 +1958,26 @@ const CreateStrategyPage = () => {
                 {(timeIndicatorFormData.transaction_type === 'Both Side' || timeIndicatorFormData.transaction_type === 'Only Short') && (
                   <div>
                     <span className="text-red-400 font-semibold text-sm">Short Entry condition</span>
-                    <div className="mt-2 grid grid-cols-3 gap-2">
-                      <select className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-red-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none appearance-none">
+                    <div className="mt-2 space-y-3">
+                      {/* First Indicator */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <select 
+                          value={selectedIndicators.short1?.indicator || ''}
+                          onChange={(e) => handleIndicatorChange('short1', e.target.value)}
+                          className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-red-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none appearance-none"
+                        >
                         <option value="">Select Indicator</option>
-                        <option value="RSI">RSI</option>
-                        <option value="MACD">MACD</option>
-                        <option value="MA">Moving Average</option>
-                        <option value="BB">Bollinger Bands</option>
-                        <option value="VWAP">VWAP</option>
-                        <option value="SUPERTREND">SuperTrend</option>
-                        <option value="ADX">ADX</option>
+                          {Object.entries(groupedIndicators).map(([category, categoryIndicators]) => (
+                            <optgroup key={category} label={category}>
+                              {categoryIndicators.map((indicator) => (
+                                <option key={indicator.value} value={indicator.value}>
+                                  {indicator.label}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
                       </select>
+                        
                       <select 
                         value={shortComparator}
                         onChange={handleShortComparatorChange}
@@ -1747,16 +1990,105 @@ const CreateStrategyPage = () => {
                         <option value="less_than">Less than</option>
                         <option value="equal">Equal</option>
                       </select>
-                      <select className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-red-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none appearance-none">
+                        
+                        <select 
+                          value={selectedIndicators.short2?.indicator || ''}
+                          onChange={(e) => handleIndicatorChange('short2', e.target.value)}
+                          className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-red-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none appearance-none"
+                        >
                         <option value="">Select Indicator</option>
-                        <option value="RSI">RSI</option>
-                        <option value="MACD">MACD</option>
-                        <option value="MA">Moving Average</option>
-                        <option value="BB">Bollinger Bands</option>
-                        <option value="VWAP">VWAP</option>
-                        <option value="SUPERTREND">SuperTrend</option>
-                        <option value="ADX">ADX</option>
+                          {Object.entries(groupedIndicators).map(([category, categoryIndicators]) => (
+                            <optgroup key={category} label={category}>
+                              {categoryIndicators.map((indicator) => (
+                                <option key={indicator.value} value={indicator.value}>
+                                  {indicator.label}
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
                       </select>
+                      </div>
+
+                      {/* Parameter Controls for Short Entry */}
+                      {(selectedIndicators.short1?.indicator || selectedIndicators.short2?.indicator) && (
+                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 space-y-3">
+                          <h4 className="text-red-400 text-xs font-semibold">Indicator Parameters</h4>
+                          
+                          {/* Short1 Parameters */}
+                          {selectedIndicators.short1?.indicator && (
+                            <div className="space-y-2">
+                              <h5 className="text-red-300 text-xs">First Indicator: {getSelectedIndicator('short1')?.label}</h5>
+                              <div className="grid grid-cols-2 gap-2">
+                                {getSelectedIndicator('short1')?.parameters.map((param) => (
+                                  <div key={param.name} className="space-y-1">
+                                    <label className="text-red-200 text-xs">{param.label}</label>
+                                    {param.type === 'number' ? (
+                                      <input
+                                        type="number"
+                                        value={selectedIndicators.short1?.parameters[param.name] || param.default}
+                                        onChange={(e) => handleParameterChange('short1', param.name, parseFloat(e.target.value))}
+                                        min={param.min}
+                                        max={param.max}
+                                        step={param.step}
+                                        className="w-full p-1 bg-slate-800/50 border border-red-500/30 rounded text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none"
+                                      />
+                                    ) : param.type === 'select' ? (
+                                      <select
+                                        value={selectedIndicators.short1?.parameters[param.name] || param.default}
+                                        onChange={(e) => handleParameterChange('short1', param.name, e.target.value)}
+                                        className="w-full p-1 bg-slate-800/50 border border-red-500/30 rounded text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none"
+                                      >
+                                        {param.options?.map((option) => (
+                                          <option key={option.value} value={option.value}>
+                                            {option.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    ) : null}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Short2 Parameters */}
+                          {selectedIndicators.short2?.indicator && (
+                            <div className="space-y-2">
+                              <h5 className="text-red-300 text-xs">Second Indicator: {getSelectedIndicator('short2')?.label}</h5>
+                              <div className="grid grid-cols-2 gap-2">
+                                {getSelectedIndicator('short2')?.parameters.map((param) => (
+                                  <div key={param.name} className="space-y-1">
+                                    <label className="text-red-200 text-xs">{param.label}</label>
+                                    {param.type === 'number' ? (
+                                      <input
+                                        type="number"
+                                        value={selectedIndicators.short2?.parameters[param.name] || param.default}
+                                        onChange={(e) => handleParameterChange('short2', param.name, parseFloat(e.target.value))}
+                                        min={param.min}
+                                        max={param.max}
+                                        step={param.step}
+                                        className="w-full p-1 bg-slate-800/50 border border-red-500/30 rounded text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none"
+                                      />
+                                    ) : param.type === 'select' ? (
+                                      <select
+                                        value={selectedIndicators.short2?.parameters[param.name] || param.default}
+                                        onChange={(e) => handleParameterChange('short2', param.name, e.target.value)}
+                                        className="w-full p-1 bg-slate-800/50 border border-red-500/30 rounded text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none"
+                                      >
+                                        {param.options?.map((option) => (
+                                          <option key={option.value} value={option.value}>
+                                            {option.label}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    ) : null}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
               </div>
             </div>
                 )}

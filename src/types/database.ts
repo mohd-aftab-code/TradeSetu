@@ -35,8 +35,12 @@ export interface Strategy {
     position_size: number;
   };
   is_active: boolean;
+  is_paper_trading: boolean;
   created_at: Date;
   updated_at: Date;
+  last_executed?: Date;
+  total_executions: number;
+  success_rate: number;
   performance_metrics: {
     total_trades: number;
     winning_trades: number;
@@ -44,6 +48,21 @@ export interface Strategy {
     max_drawdown: number;
     sharpe_ratio: number;
   };
+}
+
+export interface BacktestTrade {
+  id: string;
+  backtest_id: string;
+  symbol: string;
+  side: 'BUY' | 'SELL';
+  quantity: number;
+  entry_price: number;
+  exit_price: number;
+  entry_time: Date;
+  exit_time: Date;
+  pnl: number;
+  fees: number;
+  created_at: Date;
 }
 
 export interface Backtest {
@@ -61,7 +80,7 @@ export interface Backtest {
   max_drawdown: number;
   sharpe_ratio: number;
   created_at: Date;
-  trade_logs: TradeLog[];
+  trade_logs: BacktestTrade[];
 }
 
 export interface TradeLog {
