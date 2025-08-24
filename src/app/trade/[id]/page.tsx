@@ -1,14 +1,21 @@
 'use client'
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { mockLiveTrades } from '../../../data/mockData';
 
 const TradeDetailsPage = () => {
   const params = useParams();
   const { id } = params;
-  const trade = mockLiveTrades.find((t) => t.id === id);
+  const [trade, setTrade] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // In a real app, fetch trade data from API
+    // For now, we'll use empty state
+    setTrade(null);
+    setIsLoading(false);
+  }, [id]);
 
   // Mock values for demo
   const strike_price = 21500;

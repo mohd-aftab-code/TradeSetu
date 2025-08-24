@@ -1,17 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Sidebar from '../components/Layout/Sidebar';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import { mockLiveTrades } from '../../data/mockData';
-import { mockStrategies } from '../../data/mockData';
+import Sidebar from '../components/Layout/Sidebar';
 import { getUserToken, getUserData } from '@/lib/cookies';
 
 const LiveTradesPage = () => {
-  const [user, setUser] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [liveTrades, setLiveTrades] = useState<any[]>([]);
+  const [strategies, setStrategies] = useState<any[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
     const token = getUserToken()
@@ -38,11 +38,11 @@ const LiveTradesPage = () => {
         <main className="flex-1 p-6 space-y-6 md:ml-0 overflow-x-hidden">
         <h1 className="text-3xl font-bold text-white">Live Trades</h1>
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 mt-6">
-          {mockLiveTrades.length === 0 ? (
+          {liveTrades.length === 0 ? (
             <div className="text-blue-200 text-center">No live trades at the moment.</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockLiveTrades.map((trade, idx) => {
+              {liveTrades.map((trade, idx) => {
                 // Mock values for strike_price and option_type
                 const strike_price = 21500 + idx * 100;
                 const option_type = idx % 2 === 0 ? 'CE' : 'PE';
@@ -61,7 +61,7 @@ const LiveTradesPage = () => {
                       <h2 className="text-xl font-bold text-white">{trade.symbol} Live Trade</h2>
                     </div>
                     <div className="mb-2 text-lg font-bold bg-gradient-to-r from-red-500 via-pink-500 to-yellow-500 bg-clip-text text-transparent tracking-wide">
-                      Strategy: {mockStrategies.find(s => s.id === trade.strategy_id)?.name || 'N/A'}
+                      Strategy: {strategies.find(s => s.id === trade.strategy_id)?.name || 'N/A'}
                     </div>
                     <div className="flex flex-col gap-1 text-white text-sm">
                       <div className="flex justify-between"><span>Symbol</span><span>{trade.symbol}</span></div>

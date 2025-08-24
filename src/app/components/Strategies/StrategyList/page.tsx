@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Play, Pause, TrendingUp, Zap, Clock, Copy, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Play, Pause, TrendingUp, Zap, Clock, BarChart3, Copy, Eye } from 'lucide-react';
 import { Strategy } from '../../../../types/database';
 import { useRouter } from 'next/navigation';
 import { formatPercentage } from '../../../../lib/utils';

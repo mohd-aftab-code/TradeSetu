@@ -1,6 +1,5 @@
 import React from 'react';
 import { Bell, Check, X } from 'lucide-react';
-import { mockNotifications } from '../../../data/mockData';
 
 const NotificationsPage: React.FC = () => {
   const getNotificationIcon = (type: string) => {

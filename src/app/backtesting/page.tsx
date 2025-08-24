@@ -66,7 +66,6 @@ import {
   Percent,
   Hash as HashIcon
 } from 'lucide-react';
-import { mockStrategies } from '../../data/mockData';
 
 const BacktestingPage = () => {
   const [user, setUser] = useState(null)
@@ -77,7 +76,7 @@ const BacktestingPage = () => {
   const [selectedStrategy, setSelectedStrategy] = useState('RSI Strategy')
   const [userName, setUserName] = useState<string>('User')
   const [isLoadingUser, setIsLoadingUser] = useState(true)
-  const [availableStrategies, setAvailableStrategies] = useState(mockStrategies)
+  const [availableStrategies, setAvailableStrategies] = useState([])
   const [newStrategyNotification, setNewStrategyNotification] = useState<any>(null)
   const router = useRouter()
 
@@ -101,7 +100,7 @@ const BacktestingPage = () => {
         
         // Load existing strategies from localStorage
         const existingStrategies = JSON.parse(localStorage.getItem('userStrategies') || '[]')
-        const allStrategies = [...mockStrategies, ...existingStrategies]
+        const allStrategies = [...existingStrategies, newStrategy]
         
         setAvailableStrategies(allStrategies)
         setSelectedStrategy(newStrategy.name)
@@ -120,8 +119,7 @@ const BacktestingPage = () => {
     } else {
       // Load existing strategies from localStorage
       const existingStrategies = JSON.parse(localStorage.getItem('userStrategies') || '[]')
-      const allStrategies = [...mockStrategies, ...existingStrategies]
-      setAvailableStrategies(allStrategies)
+      setAvailableStrategies(existingStrategies)
     }
   }, [router])
 

@@ -14,7 +14,6 @@ import {
   Receipt,
   Mail
 } from 'lucide-react';
-import { mockBills } from '../../../data/mockData';
 
 const BillingPage: React.FC = () => {
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
@@ -670,82 +669,11 @@ const BillingPage: React.FC = () => {
 
         {/* Invoice List */}
         <div className="space-y-6">
-          {mockBills.filter(bill => {
-            const statusMatch = filterStatus === 'ALL' || bill.status === filterStatus;
-            const textMatch = filterText === '' || bill.bill_number.includes(filterText) || bill.total_amount.toString().includes(filterText);
-            return statusMatch && textMatch;
-          }).map((bill, index) => (
-            <div
-              key={bill.id}
-              className="bg-gradient-to-br from-white/10 to-white/5 rounded-2xl p-6 border border-white/20 transform hover:scale-[1.02] transition-all duration-300 shadow-lg hover:shadow-2xl"
-              style={{ transitionDelay: `${index * 100}ms` }}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-gradient-to-r from-blue-500 to-cyan-600 p-4 rounded-2xl shadow-lg">
-                    <FileText size={28} className="text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white">Invoice #{bill.bill_number}</h3>
-                    <p className="text-blue-200 text-sm">{bill.billing_period}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-white">₹{bill.total_amount.toLocaleString()}</p>
-                  <div className="flex items-center space-x-3 mt-2">
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                      bill.status === 'PAID' ? 'bg-green-500/20 text-green-400 border border-green-400/30' :
-                      bill.status === 'EXPIRED' ? 'bg-gray-500/20 text-gray-300 border border-gray-400/30' :
-                      'bg-yellow-500/20 text-yellow-400 border border-yellow-400/30'
-                    }`}>
-                      {bill.status === 'PAID' && <CheckCircle size={14} className="inline mr-1" />}
-                      {bill.status === 'EXPIRED' && <AlertCircle size={14} className="inline mr-1" />}
-                      {bill.status}
-                    </span>
-                    <button
-                      onClick={() => generateInvoice(bill.id)}
-                      className="p-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-                    >
-                      <Download size={18} />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                <div className="bg-white/5 rounded-xl p-4">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <DollarSign size={16} className="text-green-400" />
-                    <p className="text-green-200 font-semibold">Amount</p>
-                  </div>
-                  <p className="text-white font-bold text-lg">₹{bill.amount.toLocaleString()}</p>
-                </div>
-                <div className="bg-white/5 rounded-xl p-4">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Calendar size={16} className="text-purple-400" />
-                    <p className="text-purple-200 font-semibold">Due Date</p>
-                  </div>
-                  <p className="text-white font-bold text-lg">{bill.due_date.toLocaleDateString()}</p>
-                </div>
-                <div className="bg-white/5 rounded-xl p-4">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <CheckCircle size={16} className="text-green-400" />
-                    <p className="text-green-200 font-semibold">Paid Date</p>
-                  </div>
-                  <p className="text-white font-bold text-lg">
-                    {bill.paid_at ? bill.paid_at.toLocaleDateString() : 'N/A'}
-                  </p>
-                </div>
-                <div className="bg-white/5 rounded-xl p-4">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Clock size={16} className="text-blue-400" />
-                    <p className="text-blue-200 font-semibold">Created</p>
-                  </div>
-                  <p className="text-white font-bold text-lg">{bill.created_at.toLocaleDateString()}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+          {/* The mockBills data was removed, so this section will be empty or require a new data source */}
+          {/* For now, we'll just show a placeholder message */}
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/20 text-center text-blue-200">
+            No invoice history available.
+          </div>
         </div>
       </div>
     </div>

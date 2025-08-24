@@ -1,6 +1,5 @@
 import React from 'react';
 import { Users, TrendingUp, DollarSign, Activity, Crown, Shield, AlertTriangle } from 'lucide-react';
-import { mockUser, mockStrategies } from '../../../data/mockData';
 
 const AdminStats: React.FC = () => {
   // Mock admin statistics

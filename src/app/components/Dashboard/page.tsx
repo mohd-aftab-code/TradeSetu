@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Target, DollarSign, Activity, Users, UserCircle2, Info, ArrowLeft, ArrowRight, Plus, Handshake } from 'lucide-react';
-import { mockUser, mockStrategies, mockLiveTrades, mockMarketData } from '../../../data/mockData';
 import Sidebar from '../Layout/Sidebar';
 import { getUserToken, getUserData } from '@/lib/cookies';
 
@@ -20,6 +19,10 @@ const Dashboard: React.FC = () => {
   const [marketData, setMarketData] = useState<any[]>([]);
   const [isLoadingMarketData, setIsLoadingMarketData] = useState(true);
   const [dataSource, setDataSource] = useState<string>('Loading...');
+  // Strategy and trade data state
+  const [strategies, setStrategies] = useState<any[]>([]);
+  const [liveTrades, setLiveTrades] = useState<any[]>([]);
+  const [userData, setUserData] = useState<any>(null);
   // Broker state
   const [brokers, setBrokers] = useState<any[]>([]);
   const [userConnections, setUserConnections] = useState<any[]>([]);
@@ -225,9 +228,9 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const totalPnL = mockStrategies.reduce((sum, strategy) => sum + strategy.performance_metrics.total_pnl, 0);
-  const totalTrades = mockStrategies.reduce((sum, strategy) => sum + strategy.performance_metrics.total_trades, 0);
-  const winRate = mockStrategies.reduce((sum, strategy) => sum + (strategy.performance_metrics.winning_trades / strategy.performance_metrics.total_trades), 0) / mockStrategies.length;
+  const totalPnL = strategies.reduce((sum, strategy) => sum + strategy.performance_metrics.total_pnl, 0);
+  const totalTrades = strategies.reduce((sum, strategy) => sum + strategy.performance_metrics.total_trades, 0);
+  const winRate = strategies.reduce((sum, strategy) => sum + (strategy.performance_metrics.winning_trades / strategy.performance_metrics.total_trades), 0) / strategies.length;
 
   // Fetch user profile data
   useEffect(() => {
@@ -279,17 +282,17 @@ const Dashboard: React.FC = () => {
           setMarketData(data.data);
           setDataSource(data.source || 'Unknown');
         } else {
-          setMarketData(mockMarketData);
-          setDataSource('Mock data (fallback)');
+          setMarketData([]); // Clear market data on error
+          setDataSource('Error fetching market data');
         }
       } else {
-        setMarketData(mockMarketData);
-        setDataSource('Mock data (fallback)');
+        setMarketData([]); // Clear market data on error
+        setDataSource('Error fetching market data');
       }
     } catch (error) {
       console.error('Error fetching market data:', error);
-      setMarketData(mockMarketData);
-      setDataSource('Mock data (fallback)');
+      setMarketData([]); // Clear market data on error
+      setDataSource('Error fetching market data');
     } finally {
       setIsLoadingMarketData(false);
     }
@@ -359,13 +362,13 @@ const Dashboard: React.FC = () => {
                   <div className="mt-3 flex flex-col items-end w-full">
                     <span className="text-blue-200 text-sm lg:text-base font-semibold mb-1 flex items-center gap-2">
                       <Activity className="text-green-400 animate-pulse" size={16} />
-                      Active Trades: {mockLiveTrades.length}
+                      Active Trades: {liveTrades.length}
                     </span>
                     <div className="w-full max-w-xs lg:max-w-md flex flex-col gap-1">
-                      {mockLiveTrades.length === 0 ? (
+                      {liveTrades.length === 0 ? (
                         <span className="text-blue-300 text-xs lg:text-sm italic">No active trades</span>
                       ) : (
-                        mockLiveTrades.map((trade, idx) => {
+                        liveTrades.map((trade, idx) => {
                           // Mock values for strike_price and option_type
                           const strike_price = 21500 + idx * 100;
                           const option_type = idx % 2 === 0 ? 'CE' : 'PE';
@@ -466,7 +469,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-blue-200 text-sm">Active Strategies</p>
-                    <p className="text-xl lg:text-2xl font-bold text-white">{mockStrategies.filter(s => s.is_active).length}</p>
+                    <p className="text-xl lg:text-2xl font-bold text-white">{strategies.filter(s => s.is_active).length}</p>
                   </div>
                   <div className="bg-blue-500/20 p-2 lg:p-3 rounded-full">
                     <Target className="text-blue-400" size={20} />
@@ -490,7 +493,7 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-blue-200 text-sm">Balance</p>
-                    <p className="text-xl lg:text-2xl font-bold text-white">₹{mockUser.balance.toLocaleString()}</p>
+                    <p className="text-xl lg:text-2xl font-bold text-white">₹{userData?.balance || 0}</p>
                   </div>
                   <div className="bg-yellow-500/20 p-2 lg:p-3 rounded-full">
                     <DollarSign className="text-yellow-400" size={20} />
@@ -571,7 +574,7 @@ const Dashboard: React.FC = () => {
             <div className="bg-white/10 backdrop-blur-lg rounded-lg p-3 lg:p-4 border border-white/20">
               <h2 className="text-base lg:text-lg font-semibold text-white mb-3">Top Performing Strategies</h2>
               <div className="space-y-3">
-                {mockStrategies.map((strategy) => (
+                {strategies.map((strategy) => (
                   <div key={strategy.id} className="bg-white/5 rounded-lg p-3">
                     <div className="flex items-center justify-between">
                       <div>

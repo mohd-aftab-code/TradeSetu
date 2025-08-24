@@ -10,7 +10,7 @@ import { getUserToken, getUserData } from '@/lib/cookies';
 interface IndicatorParameter {
   name: string;
   label: string;
-  type: 'number' | 'select';
+  type: 'number' | 'select' | 'text';
   default: number | string;
   min?: number;
   max?: number;
@@ -127,6 +127,12 @@ const CreateStrategyPage = () => {
     short2?: { indicator: string; parameters: Record<string, any> };
   }>({});
 
+  // Modal state for indicator selection
+  const [showIndicatorModal, setShowIndicatorModal] = useState(false);
+  const [currentIndicatorPosition, setCurrentIndicatorPosition] = useState<'long1' | 'long2' | 'short1' | 'short2' | null>(null);
+  const [tempSelectedIndicator, setTempSelectedIndicator] = useState<string>('');
+  const [tempIndicatorParameters, setTempIndicatorParameters] = useState<Record<string, any>>({});
+
   // Instrument search state
   const [instrumentSearch, setInstrumentSearch] = useState<{
     searchQuery: string;
@@ -154,6 +160,9 @@ const CreateStrategyPage = () => {
 
   // State for validation errors
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Check if underlying is selected
+  const isUnderlyingSelected = !!instrumentSearch.selectedInstrument;
 
   // Fetch indicators from API
   const fetchIndicators = async () => {
@@ -191,6 +200,65 @@ const CreateStrategyPage = () => {
         }
       }));
     }
+  };
+
+  // Open indicator selection modal
+  const openIndicatorModal = (position: 'long1' | 'long2' | 'short1' | 'short2') => {
+    setCurrentIndicatorPosition(position);
+    setTempSelectedIndicator(selectedIndicators[position]?.indicator || '');
+    setTempIndicatorParameters(selectedIndicators[position]?.parameters || {});
+    setShowIndicatorModal(true);
+  };
+
+  // Handle indicator selection in modal
+  const handleModalIndicatorChange = (indicatorValue: string) => {
+    console.log('Indicator selected:', indicatorValue);
+    setTempSelectedIndicator(indicatorValue);
+    const selectedIndicator = indicators.find(ind => ind.value === indicatorValue);
+    if (selectedIndicator) {
+      const defaultParameters = selectedIndicator.parameters.reduce((acc, param) => {
+        acc[param.name] = param.default;
+        return acc;
+      }, {} as Record<string, any>);
+      console.log('Default parameters:', defaultParameters);
+      setTempIndicatorParameters(defaultParameters);
+    } else {
+      setTempIndicatorParameters({});
+    }
+  };
+
+  // Handle parameter change in modal
+  const handleModalParameterChange = (paramName: string, value: any) => {
+    console.log('Parameter change:', paramName, value);
+    setTempIndicatorParameters(prev => ({
+      ...prev,
+      [paramName]: value
+    }));
+  };
+
+  // Apply indicator selection from modal
+  const applyIndicatorSelection = () => {
+    if (currentIndicatorPosition && tempSelectedIndicator) {
+      setSelectedIndicators(prev => ({
+        ...prev,
+        [currentIndicatorPosition]: {
+          indicator: tempSelectedIndicator,
+          parameters: tempIndicatorParameters
+        }
+      }));
+    }
+    setShowIndicatorModal(false);
+    setCurrentIndicatorPosition(null);
+    setTempSelectedIndicator('');
+    setTempIndicatorParameters({});
+  };
+
+  // Cancel indicator selection
+  const cancelIndicatorSelection = () => {
+    setShowIndicatorModal(false);
+    setCurrentIndicatorPosition(null);
+    setTempSelectedIndicator('');
+    setTempIndicatorParameters({});
   };
 
   // Handle parameter change
@@ -555,20 +623,12 @@ const CreateStrategyPage = () => {
     }
   };
 
-     // Mock instrument data for search with actual market values
-  const mockInstruments = [
-     { symbol: 'NIFTY 50', name: 'NIFTY 50', segment: 'INDEX', lotSize: 50, change: '+0.85%', price: 22450.75 },
-     { symbol: 'BANKNIFTY', name: 'BANK NIFTY', segment: 'INDEX', lotSize: 25, change: '+1.25%', price: 48520.50 },
-     { symbol: 'RELIANCE', name: 'Reliance Industries', segment: 'STOCK', lotSize: 250, change: '+0.45%', price: 2845.80 },
-     { symbol: 'TCS', name: 'Tata Consultancy Services', segment: 'STOCK', lotSize: 100, change: '+1.15%', price: 4125.60 },
-     { symbol: 'INFY', name: 'Infosys Limited', segment: 'STOCK', lotSize: 100, change: '+0.95%', price: 1585.40 },
-     { symbol: 'HDFC', name: 'HDFC Bank', segment: 'STOCK', lotSize: 250, change: '+0.75%', price: 1725.90 },
-     { symbol: 'ITC', name: 'ITC Limited', segment: 'STOCK', lotSize: 100, change: '+0.35%', price: 485.25 },
-     { symbol: 'SBIN', name: 'State Bank of India', segment: 'STOCK', lotSize: 1500, change: '+1.45%', price: 725.80 },
-     { symbol: 'AXIS', name: 'Axis Bank', segment: 'STOCK', lotSize: 250, change: '+0.65%', price: 1125.40 },
-     { symbol: 'ICICIBANK', name: 'ICICI Bank', segment: 'STOCK', lotSize: 250, change: '+0.85%', price: 985.60 },
-     { symbol: 'FINNIFTY', name: 'FINANCIAL NIFTY', segment: 'INDEX', lotSize: 40, change: '+1.05%', price: 22580.30 },
-     { symbol: 'MIDCPNIFTY', name: 'MIDCAP NIFTY', segment: 'INDEX', lotSize: 75, change: '+1.35%', price: 13520.45 }
+     // Available instruments for strategy creation
+  const availableInstruments = [
+    { symbol: 'NIFTY 50', name: 'NIFTY 50', segment: 'INDEX', lotSize: 50 },
+    { symbol: 'BANKNIFTY', name: 'BANK NIFTY', segment: 'INDEX', lotSize: 25 },
+    { symbol: 'FINNIFTY', name: 'FINANCIAL NIFTY', segment: 'INDEX', lotSize: 40 },
+    { symbol: 'MIDCPNIFTY', name: 'MIDCAP NIFTY', segment: 'INDEX', lotSize: 75 }
   ];
 
   // Handle instrument search
@@ -580,7 +640,7 @@ const CreateStrategyPage = () => {
     }));
 
     if (query.length > 0) {
-      const filtered = mockInstruments.filter(instrument =>
+      const filtered = availableInstruments.filter(instrument =>
         instrument.symbol.toLowerCase().includes(query.toLowerCase()) ||
         instrument.name.toLowerCase().includes(query.toLowerCase()) ||
         instrument.segment.toLowerCase().includes(query.toLowerCase())
@@ -1496,10 +1556,8 @@ const CreateStrategyPage = () => {
                               </div>
                             </div>
                             <div className="text-right">
-                              <div className="text-white font-semibold text-sm">₹{instrument.price.toLocaleString()}</div>
-                              <div className={`text-xs ${instrument.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                                {instrument.change}
-                              </div>
+                              <div className="text-blue-200 text-xs">{instrument.segment}</div>
+                              <div className="text-blue-300 text-xs">Lot: {instrument.lotSize}</div>
                             </div>
                           </div>
                         </div>
@@ -1513,7 +1571,7 @@ const CreateStrategyPage = () => {
 
                      {/* Quick Selection Buttons */}
            <div className="grid grid-cols-4 gap-2">
-             {mockInstruments.slice(0, 4).map((instrument, index) => (
+             {availableInstruments.slice(0, 4).map((instrument, index) => (
                           <button
                             key={index}
                             onClick={() => handleInstrumentSelect(instrument)}
@@ -1521,13 +1579,26 @@ const CreateStrategyPage = () => {
                >
                  <div className="text-center">
                    <div className="text-white font-semibold text-xs">{instrument.symbol}</div>
-                   <div className={`text-xs mt-1 ${instrument.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                     {instrument.change}
-                   </div>
-                            </div>
+                   <div className="text-blue-200 text-xs mt-1">{instrument.segment}</div>
+                 </div>
                           </button>
                         ))}
           </div>
+
+          {/* Warning if no underlying selected */}
+          {!isUnderlyingSelected && (
+            <div className="mt-4 bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-xl p-4 border border-orange-500/20">
+              <div className="flex items-center space-x-3">
+                <AlertTriangle size={20} className="text-orange-400" />
+                <div>
+                  <h4 className="text-white font-semibold">Select Underlying Required</h4>
+                  <p className="text-orange-200 text-sm">
+                    You must select an underlying instrument before you can configure your strategy
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
            {/* Trading Configuration */}
            <div className="mt-4 space-y-4">
@@ -1791,9 +1862,16 @@ const CreateStrategyPage = () => {
         </div>
 
       {/* Entry Conditions Card */}
-      <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-2xl p-4 border border-green-500/20">
+      <div className={`rounded-2xl p-4 border transition-all duration-300 ${
+        isUnderlyingSelected 
+          ? 'bg-gradient-to-r from-green-500/10 to-emerald-500/10 border-green-500/20' 
+          : 'bg-gradient-to-r from-gray-500/10 to-gray-600/10 border-gray-500/20 opacity-50'
+      }`}>
         <h3 className="text-lg font-bold text-white mb-4">
           <span>Entry conditions</span>
+          {!isUnderlyingSelected && (
+            <span className="text-orange-400 text-sm ml-2">(Select underlying first)</span>
+          )}
           </h3>
           
         <div className="space-y-4">
@@ -1822,27 +1900,31 @@ const CreateStrategyPage = () => {
                     <div className="mt-2 space-y-3">
                       {/* First Indicator */}
                       <div className="grid grid-cols-3 gap-2">
-                        <select 
-                          value={selectedIndicators.long1?.indicator || ''}
-                          onChange={(e) => handleIndicatorChange('long1', e.target.value)}
-                          className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-green-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none appearance-none"
+                        <button 
+                          type="button"
+                          onClick={() => openIndicatorModal('long1')}
+                          disabled={!isUnderlyingSelected}
+                          className={`p-2 border rounded-lg text-white text-xs focus:outline-none transition-all duration-200 text-left ${
+                            isUnderlyingSelected
+                              ? 'bg-gradient-to-r from-slate-800/80 to-slate-700/80 border-green-500/30 focus:ring-1 focus:ring-green-400 hover:border-green-400'
+                              : 'bg-gradient-to-r from-gray-600/80 to-gray-700/80 border-gray-500/30 cursor-not-allowed opacity-50'
+                          }`}
                         >
-                        <option value="">Select Indicator</option>
-                          {Object.entries(groupedIndicators).map(([category, categoryIndicators]) => (
-                            <optgroup key={category} label={category}>
-                              {categoryIndicators.map((indicator) => (
-                                <option key={indicator.value} value={indicator.value}>
-                                  {indicator.label}
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))}
-                      </select>
+                          {selectedIndicators.long1?.indicator ? 
+                            indicators.find(ind => ind.value === selectedIndicators.long1?.indicator)?.label || 'Select Indicator' 
+                            : 'Select Indicator'
+                          }
+                        </button>
                         
                       <select 
                         value={longComparator}
                         onChange={handleLongComparatorChange}
-                        className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-green-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none appearance-none"
+                        disabled={!isUnderlyingSelected}
+                        className={`p-2 border rounded-lg text-white text-xs focus:outline-none appearance-none ${
+                          isUnderlyingSelected
+                            ? 'bg-gradient-to-r from-slate-800/80 to-slate-700/80 border-green-500/30 focus:ring-1 focus:ring-green-400'
+                            : 'bg-gradient-to-r from-gray-600/80 to-gray-700/80 border-gray-500/30 cursor-not-allowed opacity-50'
+                        }`}
                       >
                         <option value="">Select Comparator</option>
                         <option value="crosses_above">Crosses Above</option>
@@ -1852,104 +1934,24 @@ const CreateStrategyPage = () => {
                         <option value="equal">Equal</option>
                       </select>
                         
-                        <select 
-                          value={selectedIndicators.long2?.indicator || ''}
-                          onChange={(e) => handleIndicatorChange('long2', e.target.value)}
-                          className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-green-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none appearance-none"
+                        <button 
+                          type="button"
+                          onClick={() => openIndicatorModal('long2')}
+                          disabled={!isUnderlyingSelected}
+                          className={`p-2 border rounded-lg text-white text-xs focus:outline-none transition-all duration-200 text-left ${
+                            isUnderlyingSelected
+                              ? 'bg-gradient-to-r from-slate-800/80 to-slate-700/80 border-green-500/30 focus:ring-1 focus:ring-green-400 hover:border-green-400'
+                              : 'bg-gradient-to-r from-gray-600/80 to-gray-700/80 border-gray-500/30 cursor-not-allowed opacity-50'
+                          }`}
                         >
-                        <option value="">Select Indicator</option>
-                          {Object.entries(groupedIndicators).map(([category, categoryIndicators]) => (
-                            <optgroup key={category} label={category}>
-                              {categoryIndicators.map((indicator) => (
-                                <option key={indicator.value} value={indicator.value}>
-                                  {indicator.label}
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))}
-                      </select>
+                          {selectedIndicators.long2?.indicator ? 
+                            indicators.find(ind => ind.value === selectedIndicators.long2?.indicator)?.label || 'Select Indicator' 
+                            : 'Select Indicator'
+                          }
+                        </button>
                       </div>
 
-                      {/* Parameter Controls for Long Entry */}
-                      {(selectedIndicators.long1?.indicator || selectedIndicators.long2?.indicator) && (
-                        <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 space-y-3">
-                          <h4 className="text-green-400 text-xs font-semibold">Indicator Parameters</h4>
-                          
-                          {/* Long1 Parameters */}
-                          {selectedIndicators.long1?.indicator && (
-                            <div className="space-y-2">
-                              <h5 className="text-green-300 text-xs">First Indicator: {getSelectedIndicator('long1')?.label}</h5>
-                              <div className="grid grid-cols-2 gap-2">
-                                {getSelectedIndicator('long1')?.parameters.map((param) => (
-                                  <div key={param.name} className="space-y-1">
-                                    <label className="text-green-200 text-xs">{param.label}</label>
-                                    {param.type === 'number' ? (
-                                      <input
-                                        type="number"
-                                        value={selectedIndicators.long1?.parameters[param.name] || param.default}
-                                        onChange={(e) => handleParameterChange('long1', param.name, parseFloat(e.target.value))}
-                                        min={param.min}
-                                        max={param.max}
-                                        step={param.step}
-                                        className="w-full p-1 bg-slate-800/50 border border-green-500/30 rounded text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none"
-                                      />
-                                    ) : param.type === 'select' ? (
-                                      <select
-                                        value={selectedIndicators.long1?.parameters[param.name] || param.default}
-                                        onChange={(e) => handleParameterChange('long1', param.name, e.target.value)}
-                                        className="w-full p-1 bg-slate-800/50 border border-green-500/30 rounded text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none"
-                                      >
-                                        {param.options?.map((option) => (
-                                          <option key={option.value} value={option.value}>
-                                            {option.label}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    ) : null}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
 
-                          {/* Long2 Parameters */}
-                          {selectedIndicators.long2?.indicator && (
-                            <div className="space-y-2">
-                              <h5 className="text-green-300 text-xs">Second Indicator: {getSelectedIndicator('long2')?.label}</h5>
-                              <div className="grid grid-cols-2 gap-2">
-                                {getSelectedIndicator('long2')?.parameters.map((param) => (
-                                  <div key={param.name} className="space-y-1">
-                                    <label className="text-green-200 text-xs">{param.label}</label>
-                                    {param.type === 'number' ? (
-                                      <input
-                                        type="number"
-                                        value={selectedIndicators.long2?.parameters[param.name] || param.default}
-                                        onChange={(e) => handleParameterChange('long2', param.name, parseFloat(e.target.value))}
-                                        min={param.min}
-                                        max={param.max}
-                                        step={param.step}
-                                        className="w-full p-1 bg-slate-800/50 border border-green-500/30 rounded text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none"
-                                      />
-                                    ) : param.type === 'select' ? (
-                                      <select
-                                        value={selectedIndicators.long2?.parameters[param.name] || param.default}
-                                        onChange={(e) => handleParameterChange('long2', param.name, e.target.value)}
-                                        className="w-full p-1 bg-slate-800/50 border border-green-500/30 rounded text-white text-xs focus:ring-1 focus:ring-green-400 focus:outline-none"
-                                      >
-                                        {param.options?.map((option) => (
-                                          <option key={option.value} value={option.value}>
-                                            {option.label}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    ) : null}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
               </div>
             </div>
                 )}
@@ -1961,27 +1963,31 @@ const CreateStrategyPage = () => {
                     <div className="mt-2 space-y-3">
                       {/* First Indicator */}
                       <div className="grid grid-cols-3 gap-2">
-                        <select 
-                          value={selectedIndicators.short1?.indicator || ''}
-                          onChange={(e) => handleIndicatorChange('short1', e.target.value)}
-                          className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-red-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none appearance-none"
+                        <button 
+                          type="button"
+                          onClick={() => openIndicatorModal('short1')}
+                          disabled={!isUnderlyingSelected}
+                          className={`p-2 border rounded-lg text-white text-xs focus:outline-none transition-all duration-200 text-left ${
+                            isUnderlyingSelected
+                              ? 'bg-gradient-to-r from-slate-800/80 to-slate-700/80 border-red-500/30 focus:ring-1 focus:ring-red-400 hover:border-red-400'
+                              : 'bg-gradient-to-r from-gray-600/80 to-gray-700/80 border-gray-500/30 cursor-not-allowed opacity-50'
+                          }`}
                         >
-                        <option value="">Select Indicator</option>
-                          {Object.entries(groupedIndicators).map(([category, categoryIndicators]) => (
-                            <optgroup key={category} label={category}>
-                              {categoryIndicators.map((indicator) => (
-                                <option key={indicator.value} value={indicator.value}>
-                                  {indicator.label}
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))}
-                      </select>
+                          {selectedIndicators.short1?.indicator ? 
+                            indicators.find(ind => ind.value === selectedIndicators.short1?.indicator)?.label || 'Select Indicator' 
+                            : 'Select Indicator'
+                          }
+                        </button>
                         
                       <select 
                         value={shortComparator}
                         onChange={handleShortComparatorChange}
-                        className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-red-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none appearance-none"
+                        disabled={!isUnderlyingSelected}
+                        className={`p-2 border rounded-lg text-white text-xs focus:outline-none appearance-none ${
+                          isUnderlyingSelected
+                            ? 'bg-gradient-to-r from-slate-800/80 to-slate-700/80 border-red-500/30 focus:ring-1 focus:ring-red-400'
+                            : 'bg-gradient-to-r from-gray-600/80 to-gray-700/80 border-gray-500/30 cursor-not-allowed opacity-50'
+                        }`}
                       >
                         <option value="">Select Comparator</option>
                         <option value="crosses_above">Crosses Above</option>
@@ -1991,104 +1997,24 @@ const CreateStrategyPage = () => {
                         <option value="equal">Equal</option>
                       </select>
                         
-                        <select 
-                          value={selectedIndicators.short2?.indicator || ''}
-                          onChange={(e) => handleIndicatorChange('short2', e.target.value)}
-                          className="p-2 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-red-500/30 rounded-lg text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none appearance-none"
+                        <button 
+                          type="button"
+                          onClick={() => openIndicatorModal('short2')}
+                          disabled={!isUnderlyingSelected}
+                          className={`p-2 border rounded-lg text-white text-xs focus:outline-none transition-all duration-200 text-left ${
+                            isUnderlyingSelected
+                              ? 'bg-gradient-to-r from-slate-800/80 to-slate-700/80 border-red-500/30 focus:ring-1 focus:ring-red-400 hover:border-red-400'
+                              : 'bg-gradient-to-r from-gray-600/80 to-gray-700/80 border-gray-500/30 cursor-not-allowed opacity-50'
+                          }`}
                         >
-                        <option value="">Select Indicator</option>
-                          {Object.entries(groupedIndicators).map(([category, categoryIndicators]) => (
-                            <optgroup key={category} label={category}>
-                              {categoryIndicators.map((indicator) => (
-                                <option key={indicator.value} value={indicator.value}>
-                                  {indicator.label}
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))}
-                      </select>
+                          {selectedIndicators.short2?.indicator ? 
+                            indicators.find(ind => ind.value === selectedIndicators.short2?.indicator)?.label || 'Select Indicator' 
+                            : 'Select Indicator'
+                          }
+                        </button>
                       </div>
 
-                      {/* Parameter Controls for Short Entry */}
-                      {(selectedIndicators.short1?.indicator || selectedIndicators.short2?.indicator) && (
-                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 space-y-3">
-                          <h4 className="text-red-400 text-xs font-semibold">Indicator Parameters</h4>
-                          
-                          {/* Short1 Parameters */}
-                          {selectedIndicators.short1?.indicator && (
-                            <div className="space-y-2">
-                              <h5 className="text-red-300 text-xs">First Indicator: {getSelectedIndicator('short1')?.label}</h5>
-                              <div className="grid grid-cols-2 gap-2">
-                                {getSelectedIndicator('short1')?.parameters.map((param) => (
-                                  <div key={param.name} className="space-y-1">
-                                    <label className="text-red-200 text-xs">{param.label}</label>
-                                    {param.type === 'number' ? (
-                                      <input
-                                        type="number"
-                                        value={selectedIndicators.short1?.parameters[param.name] || param.default}
-                                        onChange={(e) => handleParameterChange('short1', param.name, parseFloat(e.target.value))}
-                                        min={param.min}
-                                        max={param.max}
-                                        step={param.step}
-                                        className="w-full p-1 bg-slate-800/50 border border-red-500/30 rounded text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none"
-                                      />
-                                    ) : param.type === 'select' ? (
-                                      <select
-                                        value={selectedIndicators.short1?.parameters[param.name] || param.default}
-                                        onChange={(e) => handleParameterChange('short1', param.name, e.target.value)}
-                                        className="w-full p-1 bg-slate-800/50 border border-red-500/30 rounded text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none"
-                                      >
-                                        {param.options?.map((option) => (
-                                          <option key={option.value} value={option.value}>
-                                            {option.label}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    ) : null}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
 
-                          {/* Short2 Parameters */}
-                          {selectedIndicators.short2?.indicator && (
-                            <div className="space-y-2">
-                              <h5 className="text-red-300 text-xs">Second Indicator: {getSelectedIndicator('short2')?.label}</h5>
-                              <div className="grid grid-cols-2 gap-2">
-                                {getSelectedIndicator('short2')?.parameters.map((param) => (
-                                  <div key={param.name} className="space-y-1">
-                                    <label className="text-red-200 text-xs">{param.label}</label>
-                                    {param.type === 'number' ? (
-                                      <input
-                                        type="number"
-                                        value={selectedIndicators.short2?.parameters[param.name] || param.default}
-                                        onChange={(e) => handleParameterChange('short2', param.name, parseFloat(e.target.value))}
-                                        min={param.min}
-                                        max={param.max}
-                                        step={param.step}
-                                        className="w-full p-1 bg-slate-800/50 border border-red-500/30 rounded text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none"
-                                      />
-                                    ) : param.type === 'select' ? (
-                                      <select
-                                        value={selectedIndicators.short2?.parameters[param.name] || param.default}
-                                        onChange={(e) => handleParameterChange('short2', param.name, e.target.value)}
-                                        className="w-full p-1 bg-slate-800/50 border border-red-500/30 rounded text-white text-xs focus:ring-1 focus:ring-red-400 focus:outline-none"
-                                      >
-                                        {param.options?.map((option) => (
-                                          <option key={option.value} value={option.value}>
-                                            {option.label}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    ) : null}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
               </div>
             </div>
                 )}
@@ -2128,7 +2054,12 @@ const CreateStrategyPage = () => {
            <div className="flex justify-center pt-4">
            <button
                onClick={addConditionBlock}
-               className="px-6 py-3 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+               disabled={!isUnderlyingSelected}
+               className={`px-6 py-3 font-semibold rounded-lg transition-all duration-300 transform ${
+                 isUnderlyingSelected
+                   ? 'bg-blue-500 text-white hover:bg-blue-600 hover:scale-105 hover:shadow-lg cursor-pointer'
+                   : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+               }`}
              >
                Add Condition +
            </button>
@@ -2137,7 +2068,11 @@ const CreateStrategyPage = () => {
        </div>
 
                {/* Trading Configuration Card */}
-        <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-2xl p-6 border border-blue-500/20">
+        <div className={`rounded-2xl p-6 border transition-all duration-300 ${
+          isUnderlyingSelected 
+            ? 'bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-blue-500/20' 
+            : 'bg-gradient-to-r from-gray-500/10 to-gray-600/10 border-gray-500/20 opacity-50'
+        }`}>
          <div className="space-y-6">
                        {/* Conditions Section */}
                          <div className="flex justify-between items-start">
@@ -2146,7 +2081,21 @@ const CreateStrategyPage = () => {
                                    <div className="flex items-center space-x-1">
                      <select 
                        id="long-condition-select"
-                       className="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-sm font-medium border border-green-300 focus:ring-1 focus:ring-green-400 focus:outline-none"
+                       disabled={!isUnderlyingSelected}
+                       className={`px-3 py-1 rounded-lg text-sm font-medium border focus:outline-none ${
+                         isUnderlyingSelected
+                           ? 'bg-green-100 text-green-700 border-green-300 focus:ring-1 focus:ring-green-400'
+                           : 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed opacity-50'
+                       }`}
+                       onChange={(e) => {
+                         if (!isUnderlyingSelected) return;
+                         const selectedValue = e.target.value;
+                         const shortConditionSelect = document.getElementById('short-condition-select') as HTMLSelectElement;
+                         if (shortConditionSelect) {
+                           // Set the opposite value in the short condition select
+                           shortConditionSelect.value = selectedValue === 'CE' ? 'PE' : 'CE';
+                         }
+                       }}
                      >
                        <option value="CE">CE</option>
                        <option value="PE">PE</option>
@@ -2158,7 +2107,21 @@ const CreateStrategyPage = () => {
                                    <div className="flex items-center space-x-1">
                      <select 
                        id="short-condition-select"
-                       className="bg-red-100 text-red-700 px-3 py-1 rounded-lg text-sm font-medium border border-red-300 focus:ring-1 focus:ring-red-400 focus:outline-none"
+                       disabled={!isUnderlyingSelected}
+                       className={`px-3 py-1 rounded-lg text-sm font-medium border focus:outline-none ${
+                         isUnderlyingSelected
+                           ? 'bg-red-100 text-red-700 border-red-300 focus:ring-1 focus:ring-red-400'
+                           : 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed opacity-50'
+                       }`}
+                       onChange={(e) => {
+                         if (!isUnderlyingSelected) return;
+                         const selectedValue = e.target.value;
+                         const longConditionSelect = document.getElementById('long-condition-select') as HTMLSelectElement;
+                         if (longConditionSelect) {
+                           // Set the opposite value in the long condition select
+                           longConditionSelect.value = selectedValue === 'CE' ? 'PE' : 'CE';
+                         }
+                       }}
                      >
                        <option value="PE">PE</option>
                        <option value="CE">CE</option>
@@ -2172,21 +2135,12 @@ const CreateStrategyPage = () => {
                 <div className="flex flex-col">
                   <label className="text-xs text-blue-300 mb-1">Action</label>
                   <select 
-                    className="p-2 bg-green-100 text-green-700 rounded text-sm font-medium border border-green-300 focus:ring-1 focus:ring-green-400 focus:outline-none"
-                    onChange={(e) => {
-                      const action = e.target.value;
-                      // Update conditions based on action
-                      const longConditionSelect = document.getElementById('long-condition-select') as HTMLSelectElement;
-                      const shortConditionSelect = document.getElementById('short-condition-select') as HTMLSelectElement;
-                      
-                      if (action === 'BUY') {
-                        if (longConditionSelect) longConditionSelect.value = 'CE';
-                        if (shortConditionSelect) shortConditionSelect.value = 'PE';
-                      } else if (action === 'SELL') {
-                        if (longConditionSelect) longConditionSelect.value = 'PE';
-                        if (shortConditionSelect) shortConditionSelect.value = 'CE';
-                      }
-                    }}
+                    disabled={!isUnderlyingSelected}
+                    className={`p-2 rounded text-sm font-medium border focus:outline-none ${
+                      isUnderlyingSelected
+                        ? 'bg-green-100 text-green-700 border-green-300 focus:ring-1 focus:ring-green-400'
+                        : 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed opacity-50'
+                    }`}
                   >
                     <option value="BUY">BUY</option>
                     <option value="SELL">SELL</option>
@@ -2198,8 +2152,14 @@ const CreateStrategyPage = () => {
                   <input 
                     type="number" 
                     placeholder="75"
-                    className="w-full p-2 border border-gray-300 rounded text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none"
+                    disabled={!isUnderlyingSelected}
+                    className={`w-full p-2 border rounded text-sm focus:outline-none ${
+                      isUnderlyingSelected
+                        ? 'border-gray-300 focus:ring-1 focus:ring-blue-400'
+                        : 'border-gray-500 bg-gray-100 text-gray-500 cursor-not-allowed opacity-50'
+                    }`}
                     onChange={(e) => {
+                      if (!isUnderlyingSelected) return;
                       // Update quantity based on lot size
                       const quantity = parseInt(e.target.value) || 0;
                       const lotSize = instrumentSearch.selectedInstrument?.lotSize || 50;
@@ -2211,7 +2171,14 @@ const CreateStrategyPage = () => {
               
                 <div className="flex flex-col">
                   <label className="text-xs text-blue-300 mb-1">Expiry</label>
-                  <select className="bg-blue-100 text-blue-700 px-2 py-2 rounded text-sm font-medium border border-blue-300 focus:ring-1 focus:ring-blue-400 focus:outline-none">
+                  <select 
+                    disabled={!isUnderlyingSelected}
+                    className={`px-2 py-2 rounded text-sm font-medium border focus:outline-none ${
+                      isUnderlyingSelected
+                        ? 'bg-blue-100 text-blue-700 border-blue-300 focus:ring-1 focus:ring-blue-400'
+                        : 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed opacity-50'
+                    }`}
+                  >
                     <option value="WEEKLY">Weekly</option>
                     <option value="MONTHLY">Monthly</option>
                   </select>
@@ -2222,8 +2189,14 @@ const CreateStrategyPage = () => {
                    <div className="flex space-x-1">
                      <select 
                        id="strikeTypeSelect"
-                       className="bg-blue-100 text-blue-700 px-2 py-2 rounded text-sm font-medium border border-blue-300 focus:ring-1 focus:ring-blue-400 focus:outline-none"
+                       disabled={!isUnderlyingSelected}
+                       className={`px-2 py-2 rounded text-sm font-medium border focus:outline-none ${
+                         isUnderlyingSelected
+                           ? 'bg-blue-100 text-blue-700 border-blue-300 focus:ring-1 focus:ring-blue-400'
+                           : 'bg-gray-100 text-gray-500 border-gray-300 cursor-not-allowed opacity-50'
+                       }`}
                        onChange={(e) => {
+                         if (!isUnderlyingSelected) return;
                          const strikeType = e.target.value;
                          const strikeOffsetContainer = document.getElementById('strikeOffsetContainer');
                          
@@ -2669,28 +2642,39 @@ const CreateStrategyPage = () => {
                   <span>Strategy name is required to save</span>
                 </p>
               )}
+              {!isUnderlyingSelected && (
+                <p className="text-orange-400 text-sm mt-2 flex items-center space-x-1">
+                  <AlertTriangle size={16} />
+                  <span>Select an underlying instrument to enable strategy creation</span>
+                </p>
+              )}
             </div>
 
             {/* Save Strategy Button */}
             <div className="flex justify-center">
               <button
                 type="submit"
-                disabled={!timeIndicatorFormData.name.trim()}
+                disabled={!timeIndicatorFormData.name.trim() || !isUnderlyingSelected}
                 className={`group relative px-12 py-4 font-bold rounded-2xl transition-all duration-500 transform ${
-                  timeIndicatorFormData.name.trim()
+                  timeIndicatorFormData.name.trim() && isUnderlyingSelected
                     ? 'bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 text-white hover:from-yellow-600 hover:via-orange-600 hover:to-red-600 hover:scale-105 hover:shadow-2xl hover:shadow-yellow-500/25 cursor-pointer'
                     : 'bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 cursor-not-allowed opacity-50'
                 }`}
               >
                 <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-                  timeIndicatorFormData.name.trim()
+                  timeIndicatorFormData.name.trim() && isUnderlyingSelected
                     ? 'bg-gradient-to-r from-yellow-400/20 via-orange-400/20 to-red-400/20'
                     : ''
                 }`}></div>
                 <span className="relative z-10 flex items-center space-x-3">
-                  <Save size={24} className={timeIndicatorFormData.name.trim() ? 'animate-pulse' : ''} />
+                  <Save size={24} className={timeIndicatorFormData.name.trim() && isUnderlyingSelected ? 'animate-pulse' : ''} />
                   <span className="text-lg">
-                    {timeIndicatorFormData.name.trim() ? 'Save Strategy' : 'Enter Strategy Name First'}
+                    {!isUnderlyingSelected 
+                      ? 'Select Underlying First' 
+                      : !timeIndicatorFormData.name.trim() 
+                        ? 'Enter Strategy Name First' 
+                        : 'Save Strategy'
+                    }
                   </span>
                 </span>
               </button>
@@ -2923,6 +2907,168 @@ def strategy(data):
           {renderContent()}
         </main>
       </div>
+
+      {/* Indicator Selection Modal */}
+      {showIndicatorModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto border border-blue-500/30 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-white">Select Indicator</h3>
+              <button
+                onClick={cancelIndicatorSelection}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors duration-200"
+              >
+                <X size={24} className="text-white" />
+              </button>
+            </div>
+
+            {/* Indicator List */}
+            <div className="space-y-4 mb-6">
+              <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+                {Object.entries(groupedIndicators).map(([category, categoryIndicators]) => (
+                  <div key={category} className="space-y-2">
+                    <h4 className="text-blue-300 font-semibold text-sm border-b border-blue-500/30 pb-1">
+                      {category}
+                    </h4>
+                    <div className="space-y-1">
+                      {categoryIndicators.map((indicator) => (
+                        <label
+                          key={indicator.value}
+                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-white/5 cursor-pointer transition-colors duration-200"
+                        >
+                          <input
+                            type="radio"
+                            name="indicator"
+                            value={indicator.value}
+                            checked={tempSelectedIndicator === indicator.value}
+                            onChange={(e) => handleModalIndicatorChange(e.target.value)}
+                            className="w-4 h-4 text-blue-600 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-full focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+                          />
+                          <span className="text-white font-medium">{indicator.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Parameter Configuration */}
+            {tempSelectedIndicator && (
+              <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl p-4 border border-blue-500/20 mb-6">
+                <h4 className="text-blue-300 font-semibold mb-4">
+                  {indicators.find(ind => ind.value === tempSelectedIndicator)?.label} Parameters
+                </h4>
+                
+                {/* Debug info - remove in production */}
+                <div className="mb-4 p-2 bg-slate-800/50 rounded text-xs text-gray-300">
+                  <div>Selected Indicator: {tempSelectedIndicator}</div>
+                  <div>Current Parameters: {JSON.stringify(tempIndicatorParameters)}</div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {indicators.find(ind => ind.value === tempSelectedIndicator)?.parameters.map((param) => {
+                    console.log('Rendering parameter:', param.name, 'Current value:', tempIndicatorParameters[param.name]);
+                    return (
+                      <div key={param.name} className="space-y-2">
+                        <label className="text-blue-200 text-sm font-medium">{param.label}</label>
+                        {param.type === 'number' ? (
+                          <input
+                            type="number"
+                            value={tempIndicatorParameters[param.name] !== undefined ? tempIndicatorParameters[param.name] : param.default}
+                            onChange={(e) => {
+                              const inputValue = e.target.value;
+                              console.log('Raw input value:', inputValue, 'for param:', param.name);
+                              
+                              // Allow empty input temporarily
+                              if (inputValue === '' || inputValue === null || inputValue === undefined) {
+                                console.log('Empty input, allowing temporary empty state');
+                                handleModalParameterChange(param.name, '');
+                                return;
+                              }
+                              
+                              // Parse the number
+                              const parsed = parseFloat(inputValue);
+                              if (isNaN(parsed)) {
+                                console.log('Invalid number, allowing as string temporarily');
+                                handleModalParameterChange(param.name, inputValue);
+                                return;
+                              }
+                              
+                              console.log('Valid number parsed:', parsed);
+                              handleModalParameterChange(param.name, parsed);
+                            }}
+                            onBlur={(e) => {
+                              // Only set default if the field is completely empty when leaving
+                              const value = tempIndicatorParameters[param.name];
+                              if (value === '' || value === null || value === undefined) {
+                                handleModalParameterChange(param.name, param.default);
+                              }
+                            }}
+                            min={param.min}
+                            max={param.max}
+                            step={param.step || 1}
+                            className="w-full p-3 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-blue-500/30 rounded-lg text-white focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-300 backdrop-blur-sm"
+                          />
+                        ) : param.type === 'text' ? (
+                          <input
+                            type="text"
+                            value={tempIndicatorParameters[param.name] !== undefined ? tempIndicatorParameters[param.name] : param.default}
+                            onChange={(e) => {
+                              console.log('Text input changed:', param.name, 'from', tempIndicatorParameters[param.name], 'to', e.target.value);
+                              handleModalParameterChange(param.name, e.target.value);
+                            }}
+                            className="w-full p-3 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-blue-500/30 rounded-lg text-white focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-300 backdrop-blur-sm"
+                            placeholder="Enter value..."
+                          />
+                        ) : param.type === 'select' ? (
+                          <select
+                            value={tempIndicatorParameters[param.name] !== undefined ? tempIndicatorParameters[param.name] : param.default}
+                            onChange={(e) => {
+                              console.log('Select changed:', param.name, 'from', tempIndicatorParameters[param.name], 'to', e.target.value);
+                              handleModalParameterChange(param.name, e.target.value);
+                            }}
+                            className="w-full p-3 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-blue-500/30 rounded-lg text-white focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all duration-300 backdrop-blur-sm"
+                          >
+                            {param.options?.map((option) => (
+                              <option key={option.value} value={option.value} className="bg-slate-800 text-white">
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : null}
+                        
+                        
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={cancelIndicatorSelection}
+                className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-600 text-white font-semibold rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 transform hover:scale-105"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={applyIndicatorSelection}
+                disabled={!tempSelectedIndicator}
+                className={`px-6 py-3 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 ${
+                  tempSelectedIndicator
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white hover:from-blue-600 hover:to-cyan-700'
+                    : 'bg-gradient-to-r from-gray-500 to-gray-600 text-gray-300 cursor-not-allowed'
+                }`}
+              >
+                Ok
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
