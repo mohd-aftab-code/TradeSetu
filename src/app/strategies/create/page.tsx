@@ -2124,29 +2124,12 @@ const CreateStrategyPage = () => {
               </button>
             </div>
 
-          {/* Column Headers */}
-          <div className="grid grid-cols-12 gap-2 items-center mb-4 px-2">
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">Action</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">Qty</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">Option</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">Expiry</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">ATM Pt</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">ATM</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">SL Type</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">SL Value</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">SL On</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">TP Type</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">TP Value</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">TP On</div>
-            <div className="col-span-1 text-xs font-semibold text-gray-700 text-center bg-gray-100 py-2 rounded-lg">Actions</div>
-          </div>
-
-          <div className="space-y-4">
+            <div className="space-y-4">
             {orderLegs.map((leg, index) => (
-              <div key={leg.id} className={`relative overflow-hidden rounded-xl p-4 shadow-lg transition-all duration-300 hover:shadow-xl ${
+              <div key={leg.id} className={`relative overflow-hidden rounded-lg p-3 shadow-md transition-all duration-300 hover:shadow-lg ${
                 index === 0 
-                  ? 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border border-blue-200' 
-                  : 'bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 border border-orange-200'
+                  ? 'bg-gradient-to-br from-slate-800/80 to-blue-900/80 border border-blue-500/30' 
+                  : 'bg-gradient-to-br from-slate-800/80 to-purple-900/80 border border-purple-500/30'
               }`}>
                 {/* Background Pattern */}
                 <div className="absolute inset-0 opacity-5">
@@ -2157,40 +2140,40 @@ const CreateStrategyPage = () => {
                 </div>
                 
                 {/* Leg Header */}
-                <div className="relative z-10 mb-3">
+                <div className="relative z-10 mb-2">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-3 h-3 rounded-full ${index === 0 ? 'bg-blue-500' : 'bg-orange-500'}`}></div>
-                      <span className={`text-sm font-semibold ${index === 0 ? 'text-blue-700' : 'text-orange-700'}`}>
-                        Order Leg {index + 1}
+                    <div className="flex items-center space-x-1.5">
+                      <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-blue-400' : 'bg-purple-400'}`}></div>
+                      <span className={`text-xs font-semibold ${index === 0 ? 'text-blue-300' : 'text-purple-300'}`}>
+                        Leg {index + 1}
                       </span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`text-xs px-2 py-1 rounded-full ${index === 0 ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>
+                    <div className="flex items-center space-x-1.5">
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${index === 0 ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'}`}>
                         {leg.action.toUpperCase()}
                       </span>
-                      <span className={`text-xs px-2 py-1 rounded-full ${index === 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-red-100 text-red-700'}`}>
+                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${index === 0 ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-pink-500/20 text-pink-300 border border-pink-500/30'}`}>
                         {leg.optionType.toUpperCase()}
                       </span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-12 gap-2 items-center relative z-10 h-20">
+                <div className="grid grid-cols-12 gap-1.5 items-center relative z-10 h-14">
                   {/* Action */}
                   <div className="col-span-1">
                     <select
                       value={leg.action}
                       onChange={(e) => updateLeg(leg.id, 'action', e.target.value)}
-                      className="w-full h-12 p-2 text-sm font-medium rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-medium rounded-md border-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
                       style={{
-                        backgroundColor: leg.action === 'buy' ? '#10b981' : '#ef4444',
+                        backgroundColor: leg.action === 'buy' ? '#059669' : '#dc2626',
                         color: 'white',
-                        borderColor: leg.action === 'buy' ? '#059669' : '#dc2626'
+                        borderColor: leg.action === 'buy' ? '#10b981' : '#ef4444'
                       }}
                     >
-                      <option value="buy" className="bg-green-500 text-white">BUY</option>
-                      <option value="sell" className="bg-red-500 text-white">SELL</option>
+                      <option value="buy" className="bg-green-600 text-white">BUY</option>
+                      <option value="sell" className="bg-red-600 text-white">SELL</option>
                     </select>
                   </div>
 
@@ -2200,7 +2183,7 @@ const CreateStrategyPage = () => {
                       type="number"
                       value={leg.quantity}
                       onChange={(e) => updateLeg(leg.id, 'quantity', parseInt(e.target.value) || 0)}
-                      className="w-full h-12 p-2 text-sm border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 bg-gradient-to-r from-gray-50 to-slate-50 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-bold border-2 border-blue-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-gradient-to-r from-slate-700/50 to-slate-600/50 text-white transition-all duration-200"
                       placeholder="Qty"
                     />
                   </div>
@@ -2210,15 +2193,15 @@ const CreateStrategyPage = () => {
                     <select
                       value={leg.optionType}
                       onChange={(e) => updateLeg(leg.id, 'optionType', e.target.value)}
-                      className="w-full h-12 p-2 text-sm font-medium rounded-lg border-2 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-medium rounded-md border-2 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-200"
                       style={{
-                        backgroundColor: leg.optionType === 'ce' ? '#3b82f6' : '#ef4444',
+                        backgroundColor: leg.optionType === 'ce' ? '#0891b2' : '#be185d',
                         color: 'white',
-                        borderColor: leg.optionType === 'ce' ? '#2563eb' : '#dc2626'
+                        borderColor: leg.optionType === 'ce' ? '#06b6d4' : '#ec4899'
                       }}
                     >
-                      <option value="ce" className="bg-blue-500 text-white">CE</option>
-                      <option value="pe" className="bg-red-500 text-white">PE</option>
+                      <option value="ce" className="bg-cyan-600 text-white">CE</option>
+                      <option value="pe" className="bg-pink-600 text-white">PE</option>
                     </select>
                   </div>
 
@@ -2227,11 +2210,11 @@ const CreateStrategyPage = () => {
                     <select
                       value={leg.expiry}
                       onChange={(e) => updateLeg(leg.id, 'expiry', e.target.value)}
-                      className="w-full h-12 p-2 text-sm font-medium rounded-lg border-2 border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-medium rounded-md border-2 border-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-gradient-to-r from-slate-700/50 to-blue-900/50 text-blue-300 transition-all duration-200"
                     >
-                      <option value="Weekly">Weekly</option>
-                      <option value="Next Weekly">Next Weekly</option>
-                      <option value="Monthly">Monthly</option>
+                      <option value="Weekly" className="bg-slate-700 text-blue-300 font-bold">Weekly</option>
+                      <option value="Next Weekly" className="bg-slate-700 text-blue-300 font-bold">Next Weekly</option>
+                      <option value="Monthly" className="bg-slate-700 text-blue-300 font-bold">Monthly</option>
                     </select>
                   </div>
 
@@ -2240,13 +2223,13 @@ const CreateStrategyPage = () => {
                     <select
                       value={leg.atmPt}
                       onChange={(e) => updateLeg(leg.id, 'atmPt', e.target.value)}
-                      className="w-full h-12 p-2 text-sm font-medium rounded-lg border-2 border-purple-200 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-medium rounded-md border-2 border-purple-500/30 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 bg-gradient-to-r from-slate-700/50 to-purple-900/50 text-purple-300 transition-all duration-200"
                     >
-                      <option value="ATM pt">ATM pt</option>
-                      <option value="ATM %">ATM %</option>
-                      <option value="SP">SP</option>
-                      <option value="SP &gt;=">SP &gt;=</option>
-                      <option value="SP &lt;=">SP &lt;=</option>
+                      <option value="ATM pt" className="bg-slate-700 text-purple-300 font-bold">ATM pt</option>
+                      <option value="ATM %" className="bg-slate-700 text-purple-300 font-bold">ATM %</option>
+                      <option value="SP" className="bg-slate-700 text-purple-300 font-bold">SP</option>
+                      <option value="SP &gt;=" className="bg-slate-700 text-purple-300 font-bold">SP &gt;=</option>
+                      <option value="SP &lt;=" className="bg-slate-700 text-purple-300 font-bold">SP &lt;=</option>
                     </select>
                   </div>
 
@@ -2256,10 +2239,10 @@ const CreateStrategyPage = () => {
                       <select
                         value={leg.atm}
                         onChange={(e) => updateLeg(leg.id, 'atm', e.target.value)}
-                        className="w-full h-12 p-2 text-sm font-medium rounded-lg border-2 border-indigo-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-700 transition-all duration-200"
+                        className="w-full h-10 p-1.5 text-xs font-medium rounded-md border-2 border-indigo-500/30 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 bg-gradient-to-r from-slate-700/50 to-indigo-900/50 text-indigo-300 transition-all duration-200"
                       >
                         {getATMOptions(leg.atmPt).map((option: string) => (
-                          <option key={option} value={option}>{option}</option>
+                          <option key={option} value={option} className="bg-slate-700 text-indigo-300 font-bold">{option}</option>
                         ))}
                       </select>
                     ) : (
@@ -2268,7 +2251,7 @@ const CreateStrategyPage = () => {
                         value={leg.atm}
                         placeholder="Enter Premium Value"
                         onChange={(e) => updateLeg(leg.id, 'atm', e.target.value)}
-                        className="w-full h-12 p-2 text-sm border-2 border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-gradient-to-r from-orange-50 to-red-50 transition-all duration-200"
+                        className="w-full h-10 p-1.5 text-xs font-bold border-2 border-orange-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 bg-gradient-to-r from-slate-700/50 to-orange-900/50 text-orange-300 transition-all duration-200"
                       />
                     )}
                   </div>
@@ -2278,10 +2261,10 @@ const CreateStrategyPage = () => {
                     <select
                       value={leg.slType}
                       onChange={(e) => updateLeg(leg.id, 'slType', e.target.value)}
-                      className="w-full h-12 p-2 text-sm font-medium rounded-lg border-2 border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-gradient-to-r from-red-50 to-pink-50 text-red-700 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-medium rounded-md border-2 border-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-gradient-to-r from-slate-700/50 to-red-900/50 text-red-300 transition-all duration-200"
                     >
-                      <option value="SL %">SL %</option>
-                      <option value="SL pt">SL pt</option>
+                      <option value="SL %" className="bg-slate-700 text-red-300 font-bold">SL %</option>
+                      <option value="SL pt" className="bg-slate-700 text-red-300 font-bold">SL pt</option>
                     </select>
                   </div>
 
@@ -2291,7 +2274,7 @@ const CreateStrategyPage = () => {
                       type="number"
                       value={leg.slValue}
                       onChange={(e) => updateLeg(leg.id, 'slValue', parseInt(e.target.value) || 0)}
-                      className="w-full h-12 p-2 text-sm border-2 border-red-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-gradient-to-r from-red-50 to-pink-50 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-bold border-2 border-red-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-gradient-to-r from-slate-700/50 to-red-900/50 text-red-300 transition-all duration-200"
                     />
                   </div>
 
@@ -2300,10 +2283,10 @@ const CreateStrategyPage = () => {
                     <select
                       value={leg.slOnPrice}
                       onChange={(e) => updateLeg(leg.id, 'slOnPrice', e.target.value)}
-                      className="w-full h-12 p-2 text-sm font-medium rounded-lg border-2 border-red-200 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-gradient-to-r from-red-50 to-pink-50 text-red-700 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-medium rounded-md border-2 border-red-500/30 focus:outline-none focus:ring-2 focus:ring-red-400 focus:border-red-400 bg-gradient-to-r from-slate-700/50 to-red-900/50 text-red-300 transition-all duration-200"
                     >
-                      <option value="On Price">On Price</option>
-                      <option value="On Close">On Close</option>
+                      <option value="On Price" className="bg-slate-700 text-red-300 font-bold">On Price</option>
+                      <option value="On Close" className="bg-slate-700 text-red-300 font-bold">On Close</option>
                     </select>
                   </div>
 
@@ -2312,10 +2295,10 @@ const CreateStrategyPage = () => {
                     <select
                       value={leg.tpType}
                       onChange={(e) => updateLeg(leg.id, 'tpType', e.target.value)}
-                      className="w-full h-12 p-2 text-sm font-medium rounded-lg border-2 border-green-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-medium rounded-md border-2 border-green-500/30 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gradient-to-r from-slate-700/50 to-green-900/50 text-green-300 transition-all duration-200"
                     >
-                      <option value="TP %">TP %</option>
-                      <option value="TP pt">TP pt</option>
+                      <option value="TP %" className="bg-slate-700 text-green-300 font-bold">TP %</option>
+                      <option value="TP pt" className="bg-slate-700 text-green-300 font-bold">TP pt</option>
                     </select>
                   </div>
 
@@ -2325,7 +2308,7 @@ const CreateStrategyPage = () => {
                       type="number"
                       value={leg.tpValue}
                       onChange={(e) => updateLeg(leg.id, 'tpValue', parseInt(e.target.value) || 0)}
-                      className="w-full h-12 p-2 text-sm border-2 border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-bold border-2 border-green-500/30 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gradient-to-r from-slate-700/50 to-green-900/50 text-green-300 transition-all duration-200"
                     />
                   </div>
 
@@ -2334,22 +2317,22 @@ const CreateStrategyPage = () => {
                     <select
                       value={leg.tpOnPrice}
                       onChange={(e) => updateLeg(leg.id, 'tpOnPrice', e.target.value)}
-                      className="w-full h-12 p-2 text-sm font-medium rounded-lg border-2 border-green-200 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 transition-all duration-200"
+                      className="w-full h-10 p-1.5 text-xs font-medium rounded-md border-2 border-green-500/30 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-400 bg-gradient-to-r from-slate-700/50 to-green-900/50 text-green-300 transition-all duration-200"
                     >
-                      <option value="On Price">On Price</option>
-                      <option value="On Close">On Close</option>
+                      <option value="On Price" className="bg-slate-700 text-green-300 font-bold">On Price</option>
+                      <option value="On Close" className="bg-slate-700 text-green-300 font-bold">On Close</option>
                     </select>
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="col-span-1 flex space-x-1 h-12 items-center justify-center">
+                  <div className="col-span-1 flex space-x-1 h-10 items-center justify-end">
                     <button
                       type="button"
                       onClick={() => deleteLeg(leg.id)}
-                      className="p-2 text-red-500 hover:text-red-700 transition-colors hover:bg-red-50 rounded-lg"
+                      className="p-1.5 text-red-500 hover:text-red-700 transition-colors hover:bg-red-50 rounded-md"
                       title="Delete leg"
                     >
-                      <Trash2 size={16} />
+                      <Trash2 size={14} />
                     </button>
                     <button
                       type="button"
@@ -2357,17 +2340,17 @@ const CreateStrategyPage = () => {
                         const newLeg = { ...leg, id: Math.max(...orderLegs.map(l => l.id)) + 1 };
                         setOrderLegs(prev => [...prev, newLeg]);
                       }}
-                      className="p-2 text-orange-500 hover:text-orange-700 transition-colors hover:bg-orange-50 rounded-lg"
+                      className="p-1.5 text-orange-500 hover:text-orange-700 transition-colors hover:bg-orange-50 rounded-md"
                       title="Duplicate leg"
                     >
-                      <Copy size={16} />
+                      <Copy size={14} />
                     </button>
                   </div>
                 </div>
 
                 {/* Advance Feature Section within each Order Leg - Only visible when Wait & Trade, Re Entry/Execute, or Trail SL is enabled globally */}
                 {(advanceFeatures.waitAndTrade || advanceFeatures.reEntryExecute || advanceFeatures.trailSL) && (
-                  <div className="mt-4 pt-4 border-t border-gray-200 relative">
+                  <div className="mt-2 pt-2 border-t border-gray-200 relative">
                     {/* Subtle background pattern for Advance Feature section */}
                     <div className="absolute inset-0 opacity-3">
                       <div className="absolute inset-0" style={{
@@ -2377,20 +2360,20 @@ const CreateStrategyPage = () => {
                     </div>
                     
                     <div className="relative z-10">
-                      <div className="flex items-center space-x-2 mb-3">
-                        <ChevronDown size={16} className="text-blue-500" />
-                        <span className="text-sm font-medium text-gray-700">Advance Feature</span>
+                      <div className="flex items-center space-x-1.5 mb-2">
+                        <ChevronDown size={14} className="text-blue-500" />
+                        <span className="text-xs font-medium text-gray-700">Advance Feature</span>
                       </div>
                       
-                      <div className="flex items-center space-x-6">
+                      <div className="flex items-center space-x-3">
                         {/* Wait & Trade Configuration - Only visible when Wait & Trade is enabled */}
                         {advanceFeatures.waitAndTrade && (
-                          <div className="flex items-center space-x-3 bg-white/80 backdrop-blur-sm rounded-lg p-2 border border-gray-200 shadow-sm">
-                            <Clock size={16} className="text-pink-500" />
+                          <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-md p-1.5 border border-gray-200 shadow-sm">
+                            <Clock size={12} className="text-pink-500" />
                             <select
                               value={leg.waitAndTradeType || '%↑'}
                               onChange={(e) => updateLeg(leg.id, 'waitAndTradeType', e.target.value)}
-                              className="px-3 py-2 text-sm border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 bg-gradient-to-r from-pink-50 to-rose-50 transition-all duration-200"
+                              className="px-2 py-1 text-xs border-2 border-pink-200 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 bg-gradient-to-r from-pink-50 to-rose-50 transition-all duration-200"
                             >
                               <option value="%↑">%↑</option>
                               <option value="%↓">%↓</option>
@@ -2406,20 +2389,20 @@ const CreateStrategyPage = () => {
                               min="0"
                               max="100"
                               step="0.1"
-                              className="w-20 px-3 py-2 text-sm border-2 border-pink-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 bg-gradient-to-r from-pink-50 to-rose-50 transition-all duration-200"
+                              className="w-16 px-2 py-1 text-xs border-2 border-pink-200 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 bg-gradient-to-r from-pink-50 to-rose-50 transition-all duration-200"
                             />
                           </div>
                         )}
                         
                         {/* ReEntry Configuration - Only visible when Re Entry/Execute is enabled */}
                         {advanceFeatures.reEntryExecute && (
-                          <div className="flex items-center space-x-3 bg-white/80 backdrop-blur-sm rounded-lg p-2 border border-gray-200 shadow-sm">
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm font-medium text-gray-700">ReEntry</span>
+                          <div className="flex items-center space-x-2 bg-white/80 backdrop-blur-sm rounded-md p-1.5 border border-gray-200 shadow-sm">
+                            <div className="flex items-center space-x-1.5">
+                              <span className="text-xs font-medium text-gray-700">ReEntry</span>
                               <select
                                 value={leg.reEntryType || 'ReEntry On Cost'}
                                 onChange={(e) => updateLeg(leg.id, 'reEntryType', e.target.value)}
-                                className="px-3 py-2 text-sm border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 transition-all duration-200"
+                                className="px-2 py-1 text-xs border-2 border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 transition-all duration-200"
                               >
                                 <option value="ReExecute">ReExecute</option>
                                 <option value="ReEntry On Cost">ReEntry On Cost</option>
@@ -2434,12 +2417,12 @@ const CreateStrategyPage = () => {
                               min="0"
                               max="100"
                               step="1"
-                              className="w-16 px-3 py-2 text-sm border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 transition-all duration-200"
+                              className="w-12 px-2 py-1 text-xs border-2 border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 transition-all duration-200"
                             />
                             <select
                               value={leg.reEntryCondition || 'On Close'}
                               onChange={(e) => updateLeg(leg.id, 'reEntryCondition', e.target.value)}
-                              className="px-3 py-2 text-sm border-2 border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 transition-all duration-200"
+                              className="px-2 py-1 text-xs border-2 border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 bg-gradient-to-r from-blue-50 to-indigo-50 transition-all duration-200"
                             >
                               <option value="On Close">On Close</option>
                               <option value="On Price">On Price</option>
@@ -2449,45 +2432,47 @@ const CreateStrategyPage = () => {
 
                         {/* Trailing Stop Loss Configuration - Only visible when Trail SL is enabled */}
                         {advanceFeatures.trailSL && (
-                          <div className="flex items-center space-x-4 bg-white/80 backdrop-blur-sm rounded-lg p-3 border border-gray-200 shadow-sm">
+                          <div className="bg-white/80 backdrop-blur-sm rounded-md p-1.5 border border-gray-200 shadow-sm">
                             <div className="flex items-center space-x-2">
-                              <span className="text-sm font-medium text-gray-700">TSL</span>
-                              <select
-                                value={leg.tslType || 'TSL %'}
-                                onChange={(e) => updateLeg(leg.id, 'tslType', e.target.value)}
-                                className="px-3 py-2 text-sm border-2 border-purple-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 bg-gradient-to-r from-purple-50 to-pink-50 transition-all duration-200"
-                              >
-                                <option value="TSL %">TSL %</option>
-                                <option value="TSL pt">TSL pt</option>
-                              </select>
-                            </div>
-                            
-                            <div className="flex items-center space-x-2">
-                              <label className="text-sm font-medium text-blue-700">If price moves (X)</label>
-                              <input
-                                type="number"
-                                value={leg.tslValue1 || ''}
-                                onChange={(e) => updateLeg(leg.id, 'tslValue1', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
-                                placeholder="Enter any value"
-                                className="w-32 h-10 px-3 py-2 text-sm border-2 border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-600 bg-white transition-all duration-200"
-                              />
-                            </div>
-                            
-                            <div className="flex items-center space-x-2">
-                              <label className="text-sm font-medium text-gray-600">Then Trail SL by (Y)</label>
-                              <input
-                                type="number"
-                                value={leg.tslValue2 || ''}
-                                onChange={(e) => updateLeg(leg.id, 'tslValue2', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
-                                placeholder="Enter any value"
-                                className="w-32 h-10 px-3 py-2 text-sm border-2 border-gray-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-600 bg-white transition-all duration-200"
-                              />
+                              <div className="flex flex-col">
+                                <span className="text-xs font-medium text-gray-700">TSL</span>
+                                <select
+                                  value={leg.tslType || 'TSL %'}
+                                  onChange={(e) => updateLeg(leg.id, 'tslType', e.target.value)}
+                                  className="px-2 py-1 text-xs border-2 border-purple-200 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400 bg-gradient-to-r from-purple-50 to-pink-50 transition-all duration-200"
+                                >
+                                  <option value="TSL %">TSL %</option>
+                                  <option value="TSL pt">TSL pt</option>
+                                </select>
+                              </div>
+                              
+                              <div className="flex flex-col">
+                                <span className="text-xs font-medium text-blue-700">If price moves (X)</span>
+                                <input
+                                  type="number"
+                                  value={leg.tslValue1 || ''}
+                                  onChange={(e) => updateLeg(leg.id, 'tslValue1', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
+                                  placeholder="Enter any value"
+                                  className="w-20 h-8 px-2 py-1 text-xs border-2 border-blue-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-600 bg-white transition-all duration-200"
+                                />
+                              </div>
+                              
+                              <div className="flex flex-col">
+                                <span className="text-xs font-medium text-gray-600">Then Trail SL by (Y)</span>
+                                <input
+                                  type="number"
+                                  value={leg.tslValue2 || ''}
+                                  onChange={(e) => updateLeg(leg.id, 'tslValue2', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
+                                  placeholder="Enter any value"
+                                  className="w-20 h-8 px-2 py-1 text-xs border-2 border-gray-400 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-600 bg-white transition-all duration-200"
+                                />
+                              </div>
                             </div>
                           </div>
                         )}
                         
                         {/* Description text */}
-                        <div className="text-gray-600 text-sm bg-white/60 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-200">
+                        <div className="text-gray-600 text-xs bg-white/60 backdrop-blur-sm px-2 py-1.5 rounded-md border border-gray-200">
                           {advanceFeatures.waitAndTrade && (
                             <span>Wait for price to move by <span className="font-semibold text-pink-600">{leg.waitAndTradeValue || 0}</span> {leg.waitAndTradeType || '%↑'}</span>
                           )}

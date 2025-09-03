@@ -136,26 +136,26 @@ const ProgrammingStrategyPage = () => {
         <Sidebar activeTab="strategies" onTabChange={() => {}} />
       </div>
       <div className="flex-1 flex min-w-0 md:ml-64">
-        <main className="flex-1 p-6 space-y-6 md:ml-0 overflow-x-hidden">
-          <div className="space-y-8">
+        <main className="flex-1 p-4 space-y-4 md:ml-0 overflow-x-hidden">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4">
                 <button
                   onClick={() => router.push('/strategies/create')}
-                  className="group relative p-4 rounded-2xl bg-gradient-to-r from-white/10 to-white/5 text-white hover:from-white/20 hover:to-white/10 transition-all duration-500 transform hover:scale-110 hover:rotate-12 shadow-2xl hover:shadow-purple-500/25"
+                  className="group relative p-3 rounded-xl bg-gradient-to-r from-white/10 to-white/5 text-white hover:from-white/20 hover:to-white/10 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-purple-500/25"
                 >
-                  <ArrowLeft size={24} className="relative z-10" />
+                  <ArrowLeft size={20} className="relative z-10" />
                 </button>
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-3">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-500 rounded-2xl blur-lg opacity-75 animate-pulse"></div>
-                    <div className="relative bg-gradient-to-r from-purple-500 to-pink-600 p-4 rounded-2xl shadow-2xl">
-                      <Code size={28} className="text-white drop-shadow-2xl" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-500 rounded-xl blur-md opacity-60 animate-pulse"></div>
+                    <div className="relative bg-gradient-to-r from-purple-500 to-pink-600 p-3 rounded-xl shadow-xl">
+                      <Code size={24} className="text-white drop-shadow-lg" />
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Programming Strategy</h2>
-                    <p className="text-blue-200 text-sm mt-1">Write custom algorithms in Python</p>
+                    <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Programming Strategy</h2>
+                    <p className="text-blue-200 text-xs">Write custom algorithms in Python</p>
                   </div>
                 </div>
               </div>
@@ -164,15 +164,15 @@ const ProgrammingStrategyPage = () => {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => router.push('/strategies/create')}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-lg text-blue-200 hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300"
+                  className="px-3 py-1.5 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-lg text-blue-200 hover:from-blue-500/30 hover:to-cyan-500/30 transition-all duration-300 text-sm"
                 >
-                  Use Main Page
+                  Main Page
                 </button>
                 <button
                   onClick={() => router.push('/strategies/create?type=programming')}
-                  className="px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300"
+                  className="px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 transition-all duration-300 text-sm"
                 >
-                  Use Integrated Form
+                  Integrated Form
                 </button>
               </div>
             </div>
@@ -190,7 +190,7 @@ const ProgrammingStrategyPage = () => {
               </div>
             </div>
 
-            <form onSubmit={handleProgrammingSubmit} className="space-y-6">
+            <form onSubmit={handleProgrammingSubmit} className="space-y-4">
               {/* Required Fields Notice */}
               <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-2xl p-4 border border-orange-500/20">
                 <div className="flex items-center space-x-3">
