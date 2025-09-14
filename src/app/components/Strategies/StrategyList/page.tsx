@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Play, Pause, TrendingUp, Zap, Clock, BarChart3, Copy, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Play, Pause, TrendingUp, Zap, Clock, BarChart3, Copy, Eye, RefreshCw } from 'lucide-react';
 import { Strategy } from '../../../../types/database';
 import { useRouter } from 'next/navigation';
 import { formatPercentage } from '../../../../lib/utils';
@@ -27,9 +27,11 @@ const StrategyList = () => {
       const response = await fetch(`/api/strategies?user_id=${userId}`);
       if (response.ok) {
         const data = await response.json();
+        console.log('Fetched strategies:', data);
         setStrategies(data.strategies || []);
       } else {
-        console.error('Failed to fetch strategies');
+        const errorData = await response.json();
+        console.error('Failed to fetch strategies:', errorData);
       }
     } catch (error) {
       console.error('Error fetching strategies:', error);
@@ -37,6 +39,7 @@ const StrategyList = () => {
       setLoading(false);
     }
   };
+
 
   const toggleStrategy = async (id: string) => {
     try {
@@ -102,6 +105,9 @@ const StrategyList = () => {
       case 'SWING': return 'text-blue-400 bg-blue-500/20';
       case 'INTRADAY': return 'text-green-400 bg-green-500/20';
       case 'POSITIONAL': return 'text-purple-400 bg-purple-500/20';
+      case 'TIME_BASED': return 'text-cyan-400 bg-cyan-500/20';
+      case 'INDICATOR_BASED': return 'text-orange-400 bg-orange-500/20';
+      case 'PROGRAMMING': return 'text-pink-400 bg-pink-500/20';
       default: return 'text-gray-400 bg-gray-500/20';
     }
   };
@@ -124,6 +130,14 @@ const StrategyList = () => {
         <h1 className="text-3xl font-bold text-white">Strategies</h1>
         <div className="flex items-center space-x-4">
           <button
+            onClick={fetchStrategies}
+            className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-gray-600 hover:to-gray-700 transition-all duration-200 flex items-center space-x-2"
+            title="Refresh Strategies"
+          >
+            <RefreshCw size={20} />
+            <span>Refresh</span>
+          </button>
+          <button
             onClick={handleCreateStrategy}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center space-x-2"
           >
@@ -142,6 +156,9 @@ const StrategyList = () => {
       {strategies.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-white text-xl mb-4">No strategies found</div>
+          <div className="text-blue-200 text-sm mb-4">
+            Total strategies loaded: {strategies.length}
+          </div>
           <button
             onClick={handleCreateStrategy}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
@@ -217,7 +234,7 @@ const StrategyList = () => {
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="bg-white/5 rounded-lg p-3">
                   <p className="text-blue-200 text-sm">Success Rate</p>
-                  <p className="text-lg font-bold text-white">{formatPercentage(strategy.success_rate)}</p>
+                  <p className="text-lg font-bold text-white">{formatPercentage(strategy.success_rate || strategy.win_rate || 0)}</p>
                 </div>
                 <div className="bg-white/5 rounded-lg p-3">
                   <p className="text-blue-200 text-sm">Total Executions</p>

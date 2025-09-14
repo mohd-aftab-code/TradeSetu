@@ -25,29 +25,37 @@ export interface Strategy {
   user_id: string;
   name: string;
   description: string;
-  strategy_type: 'INTRADAY' | 'SWING' | 'SCALPING' | 'POSITIONAL';
+  strategy_type: 'INTRADAY' | 'SWING' | 'SCALPING' | 'POSITIONAL' | 'TIME_BASED' | 'INDICATOR_BASED' | 'PROGRAMMING';
   symbol: string;
+  asset_type?: 'STOCK' | 'INDEX' | 'FUTURES' | 'OPTIONS' | 'CURRENCY' | 'COMMODITY';
   entry_conditions: string;
   exit_conditions: string;
   risk_management: {
-    stop_loss: number;
-    take_profit: number;
-    position_size: number;
+    stop_loss: string | number;
+    take_profit: string | number;
+    position_size: string | number;
   };
   is_active: boolean;
   is_paper_trading: boolean;
   created_at: Date;
   updated_at: Date;
   last_executed?: Date;
-  total_executions: number;
-  success_rate: number;
-  performance_metrics: {
+  total_executions?: number;
+  success_rate?: number;
+  performance_metrics?: {
     total_trades: number;
     winning_trades: number;
     total_pnl: number;
     max_drawdown: number;
     sharpe_ratio: number;
   };
+  // Additional fields from database
+  details?: any; // Strategy-specific details
+  total_trades?: number;
+  winning_trades?: number;
+  total_pnl?: number;
+  win_rate?: number;
+  max_drawdown?: number;
 }
 
 export interface BacktestTrade {
