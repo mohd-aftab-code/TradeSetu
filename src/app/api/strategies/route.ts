@@ -41,43 +41,40 @@ export async function GET(request: NextRequest) {
 
     console.log('Found strategies:', strategies.length);
 
-    // Fetch strategy-specific details for each strategy
-    const strategiesWithDetails = await Promise.all(
-      strategies.map(async (strategy) => {
-        let details = null;
-        
-        switch (strategy.strategy_type) {
-          case 'TIME_BASED':
-            const [timeBasedRows] = await pool.execute(
-              'SELECT * FROM time_based_strategies WHERE strategy_id = ?',
-              [strategy.id]
-            );
-            details = (timeBasedRows as any[])[0] || null;
-            break;
-            
-          case 'INDICATOR_BASED':
-            const [indicatorRows] = await pool.execute(
-              'SELECT * FROM indicator_based_strategies WHERE strategy_id = ?',
-              [strategy.id]
-            );
-            details = (indicatorRows as any[])[0] || null;
-            break;
-            
-          case 'PROGRAMMING':
-            const [programmingRows] = await pool.execute(
-              'SELECT * FROM programming_strategies WHERE strategy_id = ?',
-              [strategy.id]
-            );
-            details = (programmingRows as any[])[0] || null;
-            break;
-        }
+    // Parse JSON fields and add strategy-specific details
+    const strategiesWithDetails = strategies.map((strategy) => {
+      // Parse JSON fields
+      const riskManagement = typeof strategy.risk_management === 'string' 
+        ? JSON.parse(strategy.risk_management) 
+        : strategy.risk_management;
+      
+      const strategyData = strategy.strategy_data 
+        ? (typeof strategy.strategy_data === 'string' 
+            ? JSON.parse(strategy.strategy_data) 
+            : strategy.strategy_data)
+        : null;
+      
+      const advanceFeatures = strategy.advance_features 
+        ? (typeof strategy.advance_features === 'string' 
+            ? JSON.parse(strategy.advance_features) 
+            : strategy.advance_features)
+        : null;
+      
+      const performanceMetrics = strategy.performance_metrics 
+        ? (typeof strategy.performance_metrics === 'string' 
+            ? JSON.parse(strategy.performance_metrics) 
+            : strategy.performance_metrics)
+        : null;
 
-        return {
-          ...strategy,
-          details: details
-        };
-      })
-    );
+      return {
+        ...strategy,
+        risk_management: riskManagement,
+        strategy_data: strategyData,
+        advance_features: advanceFeatures,
+        performance_metrics: performanceMetrics,
+        details: strategyData // Use strategy_data as details
+      };
+    });
     
     return NextResponse.json({ 
       strategies: strategiesWithDetails,

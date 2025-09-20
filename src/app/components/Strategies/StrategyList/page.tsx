@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, Play, Pause, TrendingUp, Zap, Clock, BarChart3, Cop
 import { Strategy } from '../../../../types/database';
 import { useRouter } from 'next/navigation';
 import { formatPercentage } from '../../../../lib/utils';
+import { getUserData } from '../../../../lib/cookies';
 
 const StrategyList = () => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
@@ -14,17 +15,24 @@ const StrategyList = () => {
   const [strategyToDelete, setStrategyToDelete] = useState<string>('');
   const router = useRouter();
 
-  // Mock user ID - in real app, get from auth context
-  const userId = 'tradesetu001';
+  // Get user ID from authentication data
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchStrategies();
+    // Get user data from cookies
+    const userData = getUserData();
+    if (userData && userData.id) {
+      setUserId(userData.id);
+      fetchStrategies(userData.id);
+    } else {
+      console.error('No user data found');
+    }
   }, []);
 
-  const fetchStrategies = async () => {
+  const fetchStrategies = async (user_id: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/strategies?user_id=${userId}`);
+      const response = await fetch(`/api/strategies?user_id=${user_id}`);
       if (response.ok) {
         const data = await response.json();
         console.log('Fetched strategies:', data);
@@ -130,9 +138,10 @@ const StrategyList = () => {
         <h1 className="text-3xl font-bold text-white">Strategies</h1>
         <div className="flex items-center space-x-4">
           <button
-            onClick={fetchStrategies}
+            onClick={() => userId && fetchStrategies(userId)}
             className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-gray-600 hover:to-gray-700 transition-all duration-200 flex items-center space-x-2"
             title="Refresh Strategies"
+            disabled={!userId}
           >
             <RefreshCw size={20} />
             <span>Refresh</span>
