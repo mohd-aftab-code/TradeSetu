@@ -435,11 +435,138 @@ const StrategyViewPage = () => {
                     </div>
                   )}
 
-                  {strategy.strategy_type === 'TIME_BASED' && (
-                    <div className="space-y-6">
-                      {/* Trigger Configuration */}
-                      <div>
-                        <h4 className="text-lg font-semibold text-white mb-3">Trigger Configuration</h4>
+        {strategy.strategy_type === 'TIME_BASED' && (
+            <div className="space-y-6">
+                {/* Selected Instrument */}
+                <div>
+                    <h4 className="text-lg font-semibold text-white mb-3">Selected Instrument</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <p className="text-blue-200 text-sm mb-1">Symbol</p>
+                            <p className="text-white">{strategy.details.selected_instrument_symbol || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-blue-200 text-sm mb-1">Name</p>
+                            <p className="text-white">{strategy.details.selected_instrument_name || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-blue-200 text-sm mb-1">Segment</p>
+                            <p className="text-white">{strategy.details.selected_instrument_segment || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-blue-200 text-sm mb-1">Lot Size</p>
+                            <p className="text-white">{strategy.details.selected_instrument_lot_size || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Order Configuration */}
+                <div>
+                    <h4 className="text-lg font-semibold text-white mb-3">Order Configuration</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <p className="text-blue-200 text-sm mb-1">Order Product Type</p>
+                            <p className="text-white">{strategy.details.order_product_type || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-blue-200 text-sm mb-1">Start Time</p>
+                            <p className="text-white">{strategy.details.start_time || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-blue-200 text-sm mb-1">Square Off Time</p>
+                            <p className="text-white">{strategy.details.square_off_time || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-blue-200 text-sm mb-1">No Trade After</p>
+                            <p className="text-white">{strategy.details.no_trade_after || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Working Days */}
+                {strategy.details.working_days && (
+                    <div>
+                        <h4 className="text-lg font-semibold text-white mb-3">Working Days</h4>
+                        <div className="flex flex-wrap gap-2">
+                            {Object.entries(strategy.details.working_days).map(([day, isActive]: [string, any]) => (
+                                <span
+                                    key={day}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                        isActive
+                                            ? 'bg-green-500/20 text-green-400'
+                                            : 'bg-gray-500/20 text-gray-400'
+                                    }`}
+                                >
+                                    {day.charAt(0).toUpperCase() + day.slice(1)}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Order Legs */}
+                {strategy.details.order_legs && strategy.details.order_legs.length > 0 && (
+                    <div>
+                        <h4 className="text-lg font-semibold text-white mb-3">Order Legs</h4>
+                        <div className="space-y-4">
+                            {strategy.details.order_legs.map((leg: any, index: number) => (
+                                <div key={index} className="bg-white/5 p-4 rounded-lg">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h5 className="text-white font-medium">Leg {index + 1}</h5>
+                                        <div className="flex space-x-2">
+                                            <span className={`px-2 py-1 rounded text-xs ${
+                                                leg.action === 'buy' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                                            }`}>
+                                                {leg.action?.toUpperCase()}
+                                            </span>
+                                            <span className="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-400">
+                                                {leg.optionType?.toUpperCase()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                        <div>
+                                            <p className="text-blue-200 text-xs mb-1">Quantity</p>
+                                            <p className="text-white">{leg.quantity || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-blue-200 text-xs mb-1">Expiry</p>
+                                            <p className="text-white">{leg.expiry || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-blue-200 text-xs mb-1">ATM Point</p>
+                                            <p className="text-white">{leg.atmPt || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-blue-200 text-xs mb-1">ATM Value</p>
+                                            <p className="text-white">{leg.atm || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-blue-200 text-xs mb-1">SL Type</p>
+                                            <p className="text-white">{leg.slType || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-blue-200 text-xs mb-1">SL Value</p>
+                                            <p className="text-white">{leg.slValue || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-blue-200 text-xs mb-1">TP Type</p>
+                                            <p className="text-white">{leg.tpType || 'N/A'}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-blue-200 text-xs mb-1">TP Value</p>
+                                            <p className="text-white">{leg.tpValue || 'N/A'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* Trigger Configuration (Legacy) */}
+                <div>
+                    <h4 className="text-lg font-semibold text-white mb-3">Trigger Configuration</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           <div>
                             <p className="text-blue-200 text-sm mb-1">Trigger Type</p>

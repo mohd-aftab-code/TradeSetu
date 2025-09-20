@@ -131,12 +131,12 @@ export async function POST(request: NextRequest) {
       ]
     );
 
-    // Create strategy-specific record based on type
-    if (strategy_type === 'TIME_BASED' && strategyData) {
-      await createTimeBasedStrategy(strategyId, user_id, strategyData);
-    } else if (strategy_type === 'INDICATOR_BASED' && strategyData) {
-      await createIndicatorBasedStrategy(strategyId, user_id, strategyData);
-    }
+        // Create strategy-specific record based on type
+        if (strategy_type === 'TIME_BASED' && strategyData) {
+          await createTimeBasedStrategyComplete(strategyId, user_id, strategyData);
+        } else if (strategy_type === 'INDICATOR_BASED' && strategyData) {
+          await createIndicatorBasedStrategy(strategyId, user_id, strategyData);
+        }
 
     // Initialize performance record
     const performanceId = `perf_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
@@ -163,7 +163,163 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper function to create time-based strategy
+// Helper function to create comprehensive time-based strategy
+async function createTimeBasedStrategyComplete(strategyId: string, userId: string, data: any) {
+  const timeBasedId = `time_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  
+  // Extract form data
+  const {
+    name,
+    description,
+    selectedInstrument,
+    time_order_product_type,
+    start_time,
+    square_off_time,
+    working_days,
+    orderLegs = [],
+    advanceFeatures = {},
+    daily_profit_limit = 0,
+    daily_loss_limit = 0,
+    max_trade_cycles = 1,
+    noTradeAfter,
+    profitTrailingType = 'no_trailing',
+    profitTrailingConfig = {}
+  } = data;
+
+  // Create main time-based strategy record
+  await pool.execute(
+    `INSERT INTO time_based_strategies_complete (
+      id, strategy_id, user_id, name, description,
+      selected_instrument_symbol, selected_instrument_name, selected_instrument_segment, selected_instrument_lot_size,
+      order_product_type, start_time, square_off_time, working_days, order_legs, advance_features,
+      daily_profit_limit, daily_loss_limit, max_trade_cycles, no_trade_after,
+      profit_trailing_type, profit_trailing_config
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      timeBasedId, strategyId, userId, name, description,
+      selectedInstrument?.symbol || '',
+      selectedInstrument?.name || '',
+      selectedInstrument?.segment || '',
+      selectedInstrument?.lotSize || 0,
+      time_order_product_type,
+      start_time,
+      square_off_time,
+      JSON.stringify(working_days),
+      JSON.stringify(orderLegs),
+      JSON.stringify(advanceFeatures),
+      daily_profit_limit,
+      daily_loss_limit,
+      max_trade_cycles,
+      noTradeAfter,
+      profitTrailingType,
+      JSON.stringify(profitTrailingConfig)
+    ]
+  );
+
+  // Create individual order legs
+  for (let i = 0; i < orderLegs.length; i++) {
+    const leg = orderLegs[i];
+    const legId = `leg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    
+    await pool.execute(
+      `INSERT INTO time_based_order_legs (
+        id, time_based_strategy_id, leg_order, action, quantity, option_type, expiry,
+        atm_pt, atm_value, sl_type, sl_value, sl_on_price, tp_type, tp_value, tp_on_price,
+        wait_and_trade_enabled, wait_and_trade_type, wait_and_trade_value,
+        re_entry_enabled, re_entry_type, re_entry_value, re_entry_condition,
+        trail_sl_enabled, tsl_type, tsl_value1, tsl_value2
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        legId, timeBasedId, i + 1,
+        leg.action || 'buy',
+        leg.quantity || 0,
+        leg.optionType || 'ce',
+        leg.expiry || 'Weekly',
+        leg.atmPt || 'ATM pt',
+        leg.atm || '0',
+        leg.slType || 'SL %',
+        leg.slValue || 0,
+        leg.slOnPrice || 'On Price',
+        leg.tpType || 'TP %',
+        leg.tpValue || 0,
+        leg.tpOnPrice || 'On Price',
+        leg.waitAndTradeEnabled || false,
+        leg.waitAndTradeType || '%↑',
+        leg.waitAndTradeValue || 0,
+        leg.reEntryEnabled || false,
+        leg.reEntryType || 'ReEntry On Cost',
+        leg.reEntryValue || 5,
+        leg.reEntryCondition || 'On Close',
+        leg.trailSLEnabled || false,
+        leg.tslType || 'TSL %',
+        leg.tslValue1 || 0,
+        leg.tslValue2 || 0
+      ]
+    );
+  }
+
+  // Create advance features record
+  const advanceFeaturesId = `adv_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO time_based_advance_features (
+      id, time_based_strategy_id, move_sl_to_cost, exit_all_on_sl_tgt,
+      pre_punch_sl, wait_and_trade, re_entry_execute, trail_sl
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      advanceFeaturesId, timeBasedId,
+      advanceFeatures.moveSLToCost || false,
+      advanceFeatures.exitAllOnSLTgt || false,
+      advanceFeatures.prePunchSL || false,
+      advanceFeatures.waitAndTrade || false,
+      advanceFeatures.reEntryExecute || false,
+      advanceFeatures.trailSL || false
+    ]
+  );
+
+  // Create profit trailing record
+  const profitTrailingId = `trail_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO time_based_profit_trailing (
+      id, time_based_strategy_id, trailing_type,
+      lock_fix_profit_reach, lock_fix_profit_at,
+      trail_profit_increase, trail_profit_by,
+      lock_and_trail_reach, lock_and_trail_at, lock_and_trail_increase, lock_and_trail_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      profitTrailingId, timeBasedId, profitTrailingType,
+      profitTrailingConfig.lockFixProfitReach || null,
+      profitTrailingConfig.lockFixProfitAt || null,
+      profitTrailingConfig.trailProfitIncrease || null,
+      profitTrailingConfig.trailProfitBy || null,
+      profitTrailingConfig.lockAndTrailReach || null,
+      profitTrailingConfig.lockAndTrailAt || null,
+      profitTrailingConfig.lockAndTrailIncrease || null,
+      profitTrailingConfig.lockAndTrailBy || null
+    ]
+  );
+
+  // Create form state record
+  const formStateId = `state_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO time_based_form_states (
+      id, time_based_strategy_id, time_indicator_form_data, instrument_search_state,
+      order_legs_state, advance_features_state, profit_trailing_type_state,
+      is_underlying_selected, show_advance_features
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      formStateId, timeBasedId,
+      JSON.stringify(data),
+      JSON.stringify({ selectedInstrument }),
+      JSON.stringify(orderLegs),
+      JSON.stringify(advanceFeatures),
+      profitTrailingType,
+      true, // is_underlying_selected
+      false // show_advance_features
+    ]
+  );
+}
+
+// Helper function to create time-based strategy (legacy)
 async function createTimeBasedStrategy(strategyId: string, userId: string, data: any) {
   const timeBasedId = `time_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
   

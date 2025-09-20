@@ -823,25 +823,6 @@ const TimeBasedStrategy: React.FC<TimeBasedStrategyProps> = ({
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
                 <span className="text-white text-sm">Pre Punch SL</span>
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (orderLegs.length > 0) {
-                      const marketData = await getCurrentMarketData(instrumentSearch.selectedInstrument?.symbol || 'NIFTY');
-                      if (marketData) {
-                        const result = await executeOrderWithPrePunchSL(orderLegs[0], marketData);
-                        console.log('Pre Punch SL Test Result:', result);
-                        alert(`Pre Punch SL Test: ${result.message}`);
-                      }
-                    } else {
-                      alert('Please add at least one order leg to test Pre Punch SL');
-                    }
-                  }}
-                  className="ml-2 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                  title="Test Pre Punch SL functionality"
-                >
-                  Test
-                </button>
               </label>
 
               <label className={`flex items-center space-x-2 ${advanceFeatures.moveSLToCost ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}>

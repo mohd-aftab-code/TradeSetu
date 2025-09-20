@@ -26,24 +26,80 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     // Get strategy-specific details based on type
     let strategyDetails = null;
     if (strategy.strategy_type === 'TIME_BASED') {
-      const [timeBasedRows] = await pool.execute(
-        'SELECT * FROM time_based_strategies WHERE strategy_id = ?',
+        // Try to get from comprehensive table first
+      const [timeBasedCompleteRows] = await pool.execute(
+        'SELECT * FROM time_based_strategies_complete WHERE strategy_id = ?',
         [strategyId]
       );
-      if ((timeBasedRows as any[]).length > 0) {
-        const timeBasedData = (timeBasedRows as any[])[0];
+      
+      if ((timeBasedCompleteRows as any[]).length > 0) {
+        const timeBasedData = (timeBasedCompleteRows as any[])[0];
+        
         // Parse JSON fields
-        timeBasedData.trigger_weekly_days = timeBasedData.trigger_weekly_days 
-          ? (typeof timeBasedData.trigger_weekly_days === 'string' 
-              ? JSON.parse(timeBasedData.trigger_weekly_days) 
-              : timeBasedData.trigger_weekly_days)
-          : null;
         timeBasedData.working_days = timeBasedData.working_days 
           ? (typeof timeBasedData.working_days === 'string' 
               ? JSON.parse(timeBasedData.working_days) 
               : timeBasedData.working_days)
           : null;
+        timeBasedData.order_legs = timeBasedData.order_legs 
+          ? (typeof timeBasedData.order_legs === 'string' 
+              ? JSON.parse(timeBasedData.order_legs) 
+              : timeBasedData.order_legs)
+          : [];
+        timeBasedData.advance_features = timeBasedData.advance_features 
+          ? (typeof timeBasedData.advance_features === 'string' 
+              ? JSON.parse(timeBasedData.advance_features) 
+              : timeBasedData.advance_features)
+          : {};
+        timeBasedData.profit_trailing_config = timeBasedData.profit_trailing_config 
+          ? (typeof timeBasedData.profit_trailing_config === 'string' 
+              ? JSON.parse(timeBasedData.profit_trailing_config) 
+              : timeBasedData.profit_trailing_config)
+          : {};
+
+        // Get detailed order legs
+        const [orderLegsRows] = await pool.execute(
+          'SELECT * FROM time_based_order_legs WHERE time_based_strategy_id = ? ORDER BY leg_order',
+          [timeBasedData.id]
+        );
+        timeBasedData.detailed_order_legs = orderLegsRows;
+
+        // Get advance features
+        const [advanceFeaturesRows] = await pool.execute(
+          'SELECT * FROM time_based_advance_features WHERE time_based_strategy_id = ?',
+          [timeBasedData.id]
+        );
+        timeBasedData.detailed_advance_features = (advanceFeaturesRows as any[])[0] || {};
+
+        // Get profit trailing
+        const [profitTrailingRows] = await pool.execute(
+          'SELECT * FROM time_based_profit_trailing WHERE time_based_strategy_id = ?',
+          [timeBasedData.id]
+        );
+        timeBasedData.detailed_profit_trailing = (profitTrailingRows as any[])[0] || {};
+
         strategyDetails = timeBasedData;
+      } else {
+        // Fallback to legacy table
+        const [timeBasedRows] = await pool.execute(
+          'SELECT * FROM time_based_strategies WHERE strategy_id = ?',
+          [strategyId]
+        );
+        if ((timeBasedRows as any[]).length > 0) {
+          const timeBasedData = (timeBasedRows as any[])[0];
+          // Parse JSON fields
+          timeBasedData.trigger_weekly_days = timeBasedData.trigger_weekly_days 
+            ? (typeof timeBasedData.trigger_weekly_days === 'string' 
+                ? JSON.parse(timeBasedData.trigger_weekly_days) 
+                : timeBasedData.trigger_weekly_days)
+            : null;
+          timeBasedData.working_days = timeBasedData.working_days 
+            ? (typeof timeBasedData.working_days === 'string' 
+                ? JSON.parse(timeBasedData.working_days) 
+                : timeBasedData.working_days)
+            : null;
+          strategyDetails = timeBasedData;
+        }
       }
     } else if (strategy.strategy_type === 'INDICATOR_BASED') {
       const [indicatorBasedRows] = await pool.execute(

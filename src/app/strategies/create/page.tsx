@@ -599,44 +599,48 @@ const CreateStrategyPage = () => {
           },
           is_paper_trading: true,
           strategyData: {
-          trigger_type: timeIndicatorFormData.trigger_type || 'specific_time',
-          trigger_time: timeIndicatorFormData.trigger_time || '09:20:00',
-          trigger_timezone: timeIndicatorFormData.trigger_timezone || 'IST',
-          trigger_recurrence: timeIndicatorFormData.trigger_recurrence || 'daily',
-          trigger_weekly_days: timeIndicatorFormData.trigger_weekly_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-          trigger_monthly_day: timeIndicatorFormData.trigger_monthly_day || 1,
-          trigger_monthly_type: timeIndicatorFormData.trigger_monthly_type || 'day_of_month',
-          trigger_after_open_minutes: timeIndicatorFormData.trigger_after_open_minutes || 5,
-          trigger_before_close_minutes: timeIndicatorFormData.trigger_before_close_minutes || 15,
-          trigger_candle_interval: timeIndicatorFormData.trigger_candle_interval || 5,
-          trigger_candle_delay_minutes: timeIndicatorFormData.trigger_candle_delay_minutes || 1,
-          action_type: timeIndicatorFormData.action_type || 'place_order',
-          order_transaction_type: timeIndicatorFormData.time_order_transaction_type || 'BUY',
-          order_type: timeIndicatorFormData.time_order_type || 'MARKET',
-          order_quantity: timeIndicatorFormData.time_order_quantity || 1,
-          order_product_type: timeIndicatorFormData.time_order_product_type || 'MIS',
-          order_price: timeIndicatorFormData.time_order_price || null,
-          working_days: timeIndicatorFormData.working_days,
-          start_time: timeIndicatorFormData.start_time || '09:15:00',
-          square_off_time: timeIndicatorFormData.square_off_time || '15:15:00',
-          strategy_start_date: timeIndicatorFormData.strategy_start_date || null,
-          strategy_start_time: timeIndicatorFormData.strategy_start_time || '09:15:00',
-          strategy_validity_date: timeIndicatorFormData.strategy_validity_date || null,
-          deactivate_after_first_trigger: timeIndicatorFormData.deactivate_after_first_trigger || false,
-          stop_loss_type: 'SL %',
-          stop_loss_value: parseFloat(timeIndicatorFormData.stop_loss) || 2.0,
-          take_profit_type: 'TP %',
-          take_profit_value: parseFloat(timeIndicatorFormData.take_profit) || 4.0,
-          position_size: timeIndicatorFormData.position_size || '1',
-          profit_trailing_type: profitTrailingType || 'no_trailing',
-          trailing_stop: timeIndicatorFormData.trailing_stop || false,
-          trailing_stop_percentage: timeIndicatorFormData.trailing_stop_percentage || 1.5,
-          trailing_profit: timeIndicatorFormData.trailing_profit || false,
-          trailing_profit_percentage: timeIndicatorFormData.trailing_profit_percentage || 2.0,
-          daily_loss_limit: timeIndicatorFormData.daily_loss_limit || 5000,
-          daily_profit_limit: timeIndicatorFormData.daily_profit_limit || 10000,
-          max_trade_cycles: timeIndicatorFormData.max_trade_cycles || 3,
-          no_trade_after: timeIndicatorFormData.noTradeAfter || '15:15:00'
+            // Basic strategy info
+            name: timeIndicatorFormData.name.trim(),
+            description: timeIndicatorFormData.description || '',
+            
+            // Selected instrument
+            selectedInstrument: instrumentSearch.selectedInstrument,
+            
+            // Order configuration
+            time_order_product_type: timeIndicatorFormData.time_order_product_type,
+            start_time: timeIndicatorFormData.start_time || '09:15:00',
+            square_off_time: timeIndicatorFormData.square_off_time || '15:15:00',
+            working_days: timeIndicatorFormData.working_days,
+            
+            // Order legs
+            orderLegs: orderLegs.map(leg => ({
+              ...leg,
+              waitAndTradeEnabled: advanceFeatures.waitAndTrade,
+              reEntryEnabled: advanceFeatures.reEntryExecute,
+              trailSLEnabled: advanceFeatures.trailSL
+            })),
+            
+            // Advance features
+            advanceFeatures: advanceFeatures,
+            
+            // Risk management
+            daily_profit_limit: timeIndicatorFormData.daily_profit_limit || 0,
+            daily_loss_limit: timeIndicatorFormData.daily_loss_limit || 0,
+            max_trade_cycles: timeIndicatorFormData.max_trade_cycles || 1,
+            noTradeAfter: timeIndicatorFormData.noTradeAfter,
+            
+            // Profit trailing
+            profitTrailingType: profitTrailingType,
+            profitTrailingConfig: {
+              lockFixProfitReach: null,
+              lockFixProfitAt: null,
+              trailProfitIncrease: null,
+              trailProfitBy: null,
+              lockAndTrailReach: null,
+              lockAndTrailAt: null,
+              lockAndTrailIncrease: null,
+              lockAndTrailBy: null
+            }
           }
         }),
       });
