@@ -577,7 +577,7 @@ const CreateStrategyPage = () => {
     setValidationErrors([]);
     
     try {
-      // Step 1: Create main strategy record
+      // Step 1: Create main strategy record with time-based specific data
       const strategyResponse = await fetch('/api/strategies', {
         method: 'POST',
         headers: {
@@ -586,18 +586,58 @@ const CreateStrategyPage = () => {
         body: JSON.stringify({
           user_id: (user as any)?.id,
       name: timeIndicatorFormData.name.trim(),
-      description: timeIndicatorFormData.description || '',
+          description: timeIndicatorFormData.description || '',
       strategy_type: 'TIME_BASED',
       symbol: timeIndicatorFormData.symbol,
           asset_type: timeIndicatorFormData.asset_type || 'STOCK',
-      entry_conditions: timeIndicatorFormData.entry_conditions || '',
-      exit_conditions: timeIndicatorFormData.exit_conditions || '',
+          entry_conditions: timeIndicatorFormData.entry_conditions || '',
+          exit_conditions: timeIndicatorFormData.exit_conditions || '',
       risk_management: {
             stop_loss: timeIndicatorFormData.stop_loss || '',
             take_profit: timeIndicatorFormData.take_profit || '',
             position_size: timeIndicatorFormData.position_size || ''
           },
-          is_paper_trading: true
+          is_paper_trading: true,
+          strategyData: {
+          trigger_type: timeIndicatorFormData.trigger_type || 'specific_time',
+          trigger_time: timeIndicatorFormData.trigger_time || '09:20:00',
+          trigger_timezone: timeIndicatorFormData.trigger_timezone || 'IST',
+          trigger_recurrence: timeIndicatorFormData.trigger_recurrence || 'daily',
+          trigger_weekly_days: timeIndicatorFormData.trigger_weekly_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+          trigger_monthly_day: timeIndicatorFormData.trigger_monthly_day || 1,
+          trigger_monthly_type: timeIndicatorFormData.trigger_monthly_type || 'day_of_month',
+          trigger_after_open_minutes: timeIndicatorFormData.trigger_after_open_minutes || 5,
+          trigger_before_close_minutes: timeIndicatorFormData.trigger_before_close_minutes || 15,
+          trigger_candle_interval: timeIndicatorFormData.trigger_candle_interval || 5,
+          trigger_candle_delay_minutes: timeIndicatorFormData.trigger_candle_delay_minutes || 1,
+          action_type: timeIndicatorFormData.action_type || 'place_order',
+          order_transaction_type: timeIndicatorFormData.time_order_transaction_type || 'BUY',
+          order_type: timeIndicatorFormData.time_order_type || 'MARKET',
+          order_quantity: timeIndicatorFormData.time_order_quantity || 1,
+          order_product_type: timeIndicatorFormData.time_order_product_type || 'MIS',
+          order_price: timeIndicatorFormData.time_order_price || null,
+          working_days: timeIndicatorFormData.working_days,
+          start_time: timeIndicatorFormData.start_time || '09:15:00',
+          square_off_time: timeIndicatorFormData.square_off_time || '15:15:00',
+          strategy_start_date: timeIndicatorFormData.strategy_start_date || null,
+          strategy_start_time: timeIndicatorFormData.strategy_start_time || '09:15:00',
+          strategy_validity_date: timeIndicatorFormData.strategy_validity_date || null,
+          deactivate_after_first_trigger: timeIndicatorFormData.deactivate_after_first_trigger || false,
+          stop_loss_type: 'SL %',
+          stop_loss_value: parseFloat(timeIndicatorFormData.stop_loss) || 2.0,
+          take_profit_type: 'TP %',
+          take_profit_value: parseFloat(timeIndicatorFormData.take_profit) || 4.0,
+          position_size: timeIndicatorFormData.position_size || '1',
+          profit_trailing_type: profitTrailingType || 'no_trailing',
+          trailing_stop: timeIndicatorFormData.trailing_stop || false,
+          trailing_stop_percentage: timeIndicatorFormData.trailing_stop_percentage || 1.5,
+          trailing_profit: timeIndicatorFormData.trailing_profit || false,
+          trailing_profit_percentage: timeIndicatorFormData.trailing_profit_percentage || 2.0,
+          daily_loss_limit: timeIndicatorFormData.daily_loss_limit || 5000,
+          daily_profit_limit: timeIndicatorFormData.daily_profit_limit || 10000,
+          max_trade_cycles: timeIndicatorFormData.max_trade_cycles || 3,
+          no_trade_after: timeIndicatorFormData.noTradeAfter || '15:15:00'
+          }
         }),
       });
 
@@ -607,62 +647,6 @@ const CreateStrategyPage = () => {
       }
 
       const strategyData = await strategyResponse.json();
-      const strategyId = strategyData.strategy_id;
-
-      // Step 2: Update strategy with time-based specific data
-      const timeBasedResponse = await fetch(`/api/strategies/${strategyId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          detailsData: {
-            trigger_type: timeIndicatorFormData.trigger_type || 'specific_time',
-            trigger_time: timeIndicatorFormData.trigger_time || '09:20:00',
-            trigger_timezone: timeIndicatorFormData.trigger_timezone || 'IST',
-            trigger_recurrence: timeIndicatorFormData.trigger_recurrence || 'daily',
-            trigger_weekly_days: timeIndicatorFormData.trigger_weekly_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-            trigger_monthly_day: timeIndicatorFormData.trigger_monthly_day || 1,
-            trigger_monthly_type: timeIndicatorFormData.trigger_monthly_type || 'day_of_month',
-            trigger_after_open_minutes: timeIndicatorFormData.trigger_after_open_minutes || 5,
-            trigger_before_close_minutes: timeIndicatorFormData.trigger_before_close_minutes || 15,
-            trigger_candle_interval: timeIndicatorFormData.trigger_candle_interval || 5,
-            trigger_candle_delay_minutes: timeIndicatorFormData.trigger_candle_delay_minutes || 1,
-            action_type: timeIndicatorFormData.action_type || 'place_order',
-            order_transaction_type: timeIndicatorFormData.time_order_transaction_type || 'BUY',
-            order_type: timeIndicatorFormData.time_order_type || 'MARKET',
-            order_quantity: timeIndicatorFormData.time_order_quantity || 1,
-            order_product_type: timeIndicatorFormData.time_order_product_type || 'MIS',
-            order_price: timeIndicatorFormData.time_order_price || null,
-            working_days: timeIndicatorFormData.working_days,
-            start_time: timeIndicatorFormData.start_time || '09:15:00',
-            square_off_time: timeIndicatorFormData.square_off_time || '15:15:00',
-            strategy_start_date: timeIndicatorFormData.strategy_start_date || null,
-            strategy_start_time: timeIndicatorFormData.strategy_start_time || '09:15:00',
-            strategy_validity_date: timeIndicatorFormData.strategy_validity_date || null,
-            deactivate_after_first_trigger: timeIndicatorFormData.deactivate_after_first_trigger || false,
-            stop_loss_type: 'SL %',
-            stop_loss_value: parseFloat(timeIndicatorFormData.stop_loss) || 2.0,
-            take_profit_type: 'TP %',
-            take_profit_value: parseFloat(timeIndicatorFormData.take_profit) || 4.0,
-            position_size: timeIndicatorFormData.position_size || '1',
-            profit_trailing_type: profitTrailingType || 'no_trailing',
-            trailing_stop: timeIndicatorFormData.trailing_stop || false,
-            trailing_stop_percentage: timeIndicatorFormData.trailing_stop_percentage || 1.5,
-            trailing_profit: timeIndicatorFormData.trailing_profit || false,
-            trailing_profit_percentage: timeIndicatorFormData.trailing_profit_percentage || 2.0,
-            daily_loss_limit: timeIndicatorFormData.daily_loss_limit || 5000,
-            daily_profit_limit: timeIndicatorFormData.daily_profit_limit || 10000,
-            max_trade_cycles: timeIndicatorFormData.max_trade_cycles || 3,
-            no_trade_after: timeIndicatorFormData.noTradeAfter || '15:15:00'
-          }
-        }),
-      });
-
-      if (!timeBasedResponse.ok) {
-        const errorData = await timeBasedResponse.json();
-        throw new Error(errorData.error || 'Failed to update strategy with time-based details');
-      }
 
         console.log('Time Based Strategy saved successfully');
       // Add a small delay to ensure data is saved
@@ -742,7 +726,7 @@ const CreateStrategyPage = () => {
     setValidationErrors([]);
     
     try {
-      // Step 1: Create main strategy record
+      // Step 1: Create main strategy record with indicator-based specific data
       const strategyResponse = await fetch('/api/strategies', {
         method: 'POST',
         headers: {
@@ -755,14 +739,41 @@ const CreateStrategyPage = () => {
           strategy_type: 'INDICATOR_BASED',
           symbol: timeIndicatorFormData.symbol,
           asset_type: timeIndicatorFormData.asset_type || 'STOCK',
-      entry_conditions: timeIndicatorFormData.entry_conditions || '',
-      exit_conditions: timeIndicatorFormData.exit_conditions || '',
+          entry_conditions: timeIndicatorFormData.entry_conditions || '',
+          exit_conditions: timeIndicatorFormData.exit_conditions || '',
       risk_management: {
-        stop_loss: timeIndicatorFormData.stop_loss || '',
-        take_profit: timeIndicatorFormData.take_profit || '',
-        position_size: timeIndicatorFormData.position_size || ''
-      },
-          is_paper_trading: true
+            stop_loss: timeIndicatorFormData.stop_loss || '',
+            take_profit: timeIndicatorFormData.take_profit || '',
+            position_size: timeIndicatorFormData.position_size || ''
+          },
+          is_paper_trading: true,
+          strategyData: {
+          chart_type: timeIndicatorFormData.chart_type || 'Candle',
+          time_interval: timeIndicatorFormData.interval || '5 Min',
+          transaction_type: timeIndicatorFormData.transaction_type || 'Both Side',
+          long_conditions: timeIndicatorFormData.entryConditions.long || [],
+          short_conditions: timeIndicatorFormData.entryConditions.short || [],
+          condition_blocks: conditionBlocks,
+          logical_operator: logicalOperator,
+          selected_indicators: selectedIndicators,
+          stop_loss_type: 'SL %',
+          stop_loss_value: 2.0,
+          take_profit_type: 'TP %',
+          take_profit_value: 4.0,
+          position_size: '1',
+          profit_trailing_type: profitTrailingType || 'no_trailing',
+          trailing_stop: timeIndicatorFormData.trailing_stop || false,
+          trailing_stop_percentage: timeIndicatorFormData.trailing_stop_percentage || 1.5,
+          trailing_profit: timeIndicatorFormData.trailing_profit || false,
+          trailing_profit_percentage: timeIndicatorFormData.trailing_profit_percentage || 2.0,
+          daily_loss_limit: timeIndicatorFormData.daily_loss_limit || 5000,
+          daily_profit_limit: timeIndicatorFormData.daily_profit_limit || 10000,
+          max_trade_cycles: timeIndicatorFormData.max_trade_cycles || 3,
+          no_trade_after: timeIndicatorFormData.noTradeAfter || '15:15:00',
+          working_days: timeIndicatorFormData.working_days,
+          start_time: timeIndicatorFormData.start_time || '09:15:00',
+          square_off_time: timeIndicatorFormData.square_off_time || '15:15:00'
+          }
         }),
       });
 
@@ -772,49 +783,6 @@ const CreateStrategyPage = () => {
       }
 
       const strategyData = await strategyResponse.json();
-      const strategyId = strategyData.strategy_id;
-
-      // Step 2: Update strategy with indicator-based specific data
-      const indicatorResponse = await fetch(`/api/strategies/${strategyId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          detailsData: {
-            chart_type: timeIndicatorFormData.chart_type || 'Candle',
-            time_interval: timeIndicatorFormData.interval || '5 Min',
-            transaction_type: timeIndicatorFormData.transaction_type || 'Both Side',
-            long_conditions: timeIndicatorFormData.entryConditions.long || [],
-            short_conditions: timeIndicatorFormData.entryConditions.short || [],
-            condition_blocks: conditionBlocks,
-            logical_operator: logicalOperator,
-            selected_indicators: selectedIndicators,
-            stop_loss_type: 'SL %',
-            stop_loss_value: 2.0,
-            take_profit_type: 'TP %',
-            take_profit_value: 4.0,
-            position_size: '1',
-            profit_trailing_type: profitTrailingType || 'no_trailing',
-            trailing_stop: timeIndicatorFormData.trailing_stop || false,
-            trailing_stop_percentage: timeIndicatorFormData.trailing_stop_percentage || 1.5,
-            trailing_profit: timeIndicatorFormData.trailing_profit || false,
-            trailing_profit_percentage: timeIndicatorFormData.trailing_profit_percentage || 2.0,
-            daily_loss_limit: timeIndicatorFormData.daily_loss_limit || 5000,
-            daily_profit_limit: timeIndicatorFormData.daily_profit_limit || 10000,
-            max_trade_cycles: timeIndicatorFormData.max_trade_cycles || 3,
-            no_trade_after: timeIndicatorFormData.noTradeAfter || '15:15:00',
-            working_days: timeIndicatorFormData.working_days,
-            start_time: timeIndicatorFormData.start_time || '09:15:00',
-            square_off_time: timeIndicatorFormData.square_off_time || '15:15:00'
-          }
-        }),
-      });
-
-      if (!indicatorResponse.ok) {
-        const errorData = await indicatorResponse.json();
-        throw new Error(errorData.error || 'Failed to update strategy with indicator-based details');
-      }
 
       console.log('Indicator Based Strategy saved successfully');
       // Add a small delay to ensure data is saved
@@ -873,7 +841,7 @@ const CreateStrategyPage = () => {
     setValidationErrors([]);
     
     try {
-      // Step 1: Create main strategy record
+      // Step 1: Create main strategy record with programming specific data
       const strategyResponse = await fetch('/api/strategies', {
         method: 'POST',
         headers: {
@@ -889,11 +857,25 @@ const CreateStrategyPage = () => {
       entry_conditions: 'Custom programming logic',
       exit_conditions: 'Custom exit conditions',
       risk_management: {
-        stop_loss: programmingFormData.stop_loss || '',
-        take_profit: programmingFormData.take_profit || '',
-        position_size: programmingFormData.position_size || ''
-      },
-          is_paper_trading: true
+            stop_loss: programmingFormData.stop_loss || '',
+            take_profit: programmingFormData.take_profit || '',
+            position_size: programmingFormData.position_size || ''
+          },
+          is_paper_trading: true,
+          strategyData: {
+          programming_language: programmingFormData.programming_language || 'PYTHON',
+          code: programmingFormData.code,
+          code_version: '1.0.0',
+          execution_frequency: 'real_time',
+          max_execution_time: 30,
+          dependencies: [],
+          environment_variables: {},
+          stop_loss_type: 'SL %',
+          stop_loss_value: parseFloat(programmingFormData.stop_loss) || 2.0,
+          take_profit_type: 'TP %',
+          take_profit_value: parseFloat(programmingFormData.take_profit) || 4.0,
+          position_size: programmingFormData.position_size || '1'
+          }
         }),
       });
 
@@ -903,36 +885,6 @@ const CreateStrategyPage = () => {
       }
 
       const strategyData = await strategyResponse.json();
-      const strategyId = strategyData.strategy_id;
-
-      // Step 2: Update strategy with programming specific data
-      const programmingResponse = await fetch(`/api/strategies/${strategyId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          detailsData: {
-            programming_language: programmingFormData.programming_language || 'PYTHON',
-            code: programmingFormData.code,
-            code_version: '1.0.0',
-            execution_frequency: 'real_time',
-            max_execution_time: 30,
-            dependencies: [],
-            environment_variables: {},
-            stop_loss_type: 'SL %',
-            stop_loss_value: parseFloat(programmingFormData.stop_loss) || 2.0,
-            take_profit_type: 'TP %',
-            take_profit_value: parseFloat(programmingFormData.take_profit) || 4.0,
-            position_size: programmingFormData.position_size || '1'
-          }
-        }),
-      });
-
-      if (!programmingResponse.ok) {
-        const errorData = await programmingResponse.json();
-        throw new Error(errorData.error || 'Failed to update strategy with programming details');
-      }
 
       console.log('Programming Strategy saved successfully');
       // Add a small delay to ensure data is saved

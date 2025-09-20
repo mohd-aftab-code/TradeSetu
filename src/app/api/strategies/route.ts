@@ -102,7 +102,8 @@ export async function POST(request: NextRequest) {
       exit_conditions,
       risk_management,
       is_active = false,
-      is_paper_trading = true
+      is_paper_trading = true,
+      strategyData // Additional strategy-specific data
     } = body;
 
     const strategyId = `strategy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -130,6 +131,13 @@ export async function POST(request: NextRequest) {
       ]
     );
 
+    // Create strategy-specific record based on type
+    if (strategy_type === 'TIME_BASED' && strategyData) {
+      await createTimeBasedStrategy(strategyId, user_id, strategyData);
+    } else if (strategy_type === 'INDICATOR_BASED' && strategyData) {
+      await createIndicatorBasedStrategy(strategyId, user_id, strategyData);
+    }
+
     // Initialize performance record
     const performanceId = `perf_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
     await pool.execute(
@@ -153,4 +161,110 @@ export async function POST(request: NextRequest) {
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
+}
+
+// Helper function to create time-based strategy
+async function createTimeBasedStrategy(strategyId: string, userId: string, data: any) {
+  const timeBasedId = `time_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  
+  await pool.execute(
+    `INSERT INTO time_based_strategies (
+      id, strategy_id, user_id, trigger_type, trigger_time, trigger_timezone,
+      trigger_recurrence, trigger_weekly_days, trigger_monthly_day, trigger_monthly_type,
+      trigger_after_open_minutes, trigger_before_close_minutes, trigger_candle_interval,
+      trigger_candle_delay_minutes, action_type, order_transaction_type, order_type,
+      order_quantity, order_product_type, order_price, working_days, start_time,
+      square_off_time, strategy_start_date, strategy_start_time, strategy_validity_date,
+      deactivate_after_first_trigger, stop_loss_type, stop_loss_value, take_profit_type,
+      take_profit_value, position_size, profit_trailing_type, trailing_stop,
+      trailing_stop_percentage, trailing_profit, trailing_profit_percentage,
+      daily_loss_limit, daily_profit_limit, max_trade_cycles, no_trade_after
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      timeBasedId, strategyId, userId,
+      data.trigger_type || 'specific_time',
+      data.trigger_time || '09:20:00',
+      data.trigger_timezone || 'IST',
+      data.trigger_recurrence || 'daily',
+      JSON.stringify(data.trigger_weekly_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
+      data.trigger_monthly_day || 1,
+      data.trigger_monthly_type || 'day_of_month',
+      data.trigger_after_open_minutes || 0,
+      data.trigger_before_close_minutes || 0,
+      data.trigger_candle_interval || 0,
+      data.trigger_candle_delay_minutes || 0,
+      data.action_type || 'place_order',
+      data.order_transaction_type || 'BOTH',
+      data.order_type || 'MARKET',
+      data.order_quantity || 1,
+      data.order_product_type || 'MIS',
+      data.order_price || 0.00,
+      JSON.stringify(data.working_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
+      data.start_time || '09:15:00',
+      data.square_off_time || '15:15:00',
+      data.strategy_start_date || null,
+      data.strategy_start_time || null,
+      data.strategy_validity_date || null,
+      data.deactivate_after_first_trigger || 0,
+      data.stop_loss_type || 'SL %',
+      data.stop_loss_value || 2.00,
+      data.take_profit_type || 'TP %',
+      data.take_profit_value || 4.00,
+      data.position_size || '1 lot',
+      data.profit_trailing_type || 'no_trailing',
+      data.trailing_stop || 0,
+      data.trailing_stop_percentage || 0.00,
+      data.trailing_profit || 0,
+      data.trailing_profit_percentage || 0.00,
+      data.daily_loss_limit || 0.00,
+      data.daily_profit_limit || 0.00,
+      data.max_trade_cycles || 0,
+      data.no_trade_after || null
+    ]
+  );
+}
+
+// Helper function to create indicator-based strategy
+async function createIndicatorBasedStrategy(strategyId: string, userId: string, data: any) {
+  const indicatorBasedId = `ind_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  
+  await pool.execute(
+    `INSERT INTO indicator_based_strategies (
+      id, strategy_id, user_id, chart_type, time_interval, transaction_type,
+      long_conditions, short_conditions, condition_blocks, logical_operator,
+      selected_indicators, stop_loss_type, stop_loss_value, take_profit_type,
+      take_profit_value, position_size, profit_trailing_type, trailing_stop,
+      trailing_stop_percentage, trailing_profit, trailing_profit_percentage,
+      daily_loss_limit, daily_profit_limit, max_trade_cycles, no_trade_after,
+      working_days, start_time, square_off_time
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      indicatorBasedId, strategyId, userId,
+      data.chart_type || 'Candle',
+      data.time_interval || '5 Min',
+      data.transaction_type || 'Both Side',
+      JSON.stringify(data.long_conditions || []),
+      JSON.stringify(data.short_conditions || []),
+      data.condition_blocks || 0,
+      data.logical_operator || 'AND',
+      JSON.stringify(data.selected_indicators || []),
+      data.stop_loss_type || 'SL %',
+      data.stop_loss_value || 2.00,
+      data.take_profit_type || 'TP %',
+      data.take_profit_value || 4.00,
+      data.position_size || '1 lot',
+      data.profit_trailing_type || 'no_trailing',
+      data.trailing_stop || 0,
+      data.trailing_stop_percentage || 0.00,
+      data.trailing_profit || 0,
+      data.trailing_profit_percentage || 0.00,
+      data.daily_loss_limit || 0.00,
+      data.daily_profit_limit || 0.00,
+      data.max_trade_cycles || 0,
+      data.no_trade_after || null,
+      JSON.stringify(data.working_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
+      data.start_time || '09:15:00',
+      data.square_off_time || '15:15:00'
+    ]
+  );
 }

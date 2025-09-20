@@ -319,60 +319,310 @@ const StrategyViewPage = () => {
                   <h3 className="text-lg font-semibold text-white mb-4">Strategy Details</h3>
                   
                   {strategy.strategy_type === 'INDICATOR_BASED' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-6">
+                      {/* Chart Configuration */}
                       <div>
-                        <p className="text-blue-200 text-sm mb-1">Chart Type</p>
-                        <p className="text-white">{strategy.details.chart_type}</p>
+                        <h4 className="text-lg font-semibold text-white mb-3">Chart Configuration</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Chart Type</p>
+                            <p className="text-white">{strategy.details.chart_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Time Interval</p>
+                            <p className="text-white">{strategy.details.time_interval || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Transaction Type</p>
+                            <p className="text-white">{strategy.details.transaction_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Condition Blocks</p>
+                            <p className="text-white">{strategy.details.condition_blocks || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Logical Operator</p>
+                            <p className="text-white">{strategy.details.logical_operator || 'N/A'}</p>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Time Configuration */}
                       <div>
-                        <p className="text-blue-200 text-sm mb-1">Time Interval</p>
-                        <p className="text-white">{strategy.details.time_interval}</p>
+                        <h4 className="text-lg font-semibold text-white mb-3">Time Configuration</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Start Time</p>
+                            <p className="text-white">{strategy.details.start_time || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Square Off Time</p>
+                            <p className="text-white">{strategy.details.square_off_time || 'N/A'}</p>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Risk Management Details */}
                       <div>
-                        <p className="text-blue-200 text-sm mb-1">Transaction Type</p>
-                        <p className="text-white">{strategy.details.transaction_type}</p>
+                        <h4 className="text-lg font-semibold text-white mb-3">Risk Management Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Stop Loss Type</p>
+                            <p className="text-white">{strategy.details.stop_loss_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Stop Loss Value</p>
+                            <p className="text-white">{strategy.details.stop_loss_value || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Take Profit Type</p>
+                            <p className="text-white">{strategy.details.take_profit_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Take Profit Value</p>
+                            <p className="text-white">{strategy.details.take_profit_value || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Position Size</p>
+                            <p className="text-white">{strategy.details.position_size || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Profit Trailing Type</p>
+                            <p className="text-white">{strategy.details.profit_trailing_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trailing Stop</p>
+                            <p className="text-white">{strategy.details.trailing_stop ? 'Enabled' : 'Disabled'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trailing Stop %</p>
+                            <p className="text-white">{strategy.details.trailing_stop_percentage || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trailing Profit</p>
+                            <p className="text-white">{strategy.details.trailing_profit ? 'Enabled' : 'Disabled'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trailing Profit %</p>
+                            <p className="text-white">{strategy.details.trailing_profit_percentage || 'N/A'}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-blue-200 text-sm mb-1">Logical Operator</p>
-                        <p className="text-white">{strategy.details.logical_operator}</p>
-                      </div>
-                      <div>
-                        <p className="text-blue-200 text-sm mb-1">Start Time</p>
-                        <p className="text-white">{strategy.details.start_time}</p>
-                      </div>
-                      <div>
-                        <p className="text-blue-200 text-sm mb-1">Square Off Time</p>
-                        <p className="text-white">{strategy.details.square_off_time}</p>
-                      </div>
+
+                      {/* Entry Conditions */}
+                      {strategy.details.long_conditions && strategy.details.long_conditions.length > 0 && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-white mb-3">Long Entry Conditions</h4>
+                          <div className="bg-white/5 p-4 rounded-lg">
+                            <pre className="text-white text-sm whitespace-pre-wrap">
+                              {JSON.stringify(strategy.details.long_conditions, null, 2)}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Short Conditions */}
+                      {strategy.details.short_conditions && strategy.details.short_conditions.length > 0 && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-white mb-3">Short Entry Conditions</h4>
+                          <div className="bg-white/5 p-4 rounded-lg">
+                            <pre className="text-white text-sm whitespace-pre-wrap">
+                              {JSON.stringify(strategy.details.short_conditions, null, 2)}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {strategy.strategy_type === 'TIME_BASED' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-6">
+                      {/* Trigger Configuration */}
                       <div>
-                        <p className="text-blue-200 text-sm mb-1">Trigger Type</p>
-                        <p className="text-white">{strategy.details.trigger_type}</p>
+                        <h4 className="text-lg font-semibold text-white mb-3">Trigger Configuration</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trigger Type</p>
+                            <p className="text-white">{strategy.details.trigger_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trigger Time</p>
+                            <p className="text-white">{strategy.details.trigger_time || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Timezone</p>
+                            <p className="text-white">{strategy.details.trigger_timezone || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Recurrence</p>
+                            <p className="text-white">{strategy.details.trigger_recurrence || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">After Open (min)</p>
+                            <p className="text-white">{strategy.details.trigger_after_open_minutes || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Before Close (min)</p>
+                            <p className="text-white">{strategy.details.trigger_before_close_minutes || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Candle Interval</p>
+                            <p className="text-white">{strategy.details.trigger_candle_interval || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Candle Delay (min)</p>
+                            <p className="text-white">{strategy.details.trigger_candle_delay_minutes || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Monthly Day</p>
+                            <p className="text-white">{strategy.details.trigger_monthly_day || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Monthly Type</p>
+                            <p className="text-white">{strategy.details.trigger_monthly_type || 'N/A'}</p>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Order Configuration */}
                       <div>
-                        <p className="text-blue-200 text-sm mb-1">Trigger Time</p>
-                        <p className="text-white">{strategy.details.trigger_time}</p>
+                        <h4 className="text-lg font-semibold text-white mb-3">Order Configuration</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Action Type</p>
+                            <p className="text-white">{strategy.details.action_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Transaction Type</p>
+                            <p className="text-white">{strategy.details.order_transaction_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Order Type</p>
+                            <p className="text-white">{strategy.details.order_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Order Quantity</p>
+                            <p className="text-white">{strategy.details.order_quantity || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Product Type</p>
+                            <p className="text-white">{strategy.details.order_product_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Order Price</p>
+                            <p className="text-white">{strategy.details.order_price || 'N/A'}</p>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Time Configuration */}
                       <div>
-                        <p className="text-blue-200 text-sm mb-1">Recurrence</p>
-                        <p className="text-white">{strategy.details.trigger_recurrence}</p>
+                        <h4 className="text-lg font-semibold text-white mb-3">Time Configuration</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Start Time</p>
+                            <p className="text-white">{strategy.details.start_time || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Square Off Time</p>
+                            <p className="text-white">{strategy.details.square_off_time || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Strategy Start Date</p>
+                            <p className="text-white">{strategy.details.strategy_start_date || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Strategy Start Time</p>
+                            <p className="text-white">{strategy.details.strategy_start_time || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Validity Date</p>
+                            <p className="text-white">{strategy.details.strategy_validity_date || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Deactivate After First Trigger</p>
+                            <p className="text-white">{strategy.details.deactivate_after_first_trigger ? 'Yes' : 'No'}</p>
+                          </div>
+                        </div>
                       </div>
+
+                      {/* Risk Management Details */}
                       <div>
-                        <p className="text-blue-200 text-sm mb-1">Order Type</p>
-                        <p className="text-white">{strategy.details.order_type}</p>
+                        <h4 className="text-lg font-semibold text-white mb-3">Risk Management Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Stop Loss Type</p>
+                            <p className="text-white">{strategy.details.stop_loss_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Stop Loss Value</p>
+                            <p className="text-white">{strategy.details.stop_loss_value || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Take Profit Type</p>
+                            <p className="text-white">{strategy.details.take_profit_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Take Profit Value</p>
+                            <p className="text-white">{strategy.details.take_profit_value || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Position Size</p>
+                            <p className="text-white">{strategy.details.position_size || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Profit Trailing Type</p>
+                            <p className="text-white">{strategy.details.profit_trailing_type || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trailing Stop</p>
+                            <p className="text-white">{strategy.details.trailing_stop ? 'Enabled' : 'Disabled'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trailing Stop %</p>
+                            <p className="text-white">{strategy.details.trailing_stop_percentage || 'N/A'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trailing Profit</p>
+                            <p className="text-white">{strategy.details.trailing_profit ? 'Enabled' : 'Disabled'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Trailing Profit %</p>
+                            <p className="text-white">{strategy.details.trailing_profit_percentage || 'N/A'}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-blue-200 text-sm mb-1">Order Quantity</p>
-                        <p className="text-white">{strategy.details.order_quantity}</p>
-                      </div>
-                      <div>
-                        <p className="text-blue-200 text-sm mb-1">Product Type</p>
-                        <p className="text-white">{strategy.details.order_product_type}</p>
-                      </div>
+
+                      {/* Weekly Days Configuration */}
+                      {strategy.details.trigger_weekly_days && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-white mb-3">Weekly Days Configuration</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {Array.isArray(strategy.details.trigger_weekly_days) ? 
+                              strategy.details.trigger_weekly_days.map((day: string) => (
+                                <span
+                                  key={day}
+                                  className="px-3 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400"
+                                >
+                                  {day.charAt(0).toUpperCase() + day.slice(1)}
+                                </span>
+                              )) : 
+                              Object.entries(strategy.details.trigger_weekly_days).map(([day, isActive]: [string, any]) => (
+                                <span
+                                  key={day}
+                                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    isActive
+                                      ? 'bg-green-500/20 text-green-400'
+                                      : 'bg-gray-500/20 text-gray-400'
+                                  }`}
+                                >
+                                  {day.charAt(0).toUpperCase() + day.slice(1)}
+                                </span>
+                              ))
+                            }
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -546,6 +796,65 @@ const StrategyViewPage = () => {
                 </span>
               </div>
             </div>
+
+            {/* Detailed Performance Data */}
+            {strategy.performance && (
+              <div className="mt-6 pt-6 border-t border-white/20">
+                <h3 className="text-lg font-semibold text-white mb-4">Detailed Performance</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Total Trades</span>
+                      <span className="text-white font-semibold">{strategy.performance.total_trades || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Winning Trades</span>
+                      <span className="text-green-400 font-semibold">{strategy.performance.winning_trades || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Losing Trades</span>
+                      <span className="text-red-400 font-semibold">{strategy.performance.losing_trades || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Total P&L</span>
+                      <span className={`font-semibold ${(strategy.performance.total_pnl || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        ₹{strategy.performance.total_pnl || 0}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Win Rate</span>
+                      <span className="text-white font-semibold">
+                        {strategy.performance.win_rate ? formatPercentage(strategy.performance.win_rate) : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Max Drawdown</span>
+                      <span className="text-red-400 font-semibold">
+                        {strategy.performance.max_drawdown ? `${strategy.performance.max_drawdown}%` : 'N/A'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Sharpe Ratio</span>
+                      <span className="text-white font-semibold">{strategy.performance.sharpe_ratio || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Avg Win</span>
+                      <span className="text-green-400 font-semibold">₹{strategy.performance.avg_win || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Avg Loss</span>
+                      <span className="text-red-400 font-semibold">₹{strategy.performance.avg_loss || 0}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-200 text-sm">Profit Factor</span>
+                      <span className="text-white font-semibold">{strategy.performance.profit_factor || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Strategy Info */}

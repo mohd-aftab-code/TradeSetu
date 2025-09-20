@@ -51,6 +51,29 @@ export interface Strategy {
   };
   // Additional fields from database
   details?: any; // Strategy-specific details
+  performance?: {
+    id: string;
+    strategy_id: string;
+    user_id: string;
+    total_trades: number;
+    winning_trades: number;
+    losing_trades: number;
+    total_pnl: number;
+    max_drawdown: number;
+    sharpe_ratio: number;
+    win_rate: number;
+    avg_win: number;
+    avg_loss: number;
+    profit_factor: number;
+    max_consecutive_losses: number;
+    total_runtime_hours: number;
+    avg_trade_duration_minutes: number;
+    max_position_size: number;
+    max_daily_loss: number;
+    max_daily_profit: number;
+    created_at: Date;
+    updated_at: Date;
+  };
   total_trades?: number;
   winning_trades?: number;
   total_pnl?: number;
