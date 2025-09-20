@@ -104,27 +104,33 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     // Update strategy-specific details if provided (store in strategy_data JSON field)
     if (detailsData) {
-      const detailUpdateFields: string[] = [];
-      const detailValues: any[] = [];
+      // Get existing strategy_data
+      const [existingRows] = await pool.execute(
+        'SELECT strategy_data FROM strategies WHERE id = ?',
+        [strategyId]
+      );
       
-      Object.keys(detailsData).forEach(key => {
-        if (detailsData[key] !== undefined) {
-          detailUpdateFields.push(`${key} = ?`);
-          detailValues.push(
-            ['trigger_weekly_days', 'working_days', 'long_conditions', 'short_conditions', 'selected_indicators', 'dependencies', 'environment_variables', 'strategy_data', 'advance_features', 'performance_metrics'].includes(key)
-              ? JSON.stringify(detailsData[key])
-              : detailsData[key]
-          );
+      let existingStrategyData = {};
+      if ((existingRows as any[]).length > 0) {
+        const existingData = (existingRows as any[])[0].strategy_data;
+        if (existingData) {
+          existingStrategyData = typeof existingData === 'string' 
+            ? JSON.parse(existingData) 
+            : existingData;
         }
-      });
-
-      if (detailUpdateFields.length > 0) {
-        detailValues.push(strategyId);
-        await pool.execute(
-          `UPDATE strategies SET ${detailUpdateFields.join(', ')}, updated_at = NOW() WHERE id = ?`,
-          detailValues
-        );
       }
+      
+      // Merge new details with existing strategy_data
+      const updatedStrategyData = {
+        ...existingStrategyData,
+        ...detailsData
+      };
+      
+      // Update the strategy_data JSON field
+      await pool.execute(
+        'UPDATE strategies SET strategy_data = ?, updated_at = NOW() WHERE id = ?',
+        [JSON.stringify(updatedStrategyData), strategyId]
+      );
     }
 
     return NextResponse.json({

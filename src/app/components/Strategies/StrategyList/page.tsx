@@ -232,11 +232,23 @@ const StrategyList = () => {
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="bg-white/5 rounded-lg p-3">
                   <p className="text-blue-200 text-sm">Success Rate</p>
-                  <p className="text-lg font-bold text-white">{formatPercentage(strategy.success_rate || strategy.win_rate || 0)}</p>
+                  <p className="text-lg font-bold text-white">
+                    {strategy.success_rate !== null && strategy.success_rate !== undefined 
+                      ? formatPercentage(strategy.success_rate) 
+                      : strategy.win_rate !== null && strategy.win_rate !== undefined
+                      ? formatPercentage(strategy.win_rate)
+                      : 'N/A'
+                    }
+                  </p>
                 </div>
                 <div className="bg-white/5 rounded-lg p-3">
                   <p className="text-blue-200 text-sm">Total Executions</p>
-                  <p className="text-lg font-bold text-white">{strategy.total_executions || 0}</p>
+                  <p className="text-lg font-bold text-white">
+                    {strategy.total_executions !== null && strategy.total_executions !== undefined 
+                      ? strategy.total_executions 
+                      : 'N/A'
+                    }
+                  </p>
                 </div>
               </div>
 

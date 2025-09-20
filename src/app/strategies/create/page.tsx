@@ -296,18 +296,18 @@ const CreateStrategyPage = () => {
   
   const formatStrategyData = (formData: any, strategyType: string) => {
         return {
-      user_id: (user as any)?.id || 'tradesetu001',
+      user_id: (user as any)?.id,
       name: formData.name.trim(),
-      description: formData.description || `${strategyType} Strategy created on ${new Date().toLocaleDateString()}`,
+      description: formData.description || '',
       strategy_type: strategyType,
       symbol: formData.symbol,
       asset_type: formData.asset_type || 'STOCK',
-      entry_conditions: formData.entry_conditions || `${strategyType} entry conditions`,
-      exit_conditions: formData.exit_conditions || `${strategyType} exit conditions`,
+      entry_conditions: formData.entry_conditions || '',
+      exit_conditions: formData.exit_conditions || '',
       risk_management: {
-        stop_loss: formData.stop_loss || '2%',
-        take_profit: formData.take_profit || '4%',
-        position_size: formData.position_size || '1 lot'
+        stop_loss: formData.stop_loss || '',
+        take_profit: formData.take_profit || '',
+        position_size: formData.position_size || ''
       },
       is_paper_trading: true
     };
@@ -584,18 +584,18 @@ const CreateStrategyPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: (user as any)?.id || 'tradesetu001',
+          user_id: (user as any)?.id,
       name: timeIndicatorFormData.name.trim(),
-      description: timeIndicatorFormData.description || `Time Based Strategy created on ${new Date().toLocaleDateString()}`,
+      description: timeIndicatorFormData.description || '',
       strategy_type: 'TIME_BASED',
       symbol: timeIndicatorFormData.symbol,
           asset_type: timeIndicatorFormData.asset_type || 'STOCK',
-      entry_conditions: 'Time-based entry',
-      exit_conditions: 'Time-based exit',
+      entry_conditions: timeIndicatorFormData.entry_conditions || '',
+      exit_conditions: timeIndicatorFormData.exit_conditions || '',
       risk_management: {
-            stop_loss: timeIndicatorFormData.stop_loss || '2%',
-            take_profit: timeIndicatorFormData.take_profit || '4%',
-            position_size: timeIndicatorFormData.position_size || '1 lot'
+            stop_loss: timeIndicatorFormData.stop_loss || '',
+            take_profit: timeIndicatorFormData.take_profit || '',
+            position_size: timeIndicatorFormData.position_size || ''
           },
           is_paper_trading: true
         }),
@@ -749,18 +749,18 @@ const CreateStrategyPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: (user as any)?.id || 'tradesetu001',
+          user_id: (user as any)?.id,
       name: timeIndicatorFormData.name.trim(),
-          description: timeIndicatorFormData.description || `Indicator Based Strategy created on ${new Date().toLocaleDateString()}`,
+          description: timeIndicatorFormData.description || '',
           strategy_type: 'INDICATOR_BASED',
           symbol: timeIndicatorFormData.symbol,
           asset_type: timeIndicatorFormData.asset_type || 'STOCK',
-      entry_conditions: `Long: ${longComparator || 'Not set'}, Short: ${shortComparator || 'Not set'}`,
-      exit_conditions: 'Stop Loss or Take Profit',
+      entry_conditions: timeIndicatorFormData.entry_conditions || '',
+      exit_conditions: timeIndicatorFormData.exit_conditions || '',
       risk_management: {
-        stop_loss: '2%',
-        take_profit: '4%',
-        position_size: '1 lot'
+        stop_loss: timeIndicatorFormData.stop_loss || '',
+        take_profit: timeIndicatorFormData.take_profit || '',
+        position_size: timeIndicatorFormData.position_size || ''
       },
           is_paper_trading: true
         }),
@@ -880,18 +880,18 @@ const CreateStrategyPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: (user as any)?.id || 'tradesetu001',
+          user_id: (user as any)?.id,
           name: programmingFormData.name.trim(),
-          description: programmingFormData.description || `Programming Strategy created on ${new Date().toLocaleDateString()}`,
+          description: programmingFormData.description || '',
       strategy_type: 'PROGRAMMING',
           symbol: programmingFormData.symbol,
           asset_type: 'STOCK',
       entry_conditions: 'Custom programming logic',
       exit_conditions: 'Custom exit conditions',
       risk_management: {
-        stop_loss: programmingFormData.stop_loss || '2%',
-        take_profit: programmingFormData.take_profit || '4%',
-        position_size: programmingFormData.position_size || '1 lot'
+        stop_loss: programmingFormData.stop_loss || '',
+        take_profit: programmingFormData.take_profit || '',
+        position_size: programmingFormData.position_size || ''
       },
           is_paper_trading: true
         }),

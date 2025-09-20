@@ -61,10 +61,12 @@ const StrategyViewPage = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`/api/strategies/stats?user_id=${strategy?.user_id || 'tradesetu001'}`);
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.overall_stats);
+      if (strategy?.user_id) {
+        const response = await fetch(`/api/strategies/stats?user_id=${strategy.user_id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data.overall_stats);
+        }
       }
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -208,7 +210,7 @@ const StrategyViewPage = () => {
     try {
       riskManagement = JSON.parse(riskManagement);
     } catch (e) {
-      riskManagement = { stop_loss: 0, take_profit: 0, position_size: 0 };
+      riskManagement = { stop_loss: 'N/A', take_profit: 'N/A', position_size: 'N/A' };
     }
   }
 
@@ -450,22 +452,39 @@ const StrategyViewPage = () => {
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="bg-white/5 rounded-lg p-4">
                   <p className="text-blue-200 text-sm mb-1">Daily Loss Limit</p>
-                  <p className="text-white font-semibold">₹{strategy.details.daily_loss_limit || '0'}</p>
+                  <p className="text-white font-semibold">
+                    {strategy.details.daily_loss_limit !== null && strategy.details.daily_loss_limit !== undefined 
+                      ? `₹${strategy.details.daily_loss_limit}` 
+                      : 'N/A'
+                    }
+                  </p>
                 </div>
                 
                 <div className="bg-white/5 rounded-lg p-4">
                   <p className="text-blue-200 text-sm mb-1">Daily Profit Limit</p>
-                  <p className="text-white font-semibold">₹{strategy.details.daily_profit_limit || '0'}</p>
+                  <p className="text-white font-semibold">
+                    {strategy.details.daily_profit_limit !== null && strategy.details.daily_profit_limit !== undefined 
+                      ? `₹${strategy.details.daily_profit_limit}` 
+                      : 'N/A'
+                    }
+                  </p>
                 </div>
                 
                 <div className="bg-white/5 rounded-lg p-4">
                   <p className="text-blue-200 text-sm mb-1">Max Trade Cycles</p>
-                  <p className="text-white font-semibold">{strategy.details.max_trade_cycles || '0'}</p>
+                  <p className="text-white font-semibold">
+                    {strategy.details.max_trade_cycles !== null && strategy.details.max_trade_cycles !== undefined 
+                      ? strategy.details.max_trade_cycles 
+                      : 'N/A'
+                    }
+                  </p>
                 </div>
                 
                 <div className="bg-white/5 rounded-lg p-4">
                   <p className="text-blue-200 text-sm mb-1">No Trade After</p>
-                  <p className="text-white font-semibold">{strategy.details.no_trade_after || 'N/A'}</p>
+                  <p className="text-white font-semibold">
+                    {strategy.details.no_trade_after || 'N/A'}
+                  </p>
                 </div>
                 
                 <div className="bg-white/5 rounded-lg p-4">
@@ -489,21 +508,33 @@ const StrategyViewPage = () => {
             <h2 className="text-xl font-semibold text-white mb-4">Performance Metrics</h2>
             
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <TrendingUp size={16} className="text-green-400" />
-                  <span className="text-blue-200 text-sm">Success Rate</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp size={16} className="text-green-400" />
+                    <span className="text-blue-200 text-sm">Success Rate</span>
+                  </div>
+                  <span className="text-white font-semibold">
+                    {strategy.success_rate !== null && strategy.success_rate !== undefined 
+                      ? formatPercentage(strategy.success_rate) 
+                      : strategy.win_rate !== null && strategy.win_rate !== undefined
+                      ? formatPercentage(strategy.win_rate)
+                      : 'N/A'
+                    }
+                  </span>
                 </div>
-                    <span className="text-white font-semibold">{formatPercentage(strategy.success_rate || strategy.win_rate)}</span>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Target size={16} className="text-blue-400" />
-                  <span className="text-blue-200 text-sm">Total Executions</span>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Target size={16} className="text-blue-400" />
+                    <span className="text-blue-200 text-sm">Total Executions</span>
+                  </div>
+                  <span className="text-white font-semibold">
+                    {strategy.total_executions !== null && strategy.total_executions !== undefined 
+                      ? strategy.total_executions 
+                      : 'N/A'
+                    }
+                  </span>
                 </div>
-                <span className="text-white font-semibold">{strategy.total_executions || 0}</span>
-              </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
