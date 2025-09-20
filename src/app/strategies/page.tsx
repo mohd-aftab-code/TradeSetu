@@ -4,13 +4,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Sidebar from '../components/Layout/Sidebar';
 import StrategyList from '../components/Strategies/StrategyList/page';
-import CreateStrategy from '../components/Strategies/page';
 import { getUserToken, getUserData } from '@/lib/cookies';
 
 const StrategiesPage = () => {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [showCreateForm, setShowCreateForm] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -46,11 +44,7 @@ const StrategiesPage = () => {
       </div>
       <div className="flex-1 flex min-w-0 md:ml-64">
         <main className="flex-1 p-6 space-y-6 md:ml-0 overflow-x-hidden">
-          {showCreateForm ? (
-            <CreateStrategy />
-          ) : (
-            <StrategyList />
-          )}
+          <StrategyList />
         </main>
       </div>
     </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Play, Pause, TrendingUp, Zap, Clock, BarChart3, Copy, Eye, RefreshCw } from 'lucide-react';
+import { Plus, Trash2, Play, Pause, TrendingUp, Eye, RefreshCw } from 'lucide-react';
 import { Strategy } from '../../../../types/database';
 import { useRouter } from 'next/navigation';
 import { formatPercentage } from '../../../../lib/utils';
@@ -35,7 +35,6 @@ const StrategyList = () => {
       const response = await fetch(`/api/strategies?user_id=${user_id}`);
       if (response.ok) {
         const data = await response.json();
-        console.log('Fetched strategies:', data);
         setStrategies(data.strategies || []);
       } else {
         const errorData = await response.json();
@@ -95,9 +94,6 @@ const StrategyList = () => {
     }
   };
 
-  const handleEditStrategy = (id: string) => {
-    router.push(`/strategies/edit/${id}`);
-  };
 
   const handleViewStrategy = (id: string) => {
     router.push(`/strategies/${id}`);
@@ -202,13 +198,6 @@ const StrategyList = () => {
                     title={strategy.is_active ? 'Deactivate' : 'Activate'}
                   >
                     {strategy.is_active ? <Pause size={16} /> : <Play size={16} />}
-                  </button>
-                  <button 
-                    onClick={() => handleEditStrategy(strategy.id)}
-                    className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all duration-200"
-                    title="Edit Strategy"
-                  >
-                    <Edit size={16} />
                   </button>
                   <button 
                     onClick={() => {

@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
     const strategyType = searchParams.get('strategy_type');
     const limit = searchParams.get('limit') || '50';
 
-    console.log('Fetching strategies for user_id:', userId);
 
     let query = `
       SELECT s.*, sp.total_trades, sp.winning_trades, sp.total_pnl, sp.win_rate, sp.max_drawdown
@@ -39,7 +38,6 @@ export async function GET(request: NextRequest) {
     const [rows] = await pool.execute(query, params);
     const strategies = rows as any[];
 
-    console.log('Found strategies:', strategies.length);
 
     // Parse JSON fields and add strategy-specific details
     const strategiesWithDetails = strategies.map((strategy) => {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Edit, Play, Pause, TrendingUp, BarChart3, Clock, Calendar, Target } from 'lucide-react';
+import { ArrowLeft, Play, Pause, TrendingUp, BarChart3, Clock, Calendar, Target } from 'lucide-react';
 import { Strategy } from '../../../types/database';
 import { formatPercentage } from '../../../lib/utils';
 import Sidebar from '../../components/Layout/Sidebar';
@@ -41,13 +41,10 @@ const StrategyViewPage = () => {
   const fetchStrategy = async () => {
     try {
       setLoading(true);
-      console.log('Fetching strategy with ID:', strategyId);
       const response = await fetch(`/api/strategies/${strategyId}`);
-      console.log('Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Strategy data received:', data);
         setStrategy(data.strategy);
       } else {
         const errorData = await response.json();
@@ -239,13 +236,6 @@ const StrategyViewPage = () => {
           >
             <BarChart3 size={16} />
             <span>Backtest</span>
-          </button>
-          <button
-            onClick={() => router.push(`/strategies/edit/${strategyId}`)}
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center space-x-2"
-          >
-            <Edit size={16} />
-            <span>Edit</span>
           </button>
           <button
             onClick={handleToggleActive}
@@ -566,13 +556,6 @@ const StrategyViewPage = () => {
                 <span>Run Backtest</span>
               </button>
               
-              <button
-                onClick={() => router.push(`/strategies/edit/${strategyId}`)}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
-              >
-                <Edit size={16} />
-                <span>Edit Strategy</span>
-              </button>
               
               <button
                 onClick={handleToggleActive}
