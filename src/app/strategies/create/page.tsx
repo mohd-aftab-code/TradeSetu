@@ -77,9 +77,9 @@ const CreateStrategyPage = () => {
     option_type: 'CE',
     strike_selection: 'ATM',
     expiry_type: 'WEEKLY',
-    daily_loss_limit: 5000,
-    daily_profit_limit: 10000,
-    max_trade_cycles: 3,
+    daily_loss_limit: '',
+    daily_profit_limit: '',
+    max_trade_cycles: '',
     trailing_stop: false,
     trailing_stop_percentage: 1.5,
     trailing_profit: false,
@@ -624,9 +624,9 @@ const CreateStrategyPage = () => {
             advanceFeatures: advanceFeatures,
             
             // Risk management
-            daily_profit_limit: timeIndicatorFormData.daily_profit_limit || 0,
-            daily_loss_limit: timeIndicatorFormData.daily_loss_limit || 0,
-            max_trade_cycles: timeIndicatorFormData.max_trade_cycles || 1,
+            daily_profit_limit: timeIndicatorFormData.daily_profit_limit,
+            daily_loss_limit: timeIndicatorFormData.daily_loss_limit,
+            max_trade_cycles: timeIndicatorFormData.max_trade_cycles,
             noTradeAfter: timeIndicatorFormData.noTradeAfter,
             
             // Profit trailing
@@ -752,31 +752,97 @@ const CreateStrategyPage = () => {
           },
           is_paper_trading: true,
           strategyData: {
+            // Basic strategy info
+            name: timeIndicatorFormData.name.trim(),
+            description: timeIndicatorFormData.description || '',
+            
+            // Selected instrument
+            selectedInstrument: instrumentSearch.selectedInstrument,
+            
+            // Trading configuration
+            order_type: timeIndicatorFormData.order_type || 'MIS',
+            start_time: timeIndicatorFormData.start_time || '09:15:00',
+            square_off_time: timeIndicatorFormData.square_off_time || '15:15:00',
+            working_days: timeIndicatorFormData.working_days,
+            
+            // Chart and analysis configuration
           chart_type: timeIndicatorFormData.chart_type || 'Candle',
           time_interval: timeIndicatorFormData.interval || '5 Min',
           transaction_type: timeIndicatorFormData.transaction_type || 'Both Side',
-          long_conditions: timeIndicatorFormData.entryConditions.long || [],
-          short_conditions: timeIndicatorFormData.entryConditions.short || [],
+            
+            // Condition configuration
           condition_blocks: conditionBlocks,
           logical_operator: logicalOperator,
+            long_conditions: [
+              ...(selectedIndicators.long1 ? [{
+                indicator1: selectedIndicators.long1.indicator,
+                indicator2: selectedIndicators.long2?.indicator || '',
+                parameters: {
+                  ...selectedIndicators.long1.parameters,
+                  ...(selectedIndicators.long2?.parameters || {})
+                }
+              }] : []),
+              ...(selectedIndicators.long2 && !selectedIndicators.long1 ? [{
+                indicator1: selectedIndicators.long2.indicator,
+                indicator2: '',
+                parameters: selectedIndicators.long2.parameters
+              }] : [])
+            ],
+            long_comparator: longComparator,
+            short_conditions: [
+              ...(selectedIndicators.short1 ? [{
+                indicator1: selectedIndicators.short1.indicator,
+                indicator2: selectedIndicators.short2?.indicator || '',
+                parameters: {
+                  ...selectedIndicators.short1.parameters,
+                  ...(selectedIndicators.short2?.parameters || {})
+                }
+              }] : []),
+              ...(selectedIndicators.short2 && !selectedIndicators.short1 ? [{
+                indicator1: selectedIndicators.short2.indicator,
+                indicator2: '',
+                parameters: selectedIndicators.short2.parameters
+              }] : [])
+            ],
+            short_comparator: shortComparator,
           selected_indicators: selectedIndicators,
-          stop_loss_type: 'SL %',
-          stop_loss_value: 2.0,
-          take_profit_type: 'TP %',
-          take_profit_value: 4.0,
-          position_size: '1',
+            
+            // Strike configuration
+            strike_type: strikeType,
+            strike_value: '',
+            custom_price: customPrice ? parseFloat(customPrice) : null,
+            
+            // Trading parameters
+            action_type: 'BUY',
+            quantity: 1,
+            expiry_type: 'WEEKLY',
+            
+            // Stop Loss and Take Profit
+            sl_type: 'SL Points',
+            sl_value: 0,
+            sl_on_price: 'On Price',
+            tp_type: 'TP Points',
+            tp_value: 0,
+            tp_on_price: 'On Price',
+            
+            // Risk management
+            daily_profit_limit: timeIndicatorFormData.daily_profit_limit,
+            daily_loss_limit: timeIndicatorFormData.daily_loss_limit,
+            max_trade_cycles: timeIndicatorFormData.max_trade_cycles,
+            no_trade_after: timeIndicatorFormData.noTradeAfter,
+            
+            // Profit trailing
           profit_trailing_type: profitTrailingType || 'no_trailing',
-          trailing_stop: timeIndicatorFormData.trailing_stop || false,
-          trailing_stop_percentage: timeIndicatorFormData.trailing_stop_percentage || 1.5,
-          trailing_profit: timeIndicatorFormData.trailing_profit || false,
-          trailing_profit_percentage: timeIndicatorFormData.trailing_profit_percentage || 2.0,
-          daily_loss_limit: timeIndicatorFormData.daily_loss_limit || 5000,
-          daily_profit_limit: timeIndicatorFormData.daily_profit_limit || 10000,
-          max_trade_cycles: timeIndicatorFormData.max_trade_cycles || 3,
-          no_trade_after: timeIndicatorFormData.noTradeAfter || '15:15:00',
-          working_days: timeIndicatorFormData.working_days,
-          start_time: timeIndicatorFormData.start_time || '09:15:00',
-          square_off_time: timeIndicatorFormData.square_off_time || '15:15:00'
+            profit_trailing_config: {
+              lock_fix_profit_reach: null,
+              lock_fix_profit_at: null,
+              trail_profit_increase: null,
+              trail_profit_by: null,
+              lock_and_trail_reach: null,
+              lock_and_trail_at: null,
+              lock_and_trail_increase: null,
+              lock_and_trail_by: null
+            }
           }
         }),
       });

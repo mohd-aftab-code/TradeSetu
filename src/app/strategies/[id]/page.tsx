@@ -63,9 +63,9 @@ const StrategyViewPage = () => {
     try {
       if (strategy?.user_id) {
         const response = await fetch(`/api/strategies/stats?user_id=${strategy.user_id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data.overall_stats);
+      if (response.ok) {
+        const data = await response.json();
+        setStats(data.overall_stats);
         }
       }
     } catch (error) {
@@ -113,6 +113,17 @@ const StrategyViewPage = () => {
     }
   };
 
+  // Parse risk management JSON if it's a string
+  let riskManagement = strategy?.risk_management;
+  if (typeof riskManagement === 'string') {
+    try {
+      riskManagement = JSON.parse(riskManagement);
+    } catch (e) {
+      riskManagement = { stop_loss: 'N/A', take_profit: 'N/A', position_size: 'N/A' };
+    }
+  }
+
+  // Early returns for loading states
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-purple-900 flex items-center justify-center">
@@ -129,24 +140,24 @@ const StrategyViewPage = () => {
         </div>
         <div className="flex-1 flex min-w-0 md:ml-64">
           <main className="flex-1 p-6 space-y-4 md:ml-0">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => router.push('/strategies')}
-            className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="text-2xl font-bold text-white">Loading Strategy</h1>
-        </div>
-        
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-          <div className="flex items-center justify-center space-x-3">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            <div className="text-white">Loading strategy with ID: {strategyId}</div>
-          </div>
-          <p className="text-white/60 text-center mt-2">
-            Please wait while we fetch the strategy details...
-          </p>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/strategies')}
+                className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <h1 className="text-2xl font-bold text-white">Loading Strategy</h1>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+              <div className="flex items-center justify-center space-x-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                <div className="text-white">Loading strategy with ID: {strategyId}</div>
+              </div>
+              <p className="text-white/60 text-center mt-2">
+                Please wait while we fetch the strategy details...
+              </p>
             </div>
           </main>
         </div>
@@ -162,56 +173,46 @@ const StrategyViewPage = () => {
         </div>
         <div className="flex-1 flex min-w-0 md:ml-64">
           <main className="flex-1 p-6 space-y-4 md:ml-0">
-        <div className="flex items-center space-x-4">
-          <button
-            onClick={() => router.push('/strategies')}
-            className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="text-2xl font-bold text-white">Strategy Not Found</h1>
-        </div>
-        
-        <div className="bg-red-500/20 backdrop-blur-lg rounded-xl p-6 border border-red-500/30">
-          <h2 className="text-xl font-semibold text-red-400 mb-2">Strategy Not Found</h2>
-          <p className="text-white mb-4">
-            The strategy with ID "{strategyId}" could not be found. This could be due to:
-          </p>
-          <ul className="text-white/80 space-y-1 ml-4">
-            <li>• The strategy doesn't exist in the database</li>
-            <li>• Database connection issues</li>
-            <li>• Invalid strategy ID</li>
-          </ul>
-          
-          <div className="mt-4 space-x-4">
-            <button
-              onClick={() => router.push('/strategies')}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200"
-            >
-              Back to Strategies
-            </button>
-            <button
-              onClick={() => router.push('/debug')}
-              className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-all duration-200"
-            >
-              Debug Database
-            </button>
-          </div>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/strategies')}
+                className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <h1 className="text-2xl font-bold text-white">Strategy Not Found</h1>
+            </div>
+            
+            <div className="bg-red-500/20 backdrop-blur-lg rounded-xl p-6 border border-red-500/30">
+              <h2 className="text-xl font-semibold text-red-400 mb-2">Strategy Not Found</h2>
+              <p className="text-white mb-4">
+                The strategy with ID "{strategyId}" could not be found. This could be due to:
+              </p>
+              <ul className="text-white/80 space-y-1 ml-4">
+                <li>• The strategy doesn't exist in the database</li>
+                <li>• Database connection issues</li>
+                <li>• Invalid strategy ID</li>
+              </ul>
+              
+              <div className="mt-4 space-x-4">
+                <button
+                  onClick={() => router.push('/strategies')}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200"
+                >
+                  Back to Strategies
+                </button>
+                <button
+                  onClick={() => router.push('/debug')}
+                  className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-all duration-200"
+                >
+                  Debug Database
+                </button>
+              </div>
             </div>
           </main>
         </div>
       </div>
     );
-  }
-
-  // Parse risk management JSON if it's a string
-  let riskManagement = strategy.risk_management;
-  if (typeof riskManagement === 'string') {
-    try {
-      riskManagement = JSON.parse(riskManagement);
-    } catch (e) {
-      riskManagement = { stop_loss: 'N/A', take_profit: 'N/A', position_size: 'N/A' };
-    }
   }
 
   return (
@@ -221,8 +222,8 @@ const StrategyViewPage = () => {
       </div>
       <div className="flex-1 flex min-w-0 md:ml-64">
         <main className="flex-1 p-6 space-y-6 md:ml-0">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
           <button
             onClick={() => router.push('/strategies')}
             className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200"
@@ -301,16 +302,84 @@ const StrategyViewPage = () => {
             <div className="space-y-4">
               <div>
                 <p className="text-blue-200 text-sm mb-2">Entry Conditions</p>
+                {strategy.strategy_type === 'INDICATOR_BASED' && strategy.details ? (
+                  <div className="space-y-3">
+                    {/* Long Entry Conditions */}
+                    {strategy.details.long_conditions && strategy.details.long_conditions.length > 0 && (
+                      <div className="bg-white/5 p-3 rounded-lg">
+                        <p className="text-blue-200 text-sm mb-2">
+                          Long Entry {strategy.details.long_comparator ? `(${strategy.details.long_comparator})` : ''}:
+                        </p>
+                        {strategy.details.long_conditions.map((condition: any, index: number) => (
+                          <div key={index} className="text-white text-sm">
+                            {condition.indicator1} {condition.indicator2 ? 'vs' : ''} {condition.indicator2}
+                            {condition.parameters && Object.keys(condition.parameters).length > 0 && (
+                              <span className="text-blue-300 ml-2">
+                                ({Object.entries(condition.parameters).map(([param, value]: [string, any]) => 
+                                  `${param}: ${value}`
+                                ).join(', ')})
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Short Entry Conditions */}
+                    {strategy.details.short_conditions && strategy.details.short_conditions.length > 0 && (
+                      <div className="bg-white/5 p-3 rounded-lg">
+                        <p className="text-blue-200 text-sm mb-2">
+                          Short Entry {strategy.details.short_comparator ? `(${strategy.details.short_comparator})` : ''}:
+                        </p>
+                        {strategy.details.short_conditions.map((condition: any, index: number) => (
+                          <div key={index} className="text-white text-sm">
+                            {condition.indicator1} {condition.indicator2 ? 'vs' : ''} {condition.indicator2}
+                            {condition.parameters && Object.keys(condition.parameters).length > 0 && (
+                              <span className="text-blue-300 ml-2">
+                                ({Object.entries(condition.parameters).map(([param, value]: [string, any]) => 
+                                  `${param}: ${value}`
+                                ).join(', ')})
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Fallback if no conditions */}
+                    {(!strategy.details.long_conditions || strategy.details.long_conditions.length === 0) && 
+                     (!strategy.details.short_conditions || strategy.details.short_conditions.length === 0) && (
+                      <p className="text-white bg-white/5 p-3 rounded-lg">No entry conditions defined</p>
+                    )}
+                  </div>
+                ) : (
                 <p className="text-white bg-white/5 p-3 rounded-lg">
                   {strategy.entry_conditions || 'No entry conditions defined'}
                 </p>
+                )}
               </div>
               
               <div>
                 <p className="text-blue-200 text-sm mb-2">Exit Conditions</p>
+                {strategy.strategy_type === 'INDICATOR_BASED' && strategy.details ? (
+                  <div className="bg-white/5 p-3 rounded-lg">
+                    <div className="space-y-2">
+                      <div className="text-white text-sm">
+                        <span className="text-blue-200">Stop Loss:</span> {strategy.details.sl_type} - {strategy.details.sl_value}
+                      </div>
+                      <div className="text-white text-sm">
+                        <span className="text-blue-200">Take Profit:</span> {strategy.details.tp_type} - {strategy.details.tp_value}
+                      </div>
+                      <div className="text-white text-sm">
+                        <span className="text-blue-200">Position Size:</span> {strategy.details.quantity}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
                 <p className="text-white bg-white/5 p-3 rounded-lg">
                   {strategy.exit_conditions || 'No exit conditions defined'}
                 </p>
+                )}
               </div>
 
               {/* Strategy-specific details */}
@@ -320,30 +389,119 @@ const StrategyViewPage = () => {
                   
                   {strategy.strategy_type === 'INDICATOR_BASED' && (
                     <div className="space-y-6">
+                      {/* Selected Instrument */}
+                      {strategy.details?.selected_instrument_symbol && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-white mb-3">Selected Instrument</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Symbol</p>
+                              <p className="text-white">{strategy.details.selected_instrument_symbol || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Name</p>
+                              <p className="text-white">{strategy.details.selected_instrument_name || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Segment</p>
+                              <p className="text-white">{strategy.details.selected_instrument_segment || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Lot Size</p>
+                              <p className="text-white">{strategy.details.selected_instrument_lot_size || 'N/A'}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Chart Configuration */}
                       <div>
                         <h4 className="text-lg font-semibold text-white mb-3">Chart Configuration</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Chart Type</p>
-                            <p className="text-white">{strategy.details.chart_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Time Interval</p>
-                            <p className="text-white">{strategy.details.time_interval || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Transaction Type</p>
-                            <p className="text-white">{strategy.details.transaction_type || 'N/A'}</p>
+                      <div>
+                        <p className="text-blue-200 text-sm mb-1">Chart Type</p>
+                            <p className="text-white">{strategy.details?.chart_type || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-blue-200 text-sm mb-1">Time Interval</p>
+                            <p className="text-white">{strategy.details?.time_interval || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-blue-200 text-sm mb-1">Transaction Type</p>
+                            <p className="text-white">{strategy.details?.transaction_type || 'N/A'}</p>
                           </div>
                           <div>
                             <p className="text-blue-200 text-sm mb-1">Condition Blocks</p>
-                            <p className="text-white">{strategy.details.condition_blocks || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Logical Operator</p>
-                            <p className="text-white">{strategy.details.logical_operator || 'N/A'}</p>
-                          </div>
+                            <p className="text-white">{strategy.details?.condition_blocks || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-blue-200 text-sm mb-1">Logical Operator</p>
+                            <p className="text-white">{strategy.details?.logical_operator || 'N/A'}</p>
+                      </div>
+                        </div>
+                      </div>
+
+                      {/* Entry Conditions */}
+                      <div>
+                        <h4 className="text-lg font-semibold text-white mb-3">Entry Conditions</h4>
+                        <div className="space-y-4">
+                          {/* Long Conditions */}
+                          {strategy.details?.long_conditions && strategy.details.long_conditions.length > 0 && (
+                            <div>
+                              <p className="text-blue-200 text-sm mb-2">Long Entry Conditions:</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {strategy.details.long_conditions.map((condition: any, index: number) => (
+                                  <div key={index} className="bg-white/5 p-3 rounded-lg">
+                                    <p className="text-white text-sm">
+                                      {condition.indicator1} {strategy.details?.long_comparator} {condition.indicator2}
+                                    </p>
+                                    {condition.parameters && Object.keys(condition.parameters).length > 0 && (
+                                      <div className="mt-2">
+                                        <p className="text-blue-200 text-xs mb-1">Parameters:</p>
+                                        {Object.entries(condition.parameters).map(([param, value]: [string, any]) => (
+                                          <p key={param} className="text-white text-xs">
+                                            {param}: {value}
+                                          </p>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Short Conditions */}
+                          {strategy.details?.short_conditions && strategy.details.short_conditions.length > 0 && (
+                            <div>
+                              <p className="text-blue-200 text-sm mb-2">Short Entry Conditions:</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {strategy.details.short_conditions.map((condition: any, index: number) => (
+                                  <div key={index} className="bg-white/5 p-3 rounded-lg">
+                                    <p className="text-white text-sm">
+                                      {condition.indicator1} {strategy.details?.short_comparator} {condition.indicator2}
+                                    </p>
+                                    {condition.parameters && Object.keys(condition.parameters).length > 0 && (
+                                      <div className="mt-2">
+                                        <p className="text-blue-200 text-xs mb-1">Parameters:</p>
+                                        {Object.entries(condition.parameters).map(([param, value]: [string, any]) => (
+                                          <p key={param} className="text-white text-xs">
+                                            {param}: {value}
+                                          </p>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Fallback for legacy data */}
+                          {(!strategy.details?.long_conditions || strategy.details.long_conditions.length === 0) && 
+                           (!strategy.details?.short_conditions || strategy.details.short_conditions.length === 0) && (
+                            <p className="text-gray-400">No entry conditions defined</p>
+                          )}
                         </div>
                       </div>
 
@@ -351,222 +509,225 @@ const StrategyViewPage = () => {
                       <div>
                         <h4 className="text-lg font-semibold text-white mb-3">Time Configuration</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Start Time</p>
-                            <p className="text-white">{strategy.details.start_time || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Square Off Time</p>
-                            <p className="text-white">{strategy.details.square_off_time || 'N/A'}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Risk Management Details */}
                       <div>
-                        <h4 className="text-lg font-semibold text-white mb-3">Risk Management Details</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <p className="text-blue-200 text-sm mb-1">Start Time</p>
+                            <p className="text-white">{strategy.details?.start_time || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-blue-200 text-sm mb-1">Square Off Time</p>
+                            <p className="text-white">{strategy.details?.square_off_time || 'N/A'}</p>
+                      </div>
                           <div>
-                            <p className="text-blue-200 text-sm mb-1">Stop Loss Type</p>
-                            <p className="text-white">{strategy.details.stop_loss_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Stop Loss Value</p>
-                            <p className="text-white">{strategy.details.stop_loss_value || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Take Profit Type</p>
-                            <p className="text-white">{strategy.details.take_profit_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Take Profit Value</p>
-                            <p className="text-white">{strategy.details.take_profit_value || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Position Size</p>
-                            <p className="text-white">{strategy.details.position_size || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Profit Trailing Type</p>
-                            <p className="text-white">{strategy.details.profit_trailing_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Trailing Stop</p>
-                            <p className="text-white">{strategy.details.trailing_stop ? 'Enabled' : 'Disabled'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Trailing Stop %</p>
-                            <p className="text-white">{strategy.details.trailing_stop_percentage || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Trailing Profit</p>
-                            <p className="text-white">{strategy.details.trailing_profit ? 'Enabled' : 'Disabled'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Trailing Profit %</p>
-                            <p className="text-white">{strategy.details.trailing_profit_percentage || 'N/A'}</p>
+                            <p className="text-blue-200 text-sm mb-1">Order Type</p>
+                            <p className="text-white">{strategy.details?.order_type || 'N/A'}</p>
+                    </div>
+                        </div>
+                      </div>
+
+                      {/* Strike Configuration */}
+                      <div>
+                        <h4 className="text-lg font-semibold text-white mb-3">Strike Configuration</h4>
+                        <div className="bg-white/5 p-4 rounded-lg">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Strike Type</p>
+                              <p className="text-white font-semibold">{strategy.details?.strike_type || 'N/A'}</p>
+                      </div>
+                      <div>
+                              <p className="text-blue-200 text-sm mb-1">Strike Value</p>
+                              <p className="text-white font-semibold">{strategy.details?.strike_value || 'N/A'}</p>
+                      </div>
+                      <div>
+                              <p className="text-blue-200 text-sm mb-1">Custom Price</p>
+                              <p className="text-white font-semibold">{strategy.details?.custom_price || 'N/A'}</p>
+                      </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* Entry Conditions */}
-                      {strategy.details.long_conditions && strategy.details.long_conditions.length > 0 && (
-                        <div>
-                          <h4 className="text-lg font-semibold text-white mb-3">Long Entry Conditions</h4>
-                          <div className="bg-white/5 p-4 rounded-lg">
-                            <pre className="text-white text-sm whitespace-pre-wrap">
-                              {JSON.stringify(strategy.details.long_conditions, null, 2)}
-                            </pre>
-                          </div>
-                        </div>
-                      )}
 
-                      {/* Short Conditions */}
-                      {strategy.details.short_conditions && strategy.details.short_conditions.length > 0 && (
-                        <div>
-                          <h4 className="text-lg font-semibold text-white mb-3">Short Entry Conditions</h4>
-                          <div className="bg-white/5 p-4 rounded-lg">
-                            <pre className="text-white text-sm whitespace-pre-wrap">
-                              {JSON.stringify(strategy.details.short_conditions, null, 2)}
-                            </pre>
+                      {/* Daily Limits */}
+                      <div>
+                        <h4 className="text-lg font-semibold text-white mb-3">Daily Limits</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">Daily Profit Limit</p>
+                            <p className="text-white">₹{strategy.details?.daily_profit_limit || 'Not Set'}</p>
+                      </div>
+                      <div>
+                            <p className="text-blue-200 text-sm mb-1">Daily Loss Limit</p>
+                            <p className="text-white">₹{strategy.details?.daily_loss_limit || 'Not Set'}</p>
+                      </div>
+                      <div>
+                            <p className="text-blue-200 text-sm mb-1">Max Trade Cycles</p>
+                            <p className="text-white">{strategy.details?.max_trade_cycles || 'Not Set'}</p>
+                          </div>
+                          <div>
+                            <p className="text-blue-200 text-sm mb-1">No Trade After</p>
+                            <p className="text-white">{strategy.details?.no_trade_after || 'N/A'}</p>
                           </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   )}
 
-        {strategy.strategy_type === 'TIME_BASED' && (
-            <div className="space-y-6">
-                {/* Selected Instrument */}
-                <div>
-                    <h4 className="text-lg font-semibold text-white mb-3">Selected Instrument</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
+                  {/* Selected Indicators for Indicator-based strategies */}
+                  {strategy.strategy_type === 'INDICATOR_BASED' && strategy.details?.selected_indicators && (
+                    <div className="mt-4">
+                      <h4 className="text-lg font-semibold text-white mb-3">Selected Indicators</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {Object.entries(strategy.details.selected_indicators).map(([key, indicator]: [string, any]) => (
+                          <div key={key} className="bg-white/5 p-3 rounded-lg">
+                            <p className="text-blue-200 text-sm mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                            <p className="text-white font-medium">{indicator?.indicator || 'N/A'}</p>
+                            {indicator?.parameters && Object.keys(indicator.parameters).length > 0 && (
+                              <div className="mt-2">
+                                <p className="text-blue-200 text-xs mb-1">Parameters:</p>
+                                {Object.entries(indicator.parameters).map(([param, value]: [string, any]) => (
+                                  <p key={param} className="text-white text-xs">
+                                    {param}: {value}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {strategy.strategy_type === 'TIME_BASED' && (
+                    <div className="space-y-6">
+                      {/* Selected Instrument */}
+                      <div>
+                        <h4 className="text-lg font-semibold text-white mb-3">Selected Instrument</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
                             <p className="text-blue-200 text-sm mb-1">Symbol</p>
                             <p className="text-white">{strategy.details.selected_instrument_symbol || 'N/A'}</p>
-                        </div>
-                        <div>
+                          </div>
+                          <div>
                             <p className="text-blue-200 text-sm mb-1">Name</p>
                             <p className="text-white">{strategy.details.selected_instrument_name || 'N/A'}</p>
-                        </div>
-                        <div>
+                          </div>
+                          <div>
                             <p className="text-blue-200 text-sm mb-1">Segment</p>
                             <p className="text-white">{strategy.details.selected_instrument_segment || 'N/A'}</p>
-                        </div>
-                        <div>
+                          </div>
+                          <div>
                             <p className="text-blue-200 text-sm mb-1">Lot Size</p>
                             <p className="text-white">{strategy.details.selected_instrument_lot_size || 'N/A'}</p>
+                          </div>
                         </div>
-                    </div>
-                </div>
+                      </div>
 
-                {/* Order Configuration */}
-                <div>
-                    <h4 className="text-lg font-semibold text-white mb-3">Order Configuration</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
+                      {/* Order Configuration */}
+                      <div>
+                        <h4 className="text-lg font-semibold text-white mb-3">Order Configuration</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div>
                             <p className="text-blue-200 text-sm mb-1">Order Product Type</p>
                             <p className="text-white">{strategy.details.order_product_type || 'N/A'}</p>
-                        </div>
-                        <div>
+                          </div>
+                          <div>
                             <p className="text-blue-200 text-sm mb-1">Start Time</p>
                             <p className="text-white">{strategy.details.start_time || 'N/A'}</p>
-                        </div>
-                        <div>
+                          </div>
+                          <div>
                             <p className="text-blue-200 text-sm mb-1">Square Off Time</p>
                             <p className="text-white">{strategy.details.square_off_time || 'N/A'}</p>
-                        </div>
-                        <div>
+                          </div>
+                          <div>
                             <p className="text-blue-200 text-sm mb-1">No Trade After</p>
                             <p className="text-white">{strategy.details.no_trade_after || 'N/A'}</p>
+                          </div>
                         </div>
-                    </div>
-                </div>
+                      </div>
 
-                {/* Working Days */}
-                {strategy.details.working_days && (
-                    <div>
-                        <h4 className="text-lg font-semibold text-white mb-3">Working Days</h4>
-                        <div className="flex flex-wrap gap-2">
+                      {/* Working Days */}
+                      {strategy.details.working_days && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-white mb-3">Working Days</h4>
+                          <div className="flex flex-wrap gap-2">
                             {Object.entries(strategy.details.working_days).map(([day, isActive]: [string, any]) => (
-                                <span
-                                    key={day}
-                                    className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                        isActive
-                                            ? 'bg-green-500/20 text-green-400'
-                                            : 'bg-gray-500/20 text-gray-400'
-                                    }`}
-                                >
-                                    {day.charAt(0).toUpperCase() + day.slice(1)}
-                                </span>
+                              <span
+                                key={day}
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  isActive
+                                    ? 'bg-green-500/20 text-green-400'
+                                    : 'bg-gray-500/20 text-gray-400'
+                                }`}
+                              >
+                                {day.charAt(0).toUpperCase() + day.slice(1)}
+                              </span>
                             ))}
+                          </div>
                         </div>
-                    </div>
-                )}
+                      )}
 
-                {/* Order Legs */}
-                {strategy.details.order_legs && strategy.details.order_legs.length > 0 && (
-                    <div>
-                        <h4 className="text-lg font-semibold text-white mb-3">Order Legs</h4>
-                        <div className="space-y-4">
+                      {/* Order Legs */}
+                      {strategy.details.order_legs && strategy.details.order_legs.length > 0 && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-white mb-3">Order Legs</h4>
+                          <div className="space-y-4">
                             {strategy.details.order_legs.map((leg: any, index: number) => (
-                                <div key={index} className="bg-white/5 p-4 rounded-lg">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h5 className="text-white font-medium">Leg {index + 1}</h5>
-                                        <div className="flex space-x-2">
-                                            <span className={`px-2 py-1 rounded text-xs ${
-                                                leg.action === 'buy' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                                            }`}>
-                                                {leg.action?.toUpperCase()}
-                                            </span>
-                                            <span className="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-400">
-                                                {leg.optionType?.toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                        <div>
-                                            <p className="text-blue-200 text-xs mb-1">Quantity</p>
-                                            <p className="text-white">{leg.quantity || 'N/A'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-blue-200 text-xs mb-1">Expiry</p>
-                                            <p className="text-white">{leg.expiry || 'N/A'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-blue-200 text-xs mb-1">ATM Point</p>
-                                            <p className="text-white">{leg.atmPt || 'N/A'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-blue-200 text-xs mb-1">ATM Value</p>
-                                            <p className="text-white">{leg.atm || 'N/A'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-blue-200 text-xs mb-1">SL Type</p>
-                                            <p className="text-white">{leg.slType || 'N/A'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-blue-200 text-xs mb-1">SL Value</p>
-                                            <p className="text-white">{leg.slValue || 'N/A'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-blue-200 text-xs mb-1">TP Type</p>
-                                            <p className="text-white">{leg.tpType || 'N/A'}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-blue-200 text-xs mb-1">TP Value</p>
-                                            <p className="text-white">{leg.tpValue || 'N/A'}</p>
-                                        </div>
-                                    </div>
+                              <div key={index} className="bg-white/5 p-4 rounded-lg">
+                                <div className="flex items-center justify-between mb-3">
+                                  <h5 className="text-white font-medium">Leg {index + 1}</h5>
+                                  <div className="flex space-x-2">
+                                    <span className={`px-2 py-1 rounded text-xs ${
+                                      leg.action === 'buy' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+                                    }`}>
+                                      {leg.action?.toUpperCase()}
+                                    </span>
+                                    <span className="px-2 py-1 rounded text-xs bg-blue-500/20 text-blue-400">
+                                      {leg.optionType?.toUpperCase()}
+                                    </span>
+                                  </div>
                                 </div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                  <div>
+                                    <p className="text-blue-200 text-xs mb-1">Quantity</p>
+                                    <p className="text-white">{leg.quantity || 'N/A'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-blue-200 text-xs mb-1">Expiry</p>
+                                    <p className="text-white">{leg.expiry || 'N/A'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-blue-200 text-xs mb-1">ATM Point</p>
+                                    <p className="text-white">{leg.atmPt || 'N/A'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-blue-200 text-xs mb-1">ATM Value</p>
+                                    <p className="text-white">{leg.atm || 'N/A'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-blue-200 text-xs mb-1">SL Type</p>
+                                    <p className="text-white">{leg.slType || 'N/A'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-blue-200 text-xs mb-1">SL Value</p>
+                                    <p className="text-white">{leg.slValue || 'N/A'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-blue-200 text-xs mb-1">TP Type</p>
+                                    <p className="text-white">{leg.tpType || 'N/A'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="text-blue-200 text-xs mb-1">TP Value</p>
+                                    <p className="text-white">{leg.tpValue || 'N/A'}</p>
+                                  </div>
+                                </div>
+                              </div>
                             ))}
+                          </div>
                         </div>
-                    </div>
-                )}
+                      )}
 
-                {/* Trigger Configuration (Legacy) */}
-                <div>
-                    <h4 className="text-lg font-semibold text-white mb-3">Trigger Configuration</h4>
+                      {/* Trigger Configuration */}
+                      <div>
+                        <h4 className="text-lg font-semibold text-white mb-3">Trigger Configuration</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           <div>
                             <p className="text-blue-200 text-sm mb-1">Trigger Type</p>
@@ -614,30 +775,32 @@ const StrategyViewPage = () => {
                       {/* Order Configuration */}
                       <div>
                         <h4 className="text-lg font-semibold text-white mb-3">Order Configuration</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Action Type</p>
-                            <p className="text-white">{strategy.details.action_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Transaction Type</p>
-                            <p className="text-white">{strategy.details.order_transaction_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Order Type</p>
-                            <p className="text-white">{strategy.details.order_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Order Quantity</p>
-                            <p className="text-white">{strategy.details.order_quantity || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Product Type</p>
-                            <p className="text-white">{strategy.details.order_product_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Order Price</p>
-                            <p className="text-white">{strategy.details.order_price || 'N/A'}</p>
+                        <div className="bg-white/5 p-4 rounded-lg">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Action</p>
+                              <p className="text-white font-semibold">{strategy.details.action_type || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Qty</p>
+                              <p className="text-white font-semibold">{strategy.details.quantity || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Expiry</p>
+                              <p className="text-white font-semibold">{strategy.details.expiry_type || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Order Type</p>
+                              <p className="text-white font-semibold">{strategy.details.order_type || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Transaction Type</p>
+                              <p className="text-white font-semibold">{strategy.details.transaction_type || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Order Price</p>
+                              <p className="text-white font-semibold">{strategy.details.order_price || 'N/A'}</p>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -676,46 +839,57 @@ const StrategyViewPage = () => {
                       {/* Risk Management Details */}
                       <div>
                         <h4 className="text-lg font-semibold text-white mb-3">Risk Management Details</h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Stop Loss Type</p>
-                            <p className="text-white">{strategy.details.stop_loss_type || 'N/A'}</p>
+                        <div className="bg-white/5 p-4 rounded-lg">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">SL Type</p>
+                              <p className="text-white font-semibold">{strategy.details.sl_type || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">SL Value</p>
+                              <p className="text-white font-semibold">{strategy.details.sl_value || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">SL On</p>
+                              <p className="text-white font-semibold">{strategy.details.sl_on_price || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">TP Type</p>
+                              <p className="text-white font-semibold">{strategy.details.tp_type || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">TP Value</p>
+                              <p className="text-white font-semibold">{strategy.details.tp_value || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">TP On</p>
+                              <p className="text-white font-semibold">{strategy.details.tp_on_price || 'N/A'}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Stop Loss Value</p>
-                            <p className="text-white">{strategy.details.stop_loss_value || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Take Profit Type</p>
-                            <p className="text-white">{strategy.details.take_profit_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Take Profit Value</p>
-                            <p className="text-white">{strategy.details.take_profit_value || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Position Size</p>
-                            <p className="text-white">{strategy.details.position_size || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Profit Trailing Type</p>
-                            <p className="text-white">{strategy.details.profit_trailing_type || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Trailing Stop</p>
-                            <p className="text-white">{strategy.details.trailing_stop ? 'Enabled' : 'Disabled'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Trailing Stop %</p>
-                            <p className="text-white">{strategy.details.trailing_stop_percentage || 'N/A'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Trailing Profit</p>
-                            <p className="text-white">{strategy.details.trailing_profit ? 'Enabled' : 'Disabled'}</p>
-                          </div>
-                          <div>
-                            <p className="text-blue-200 text-sm mb-1">Trailing Profit %</p>
-                            <p className="text-white">{strategy.details.trailing_profit_percentage || 'N/A'}</p>
+                        </div>
+                      </div>
+
+                      {/* Additional Risk Management Details */}
+                      <div>
+                        <h4 className="text-lg font-semibold text-white mb-3">Additional Risk Management</h4>
+                        <div className="bg-white/5 p-4 rounded-lg">
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Trailing Stop</p>
+                              <p className="text-white">{strategy.details.trailing_stop ? 'Enabled' : 'Disabled'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Trailing Stop %</p>
+                              <p className="text-white">{strategy.details.trailing_stop_percentage || 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Trailing Profit</p>
+                              <p className="text-white">{strategy.details.trailing_profit ? 'Enabled' : 'Disabled'}</p>
+                            </div>
+                            <div>
+                              <p className="text-blue-200 text-sm mb-1">Trailing Profit %</p>
+                              <p className="text-white">{strategy.details.trailing_profit_percentage || 'N/A'}</p>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -750,52 +924,27 @@ const StrategyViewPage = () => {
                           </div>
                         </div>
                       )}
-                    </div>
-                  )}
-
-                  {/* Selected Indicators for Indicator-based strategies */}
-                  {strategy.strategy_type === 'INDICATOR_BASED' && strategy.details.selected_indicators && (
-                    <div className="mt-4">
-                      <h4 className="text-lg font-semibold text-white mb-3">Selected Indicators</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(strategy.details.selected_indicators).map(([key, indicator]: [string, any]) => (
-                          <div key={key} className="bg-white/5 p-3 rounded-lg">
-                            <p className="text-blue-200 text-sm mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                            <p className="text-white font-medium">{indicator.indicator}</p>
-                            {indicator.parameters && Object.keys(indicator.parameters).length > 0 && (
-                              <div className="mt-2">
-                                <p className="text-blue-200 text-xs mb-1">Parameters:</p>
-                                {Object.entries(indicator.parameters).map(([param, value]: [string, any]) => (
-                                  <p key={param} className="text-white text-xs">
-                                    {param}: {value}
-                                  </p>
-                                ))}
-                              </div>
-                            )}
+                      
+                      {/* Working Days */}
+                      {strategy.details.working_days && (
+                        <div>
+                          <h4 className="text-lg font-semibold text-white mb-3">Working Days</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {Object.entries(strategy.details.working_days).map(([day, isActive]: [string, any]) => (
+                              <span
+                                key={day}
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  isActive
+                                    ? 'bg-green-500/20 text-green-400'
+                                    : 'bg-gray-500/20 text-gray-400'
+                                }`}
+                              >
+                                {day.charAt(0).toUpperCase() + day.slice(1)}
+                              </span>
+                            ))}
                           </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Working Days */}
-                  {strategy.details.working_days && (
-                    <div className="mt-4">
-                      <h4 className="text-lg font-semibold text-white mb-3">Working Days</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(strategy.details.working_days).map(([day, isActive]: [string, any]) => (
-                          <span
-                            key={day}
-                            className={`px-3 py-1 rounded-full text-xs font-medium ${
-                              isActive
-                                ? 'bg-green-500/20 text-green-400'
-                                : 'bg-gray-500/20 text-gray-400'
-                            }`}
-                          >
-                            {day.charAt(0).toUpperCase() + day.slice(1)}
-                          </span>
-                        ))}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -810,17 +959,21 @@ const StrategyViewPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white/5 rounded-lg p-4">
                 <p className="text-blue-200 text-sm mb-1">Stop Loss</p>
-                <p className="text-xl font-bold text-white">{riskManagement.stop_loss}%</p>
+                <p className="text-xl font-bold text-white">
+                  {strategy.details?.sl_type || 'N/A'} - {strategy.details?.sl_value || 'N/A'}
+                </p>
               </div>
               
               <div className="bg-white/5 rounded-lg p-4">
                 <p className="text-blue-200 text-sm mb-1">Take Profit</p>
-                <p className="text-xl font-bold text-white">{riskManagement.take_profit}%</p>
+                <p className="text-xl font-bold text-white">
+                  {strategy.details?.tp_type || 'N/A'} - {strategy.details?.tp_value || 'N/A'}
+                </p>
               </div>
               
               <div className="bg-white/5 rounded-lg p-4">
                 <p className="text-blue-200 text-sm mb-1">Position Size</p>
-                <p className="text-xl font-bold text-white">{riskManagement.position_size} lots</p>
+                <p className="text-xl font-bold text-white">{strategy.details?.position_size || 'N/A'}</p>
               </div>
             </div>
 
@@ -885,11 +1038,11 @@ const StrategyViewPage = () => {
             <h2 className="text-xl font-semibold text-white mb-4">Performance Metrics</h2>
             
             <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <TrendingUp size={16} className="text-green-400" />
-                    <span className="text-blue-200 text-sm">Success Rate</span>
-                  </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <TrendingUp size={16} className="text-green-400" />
+                  <span className="text-blue-200 text-sm">Success Rate</span>
+                </div>
                   <span className="text-white font-semibold">
                     {strategy.success_rate !== null && strategy.success_rate !== undefined 
                       ? formatPercentage(strategy.success_rate) 
@@ -898,20 +1051,20 @@ const StrategyViewPage = () => {
                       : 'N/A'
                     }
                   </span>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Target size={16} className="text-blue-400" />
+                  <span className="text-blue-200 text-sm">Total Executions</span>
                 </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Target size={16} className="text-blue-400" />
-                    <span className="text-blue-200 text-sm">Total Executions</span>
-                  </div>
                   <span className="text-white font-semibold">
                     {strategy.total_executions !== null && strategy.total_executions !== undefined 
                       ? strategy.total_executions 
                       : 'N/A'
                     }
                   </span>
-                </div>
+              </div>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -1038,8 +1191,8 @@ const StrategyViewPage = () => {
             </div>
           </div>
         </div>
-          </div>
-        </main>
+      </div>
+      </main>
       </div>
     </div>
   );

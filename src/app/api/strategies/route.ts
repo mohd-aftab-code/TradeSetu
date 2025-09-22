@@ -178,9 +178,9 @@ async function createTimeBasedStrategyComplete(strategyId: string, userId: strin
     working_days,
     orderLegs = [],
     advanceFeatures = {},
-    daily_profit_limit = 0,
-    daily_loss_limit = 0,
-    max_trade_cycles = 1,
+    daily_profit_limit,
+    daily_loss_limit,
+    max_trade_cycles,
     noTradeAfter,
     profitTrailingType = 'no_trailing',
     profitTrailingConfig = {}
@@ -372,55 +372,392 @@ async function createTimeBasedStrategy(strategyId: string, userId: string, data:
       data.trailing_stop_percentage || 0.00,
       data.trailing_profit || 0,
       data.trailing_profit_percentage || 0.00,
-      data.daily_loss_limit || 0.00,
-      data.daily_profit_limit || 0.00,
-      data.max_trade_cycles || 0,
+      data.daily_loss_limit || null,
+      data.daily_profit_limit || null,
+      data.max_trade_cycles || null,
       data.no_trade_after || null
     ]
   );
 }
 
 // Helper function to create indicator-based strategy
+// Helper function to create comprehensive indicator-based strategy
+async function createIndicatorBasedStrategyComplete(strategyId: string, userId: string, data: any) {
+  const indicatorBasedId = `ind_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  
+  // Extract form data
+  const {
+    name,
+    description,
+    selectedInstrument,
+    order_type,
+    start_time,
+    square_off_time,
+    working_days,
+    chart_type,
+    time_interval,
+    transaction_type,
+    condition_blocks,
+    logical_operator,
+    long_conditions,
+    long_comparator,
+    short_conditions,
+    short_comparator,
+    selected_indicators,
+    strike_type,
+    strike_value,
+    custom_price,
+    action_type,
+    quantity,
+    expiry_type,
+    sl_type,
+    sl_value,
+    sl_on_price,
+    tp_type,
+    tp_value,
+    tp_on_price,
+    daily_profit_limit,
+    daily_loss_limit,
+    max_trade_cycles,
+    no_trade_after,
+    profit_trailing_type,
+    profit_trailing_config
+  } = data;
+
+  // Create main indicator-based strategy record
+  await pool.execute(
+    `INSERT INTO indicator_based_strategies_complete (
+      id, strategy_id, user_id, name, description,
+      selected_instrument_symbol, selected_instrument_name, selected_instrument_segment, selected_instrument_lot_size,
+      order_type, start_time, square_off_time, working_days,
+      chart_type, time_interval, transaction_type,
+      condition_blocks, logical_operator,
+      long_conditions, long_comparator, short_conditions, short_comparator,
+      selected_indicators, strike_type, strike_value, custom_price,
+      action_type, quantity, expiry_type,
+      sl_type, sl_value, sl_on_price, tp_type, tp_value, tp_on_price,
+      daily_profit_limit, daily_loss_limit, max_trade_cycles, no_trade_after,
+      profit_trailing_type, profit_trailing_config
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      indicatorBasedId, strategyId, userId, name, description,
+      selectedInstrument?.symbol || '',
+      selectedInstrument?.name || '',
+      selectedInstrument?.segment || '',
+      selectedInstrument?.lotSize || 0,
+      order_type || 'MIS',
+      start_time || '09:15:00',
+      square_off_time || '15:15:00',
+      JSON.stringify(working_days || {}),
+      chart_type || 'Candle',
+      time_interval || '5 Min',
+      transaction_type || 'Both Side',
+      condition_blocks || 1,
+      logical_operator || 'AND',
+      JSON.stringify(long_conditions || []),
+      long_comparator || '',
+      JSON.stringify(short_conditions || []),
+      short_comparator || '',
+      JSON.stringify(selected_indicators || {}),
+      strike_type || 'ATM pt',
+      strike_value || '',
+      custom_price || null,
+      action_type || 'BUY',
+      quantity || 1,
+      expiry_type || 'WEEKLY',
+      sl_type || 'SL pt',
+      sl_value || 0,
+      sl_on_price || 'On Price',
+      tp_type || 'TP pt',
+      tp_value || 0,
+      tp_on_price || 'On Price',
+      daily_profit_limit || null,
+      daily_loss_limit || null,
+      max_trade_cycles || null,
+      no_trade_after || null,
+      profit_trailing_type || 'no_trailing',
+      JSON.stringify(profit_trailing_config || {})
+    ]
+  );
+
+  // Create condition blocks
+  if (condition_blocks && condition_blocks > 0) {
+    for (let i = 0; i < condition_blocks; i++) {
+      const blockId = `block_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      
+      await pool.execute(
+        `INSERT INTO indicator_condition_blocks (
+          id, indicator_strategy_id, block_order,
+          long_indicator1, long_indicator1_params, long_comparator, long_indicator2, long_indicator2_params,
+          short_indicator1, short_indicator1_params, short_comparator, short_indicator2, short_indicator2_params,
+          logical_operator
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          blockId, indicatorBasedId, i + 1,
+          long_conditions?.[i]?.indicator1 || null,
+          JSON.stringify(long_conditions?.[i]?.indicator1_params || {}),
+          long_comparator || '',
+          long_conditions?.[i]?.indicator2 || null,
+          JSON.stringify(long_conditions?.[i]?.indicator2_params || {}),
+          short_conditions?.[i]?.indicator1 || null,
+          JSON.stringify(short_conditions?.[i]?.indicator1_params || {}),
+          short_comparator || '',
+          short_conditions?.[i]?.indicator2 || null,
+          JSON.stringify(short_conditions?.[i]?.indicator2_params || {}),
+          logical_operator || 'AND'
+        ]
+      );
+    }
+  }
+
+  // Create strike configuration
+  const strikeConfigId = `strike_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO indicator_strike_config (
+      id, indicator_strategy_id, strike_type, strike_value, custom_price,
+      atm_offset_points, atm_offset_percentage, sp_operator, sp_value
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      strikeConfigId, indicatorBasedId, strike_type || 'ATM pt',
+      strike_value || '', custom_price || null,
+      null, null, '=', null
+    ]
+  );
+
+  // Create risk management configuration
+  const riskMgmtId = `risk_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO indicator_risk_management (
+      id, indicator_strategy_id, daily_profit_limit, daily_loss_limit,
+      max_trade_cycles, no_trade_after, trading_start_time, trading_end_time,
+      stop_loss_type, stop_loss_value, stop_loss_on_price,
+      take_profit_type, take_profit_value, take_profit_on_price
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      riskMgmtId, indicatorBasedId,
+      daily_profit_limit || null,
+      daily_loss_limit || null,
+      max_trade_cycles || null,
+      no_trade_after || null,
+      start_time || '09:15:00',
+      square_off_time || '15:15:00',
+      sl_type || 'SL pt',
+      sl_value || 0,
+      sl_on_price || 'On Price',
+      tp_type || 'TP pt',
+      tp_value || 0,
+      tp_on_price || 'On Price'
+    ]
+  );
+
+  // Create profit trailing configuration
+  const profitTrailingId = `trail_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO indicator_profit_trailing (
+      id, indicator_strategy_id, trailing_type,
+      lock_fix_profit_reach, lock_fix_profit_at,
+      trail_profit_increase, trail_profit_by,
+      lock_and_trail_reach, lock_and_trail_at, lock_and_trail_increase, lock_and_trail_by
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      profitTrailingId, indicatorBasedId, profit_trailing_type || 'no_trailing',
+      profit_trailing_config?.lock_fix_profit_reach || null,
+      profit_trailing_config?.lock_fix_profit_at || null,
+      profit_trailing_config?.trail_profit_increase || null,
+      profit_trailing_config?.trail_profit_by || null,
+      profit_trailing_config?.lock_and_trail_reach || null,
+      profit_trailing_config?.lock_and_trail_at || null,
+      profit_trailing_config?.lock_and_trail_increase || null,
+      profit_trailing_config?.lock_and_trail_by || null
+    ]
+  );
+
+  // Create form state record
+  const formStateId = `state_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO indicator_form_states (
+      id, indicator_strategy_id, indicator_form_data, instrument_search_state,
+      condition_blocks_state, selected_indicators_state, strike_config_state,
+      risk_management_state, profit_trailing_state, is_underlying_selected, show_advanced_options
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      formStateId, indicatorBasedId,
+      JSON.stringify(data),
+      JSON.stringify({ selectedInstrument }),
+      JSON.stringify({ condition_blocks, logical_operator }),
+      JSON.stringify(selected_indicators || {}),
+      JSON.stringify({ strike_type, strike_value, custom_price }),
+      JSON.stringify({ daily_profit_limit, daily_loss_limit, max_trade_cycles, no_trade_after }),
+      JSON.stringify({ profit_trailing_type, profit_trailing_config }),
+      true, // is_underlying_selected
+      false // show_advanced_options
+    ]
+  );
+}
+
 async function createIndicatorBasedStrategy(strategyId: string, userId: string, data: any) {
   const indicatorBasedId = `ind_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
   
+  // Extract data from the new structure
+  const {
+    name,
+    description,
+    selectedInstrument,
+    order_type,
+    start_time,
+    square_off_time,
+    working_days,
+    chart_type,
+    time_interval,
+    transaction_type,
+    condition_blocks,
+    logical_operator,
+    long_conditions,
+    short_conditions,
+    long_comparator,
+    short_comparator,
+    selected_indicators,
+    strike_type,
+    strike_value,
+    custom_price,
+    action_type,
+    quantity,
+    expiry_type,
+    sl_type,
+    sl_value,
+    sl_on_price,
+    tp_type,
+    tp_value,
+    tp_on_price,
+    daily_profit_limit,
+    daily_loss_limit,
+    max_trade_cycles,
+    no_trade_after,
+    profit_trailing_type,
+    profit_trailing_config
+  } = data;
+  
+  // Store in comprehensive table
   await pool.execute(
-    `INSERT INTO indicator_based_strategies (
-      id, strategy_id, user_id, chart_type, time_interval, transaction_type,
-      long_conditions, short_conditions, condition_blocks, logical_operator,
-      selected_indicators, stop_loss_type, stop_loss_value, take_profit_type,
-      take_profit_value, position_size, profit_trailing_type, trailing_stop,
-      trailing_stop_percentage, trailing_profit, trailing_profit_percentage,
-      daily_loss_limit, daily_profit_limit, max_trade_cycles, no_trade_after,
-      working_days, start_time, square_off_time
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO indicator_based_strategies_complete (
+      id, strategy_id, user_id, name, description,
+      selected_instrument_symbol, selected_instrument_name, selected_instrument_segment, selected_instrument_lot_size,
+      order_type, start_time, square_off_time, working_days,
+      chart_type, time_interval, transaction_type,
+      condition_blocks, logical_operator,
+      long_conditions, long_comparator, short_conditions, short_comparator,
+      selected_indicators,
+      strike_type, strike_value, custom_price,
+      action_type, quantity, expiry_type,
+      sl_type, sl_value, sl_on_price,
+      tp_type, tp_value, tp_on_price,
+      daily_profit_limit, daily_loss_limit, max_trade_cycles, no_trade_after,
+      profit_trailing_type, profit_trailing_config
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       indicatorBasedId, strategyId, userId,
-      data.chart_type || 'Candle',
-      data.time_interval || '5 Min',
-      data.transaction_type || 'Both Side',
-      JSON.stringify(data.long_conditions || []),
-      JSON.stringify(data.short_conditions || []),
-      data.condition_blocks || 0,
-      data.logical_operator || 'AND',
-      JSON.stringify(data.selected_indicators || []),
-      data.stop_loss_type || 'SL %',
-      data.stop_loss_value || 2.00,
-      data.take_profit_type || 'TP %',
-      data.take_profit_value || 4.00,
-      data.position_size || '1 lot',
-      data.profit_trailing_type || 'no_trailing',
-      data.trailing_stop || 0,
-      data.trailing_stop_percentage || 0.00,
-      data.trailing_profit || 0,
-      data.trailing_profit_percentage || 0.00,
-      data.daily_loss_limit || 0.00,
-      data.daily_profit_limit || 0.00,
-      data.max_trade_cycles || 0,
-      data.no_trade_after || null,
-      JSON.stringify(data.working_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
-      data.start_time || '09:15:00',
-      data.square_off_time || '15:15:00'
+      name || 'Indicator Strategy',
+      description || '',
+      selectedInstrument?.symbol || '',
+      selectedInstrument?.name || '',
+      selectedInstrument?.segment || '',
+      selectedInstrument?.lotSize || 0,
+      order_type || 'MIS',
+      start_time || '09:15:00',
+      square_off_time || '15:15:00',
+      JSON.stringify(working_days || {}),
+      chart_type || 'Candle',
+      time_interval || '5 Min',
+      transaction_type || 'Both Side',
+      condition_blocks || 1,
+      logical_operator || 'AND',
+      JSON.stringify(long_conditions || []),
+      long_comparator || '',
+      JSON.stringify(short_conditions || []),
+      short_comparator || '',
+      JSON.stringify(selected_indicators || {}),
+      strike_type || 'ATM pt',
+      strike_value || '',
+      custom_price || null,
+      action_type || 'BUY',
+      quantity || 1,
+      expiry_type || 'WEEKLY',
+      (sl_type === 'SL Points' ? 'SL pt' : sl_type) || 'SL pt',
+      sl_value || 2.00,
+      sl_on_price || 'On Price',
+      (tp_type === 'TP Points' ? 'TP pt' : tp_type) || 'TP pt',
+      tp_value || 4.00,
+      tp_on_price || 'On Price',
+      daily_profit_limit || null,
+      daily_loss_limit || null,
+      max_trade_cycles || null,
+      no_trade_after || null,
+      profit_trailing_type || 'no_trailing',
+      JSON.stringify(profit_trailing_config || {})
     ]
   );
+  
+  // Store in condition blocks table
+  const conditionBlockId = `block_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO indicator_condition_blocks (
+      id, indicator_strategy_id, block_order,
+      long_indicator1, long_indicator1_params, long_comparator, long_indicator2, long_indicator2_params,
+      short_indicator1, short_indicator1_params, short_comparator, short_indicator2, short_indicator2_params,
+      logical_operator
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      conditionBlockId, indicatorBasedId, 1,
+      long_conditions?.[0]?.indicator1 || null,
+      JSON.stringify(long_conditions?.[0]?.parameters || {}),
+      long_comparator || '',
+      long_conditions?.[0]?.indicator2 || null,
+      JSON.stringify({}),
+      short_conditions?.[0]?.indicator1 || null,
+      JSON.stringify(short_conditions?.[0]?.parameters || {}),
+      short_comparator || '',
+      short_conditions?.[0]?.indicator2 || null,
+      JSON.stringify({}),
+      logical_operator || 'AND'
+    ]
+  );
+  
+  // Store in risk management table
+  const riskMgmtId = `risk_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO indicator_risk_management (
+      id, indicator_strategy_id, daily_profit_limit, daily_loss_limit,
+      max_trade_cycles, no_trade_after, trading_start_time, trading_end_time,
+      stop_loss_type, stop_loss_value, stop_loss_on_price,
+      take_profit_type, take_profit_value, take_profit_on_price
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      riskMgmtId, indicatorBasedId,
+      daily_profit_limit || null,
+      daily_loss_limit || null,
+      max_trade_cycles || null,
+      no_trade_after || null,
+      start_time || '09:15:00',
+      square_off_time || '15:15:00',
+      (sl_type === 'SL Points' ? 'SL pt' : sl_type) || 'SL pt',
+      sl_value || 2.00,
+      sl_on_price || 'On Price',
+      (tp_type === 'TP Points' ? 'TP pt' : tp_type) || 'TP pt',
+      tp_value || 4.00,
+      tp_on_price || 'On Price'
+    ]
+  );
+  
+  // Store in profit trailing table
+  const profitTrailingId = `trail_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  await pool.execute(
+    `INSERT INTO indicator_profit_trailing (
+      id, indicator_strategy_id, trailing_type
+    ) VALUES (?, ?, ?)`,
+    [
+      profitTrailingId, indicatorBasedId,
+      profit_trailing_type || 'no_trailing'
+    ]
+  );
+  
 }

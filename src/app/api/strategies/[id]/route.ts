@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     const strategy = (strategyRows as any[])[0];
-    
+
     // Parse JSON fields
     const riskManagement = typeof strategy.risk_management === 'string' 
       ? JSON.parse(strategy.risk_management) 
@@ -102,34 +102,94 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         }
       }
     } else if (strategy.strategy_type === 'INDICATOR_BASED') {
-      const [indicatorBasedRows] = await pool.execute(
-        'SELECT * FROM indicator_based_strategies WHERE strategy_id = ?',
+      // Try comprehensive table first
+      const [comprehensiveRows] = await pool.execute(
+        'SELECT * FROM indicator_based_strategies_complete WHERE strategy_id = ?',
         [strategyId]
       );
-      if ((indicatorBasedRows as any[]).length > 0) {
-        const indicatorBasedData = (indicatorBasedRows as any[])[0];
+      
+      if ((comprehensiveRows as any[]).length > 0) {
+        const comprehensiveData = (comprehensiveRows as any[])[0];
         // Parse JSON fields
-        indicatorBasedData.long_conditions = indicatorBasedData.long_conditions 
-          ? (typeof indicatorBasedData.long_conditions === 'string' 
-              ? JSON.parse(indicatorBasedData.long_conditions) 
-              : indicatorBasedData.long_conditions)
-          : null;
-        indicatorBasedData.short_conditions = indicatorBasedData.short_conditions 
-          ? (typeof indicatorBasedData.short_conditions === 'string' 
-              ? JSON.parse(indicatorBasedData.short_conditions) 
-              : indicatorBasedData.short_conditions)
-          : null;
-        indicatorBasedData.selected_indicators = indicatorBasedData.selected_indicators 
-          ? (typeof indicatorBasedData.selected_indicators === 'string' 
-              ? JSON.parse(indicatorBasedData.selected_indicators) 
-              : indicatorBasedData.selected_indicators)
-          : null;
-        indicatorBasedData.working_days = indicatorBasedData.working_days 
-          ? (typeof indicatorBasedData.working_days === 'string' 
-              ? JSON.parse(indicatorBasedData.working_days) 
-              : indicatorBasedData.working_days)
-          : null;
-        strategyDetails = indicatorBasedData;
+        comprehensiveData.long_conditions = comprehensiveData.long_conditions 
+          ? (typeof comprehensiveData.long_conditions === 'string' 
+              ? JSON.parse(comprehensiveData.long_conditions) 
+              : comprehensiveData.long_conditions)
+          : [];
+        comprehensiveData.short_conditions = comprehensiveData.short_conditions 
+          ? (typeof comprehensiveData.short_conditions === 'string' 
+              ? JSON.parse(comprehensiveData.short_conditions) 
+              : comprehensiveData.short_conditions)
+          : [];
+        comprehensiveData.selected_indicators = comprehensiveData.selected_indicators 
+          ? (typeof comprehensiveData.selected_indicators === 'string' 
+              ? JSON.parse(comprehensiveData.selected_indicators) 
+              : comprehensiveData.selected_indicators)
+          : {};
+        comprehensiveData.working_days = comprehensiveData.working_days 
+          ? (typeof comprehensiveData.working_days === 'string' 
+              ? JSON.parse(comprehensiveData.working_days) 
+              : comprehensiveData.working_days)
+          : {};
+        comprehensiveData.profit_trailing_config = comprehensiveData.profit_trailing_config 
+          ? (typeof comprehensiveData.profit_trailing_config === 'string' 
+              ? JSON.parse(comprehensiveData.profit_trailing_config) 
+              : comprehensiveData.profit_trailing_config)
+          : {};
+        strategyDetails = comprehensiveData;
+      } else {
+        // Fallback to original table
+        const [indicatorBasedRows] = await pool.execute(
+          'SELECT * FROM indicator_based_strategies WHERE strategy_id = ?',
+          [strategyId]
+        );
+        if ((indicatorBasedRows as any[]).length > 0) {
+          const indicatorBasedData = (indicatorBasedRows as any[])[0];
+          // Parse JSON fields
+          const longConditionsData = indicatorBasedData.long_conditions 
+            ? (typeof indicatorBasedData.long_conditions === 'string' 
+                ? JSON.parse(indicatorBasedData.long_conditions) 
+                : indicatorBasedData.long_conditions)
+            : { conditions: [], comparator: '' };
+          
+          const shortConditionsData = indicatorBasedData.short_conditions 
+            ? (typeof indicatorBasedData.short_conditions === 'string' 
+                ? JSON.parse(indicatorBasedData.short_conditions) 
+                : indicatorBasedData.short_conditions)
+            : { conditions: [], comparator: '' };
+          
+          // Handle both old and new data structures
+          if (Array.isArray(longConditionsData)) {
+            // Old structure - just conditions array
+            indicatorBasedData.long_conditions = longConditionsData;
+            indicatorBasedData.long_comparator = '';
+          } else {
+            // New structure - with comparator
+            indicatorBasedData.long_conditions = longConditionsData.conditions || [];
+            indicatorBasedData.long_comparator = longConditionsData.comparator || '';
+          }
+          
+          if (Array.isArray(shortConditionsData)) {
+            // Old structure - just conditions array
+            indicatorBasedData.short_conditions = shortConditionsData;
+            indicatorBasedData.short_comparator = '';
+          } else {
+            // New structure - with comparator
+            indicatorBasedData.short_conditions = shortConditionsData.conditions || [];
+            indicatorBasedData.short_comparator = shortConditionsData.comparator || '';
+          }
+          indicatorBasedData.selected_indicators = indicatorBasedData.selected_indicators 
+            ? (typeof indicatorBasedData.selected_indicators === 'string' 
+                ? JSON.parse(indicatorBasedData.selected_indicators) 
+                : indicatorBasedData.selected_indicators)
+            : {};
+          indicatorBasedData.working_days = indicatorBasedData.working_days 
+            ? (typeof indicatorBasedData.working_days === 'string' 
+                ? JSON.parse(indicatorBasedData.working_days) 
+                : indicatorBasedData.working_days)
+            : {};
+          strategyDetails = indicatorBasedData;
+        }
       }
     }
 
@@ -326,8 +386,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
         [strategyId]
       );
     } else if (strategyType === 'INDICATOR_BASED') {
+      // Delete from comprehensive table
       await pool.execute(
-        'DELETE FROM indicator_based_strategies WHERE strategy_id = ?',
+        'DELETE FROM indicator_based_strategies_complete WHERE strategy_id = ?',
         [strategyId]
       );
     }
