@@ -708,9 +708,6 @@ const CreateStrategyPage = () => {
   const handleTimeIndicatorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log('=== INDICATOR-BASED FORM SUBMIT DEBUG ===');
-    console.log('timeIndicatorFormData:', JSON.stringify(timeIndicatorFormData, null, 2));
-    console.log('selectedIndicators:', JSON.stringify(selectedIndicators, null, 2));
     console.log('longComparator:', longComparator);
     console.log('shortComparator:', shortComparator);
     console.log('logicalOperator:', logicalOperator);
@@ -720,10 +717,6 @@ const CreateStrategyPage = () => {
     console.log('conditionBlocks:', JSON.stringify(conditionBlocks, null, 2));
     console.log('instrumentSearch.selectedInstrument:', JSON.stringify(instrumentSearch.selectedInstrument, null, 2));
     
-    // Debug specific form values
-    console.log('=== FORM VALUES DEBUG ===');
-    console.log('daily_profit_limit:', timeIndicatorFormData.daily_profit_limit);
-    console.log('daily_loss_limit:', timeIndicatorFormData.daily_loss_limit);
     console.log('max_trade_cycles:', timeIndicatorFormData.max_trade_cycles);
     console.log('action:', timeIndicatorFormData.action);
     console.log('qty:', timeIndicatorFormData.qty);
@@ -1729,9 +1722,6 @@ const CreateStrategyPage = () => {
                   {indicators.find(ind => ind.value === tempSelectedIndicator)?.label} Parameters
                 </h4>
                 
-                {/* Debug info - remove in production */}
-                <div className="mb-4 p-2 bg-slate-800/50 rounded text-xs text-gray-300">
-                  <div>Selected Indicator: {tempSelectedIndicator}</div>
                   <div>Current Parameters: {JSON.stringify(tempIndicatorParameters)}</div>
                 </div>
                 

@@ -60,7 +60,7 @@ export default function SalesDashboardPage() {
           return;
         }
 
-        const response = await fetch('/api/user/profile', {
+        const response = await fetch('/api/sales/profile', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -100,8 +100,8 @@ export default function SalesDashboardPage() {
     return null
   }
 
-  // Mock sales data
-  const salesData = {
+  // State for sales data
+  const [salesData, setSalesData] = useState({
     totalLeads: 156,
     convertedLeads: 89,
     conversionRate: 57.1,
@@ -111,22 +111,54 @@ export default function SalesDashboardPage() {
     pendingFollowUps: 12,
     thisMonthSales: 15,
     lastMonthSales: 12
-  }
+  });
 
-  const recentLeads = [
+  const [recentLeads, setRecentLeads] = useState([
     { id: 1, name: 'John Smith', email: 'john@example.com', status: 'Contacted', date: '2024-01-15' },
     { id: 2, name: 'Sarah Johnson', email: 'sarah@example.com', status: 'Qualified', date: '2024-01-14' },
     { id: 3, name: 'Mike Wilson', email: 'mike@example.com', status: 'Proposal Sent', date: '2024-01-13' },
     { id: 4, name: 'Lisa Brown', email: 'lisa@example.com', status: 'Negotiation', date: '2024-01-12' },
     { id: 5, name: 'David Lee', email: 'david@example.com', status: 'Closed', date: '2024-01-11' }
-  ]
+  ]);
 
-  const upcomingTasks = [
+  const [upcomingTasks, setUpcomingTasks] = useState([
     { id: 1, title: 'Follow up with John Smith', priority: 'High', dueDate: '2024-01-16' },
     { id: 2, title: 'Send proposal to Sarah Johnson', priority: 'Medium', dueDate: '2024-01-17' },
     { id: 3, title: 'Call Mike Wilson', priority: 'High', dueDate: '2024-01-16' },
     { id: 4, title: 'Prepare demo for Lisa Brown', priority: 'Medium', dueDate: '2024-01-18' }
-  ]
+  ]);
+
+  // Fetch sales dashboard data
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      try {
+        const token = getUserToken();
+        if (!token) return;
+
+        const response = await fetch('/api/sales/dashboard', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data) {
+            setSalesData(data.data.salesMetrics);
+            setRecentLeads(data.data.recentLeads);
+            setUpcomingTasks(data.data.upcomingTasks);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching sales data:', error);
+      }
+    };
+
+    if (user && user.role === 'SALES_EXECUTIVE') {
+      fetchSalesData();
+    }
+  }, [user]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

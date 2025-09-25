@@ -5,8 +5,6 @@ import pool from '@/lib/db';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    console.log('=== INDICATOR-BASED STRATEGY API DEBUG ===');
-    console.log('Full request body:', JSON.stringify(body, null, 2));
     
     const {
       user_id,
@@ -53,7 +51,6 @@ export async function POST(request: NextRequest) {
     );
     
     console.log('Insert result:', result);
-    console.log('=== END INDICATOR-BASED STRATEGY API DEBUG ===');
 
     return NextResponse.json({ 
       message: 'Indicator-based strategy created successfully',

@@ -222,16 +222,9 @@ export async function POST(request: NextRequest) {
 
     const strategyId = `strategy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    console.log('=== STRATEGY CREATION DEBUG ===');
-    console.log('Request body:', JSON.stringify(body, null, 2));
-    console.log('Config data:', JSON.stringify(config, null, 2));
     console.log('Risk management data:', JSON.stringify(risk_management, null, 2));
     console.log('Strategy specific data:', JSON.stringify(strategy_specific_data, null, 2));
     
-    // Debug specific config values
-    console.log('=== CONFIG VALUES DEBUG ===');
-    console.log('config.daily_profit_limit:', config.daily_profit_limit);
-    console.log('config.daily_loss_limit:', config.daily_loss_limit);
     console.log('config.max_trade_cycles:', config.max_trade_cycles);
     console.log('config.order_type:', config.order_type);
     console.log('config.start_time:', config.start_time);
@@ -408,9 +401,6 @@ async function createTimeBasedStrategyWithConnection(connection: any, strategyId
 
 // Helper function to create indicator-based strategy using normalized structure
 async function createIndicatorBasedStrategyWithConnection(connection: any, strategyId: string, userId: string, data: any) {
-  console.log('=== CREATE INDICATOR-BASED STRATEGY DEBUG ===');
-  console.log('strategyId:', strategyId);
-  console.log('userId:', userId);
   console.log('data:', JSON.stringify(data, null, 2));
   
   const indicatorBasedId = `ind_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
@@ -453,7 +443,6 @@ async function createIndicatorBasedStrategyWithConnection(connection: any, strat
   );
   
   console.log('Insert result for indicator_based_strategies:', result);
-  console.log('=== END CREATE INDICATOR-BASED STRATEGY DEBUG ===');
 }
 
 // Helper function to create programming strategy using normalized structure

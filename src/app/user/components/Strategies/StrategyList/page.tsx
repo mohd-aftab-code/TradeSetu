@@ -28,11 +28,8 @@ const StrategyList = () => {
       fetchStrategies(userData.id);
     } else {
       console.error('StrategyList useEffect - No user data found or user ID missing');
-      // Try with hardcoded user ID for debugging
-      const debugUserId = 'tradesetu002';
-      console.log('StrategyList useEffect - Using debug user ID:', debugUserId);
-      setUserId(debugUserId);
-      fetchStrategies(debugUserId);
+      console.log('StrategyList useEffect - No user data found');
+      return;
     }
   }, []);
 
@@ -204,9 +201,6 @@ const StrategyList = () => {
           <div className="text-blue-200 text-sm mb-4">
             Total strategies loaded: {strategies.length}
           </div>
-          <div className="text-red-200 text-sm mb-4">
-            Debug: strategies array = {JSON.stringify(strategies)}
-          </div>
           <div className="text-yellow-200 text-sm mb-4">
             Condition check: strategies.length === 0 = {strategies.length === 0}
           </div>
@@ -219,9 +213,6 @@ const StrategyList = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="text-green-200 text-sm mb-4 col-span-full">
-            Debug: Rendering {strategies.length} strategies
-          </div>
           {strategies.map((strategy, index) => {
             console.log(`StrategyList render - Mapping strategy ${index}:`, strategy);
             return (

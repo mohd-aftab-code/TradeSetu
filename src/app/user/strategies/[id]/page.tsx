@@ -28,25 +28,9 @@ const StrategyViewPage = () => {
     console.log('Strategy detail page - User data:', userData);
     console.log('Strategy detail page - Strategy ID:', strategyId);
 
-    // Temporarily disable authentication check for debugging
-    // if (!token || !userData) {
-    //   console.log('No token or user data found, redirecting to login');
-    //   router.push('/auth/login');
-    //   return;
-    // }
-    
-    // For debugging - use mock user data if no real data
     if (!token || !userData) {
-      console.log('No token or user data found, using mock data for debugging');
-      const mockUserData = { id: 'tradesetu002', name: 'Test User' };
-      setUser(mockUserData);
-      setIsLoading(false);
-      
-      if (strategyId) {
-        console.log('Fetching strategy details for ID:', strategyId);
-        fetchStrategy();
-        fetchStats();
-      }
+      console.log('No token or user data found, redirecting to login');
+      router.push('/auth/login');
       return;
     }
 
@@ -68,7 +52,7 @@ const StrategyViewPage = () => {
       
       // Get user ID for the API call
       const userData = getUserData();
-      const userId = userData?.id || 'tradesetu002'; // Fallback for debugging
+      const userId = userData?.id;
       
       const response = await fetch(`/api/strategies?user_id=${userId}`);
       console.log('Strategy detail fetch response status:', response.status);
@@ -237,9 +221,6 @@ const StrategyViewPage = () => {
             
             <div className="bg-red-500/20 backdrop-blur-lg rounded-xl p-6 border border-red-500/30">
               <h2 className="text-xl font-semibold text-red-400 mb-2">Strategy Not Found</h2>
-              <div className="text-red-200 text-sm mb-4">
-                Debug: strategyId = {strategyId}, strategy = {JSON.stringify(strategy)}
-              </div>
               <p className="text-white mb-4">
                 The strategy with ID "{strategyId}" could not be found. This could be due to:
               </p>
@@ -255,12 +236,6 @@ const StrategyViewPage = () => {
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200"
                 >
                   Back to Strategies
-                </button>
-                <button
-                  onClick={() => router.push('/debug')}
-                  className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-all duration-200"
-                >
-                  Debug Database
                 </button>
               </div>
             </div>
