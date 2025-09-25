@@ -134,7 +134,7 @@ const BacktestingPage = () => {
           return;
         }
 
-        const response = await fetch('/api/user/profile', {
+        const response = await fetch('/api/auth/profile', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',

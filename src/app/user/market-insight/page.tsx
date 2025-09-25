@@ -53,7 +53,7 @@ const MarketInsight: React.FC = () => {
   const fetchMarketData = async () => {
     try {
       setIsLoadingMarketData(true);
-      const response = await fetch('/api/market-data');
+      const response = await fetch('/api/users/market-data');
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data) {

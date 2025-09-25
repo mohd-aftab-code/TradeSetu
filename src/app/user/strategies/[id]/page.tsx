@@ -54,7 +54,7 @@ const StrategyViewPage = () => {
       const userData = getUserData();
       const userId = userData?.id;
       
-      const response = await fetch(`/api/strategies?user_id=${userId}`);
+      const response = await fetch(`/api/users/strategies?user_id=${userId}`);
       console.log('Strategy detail fetch response status:', response.status);
       
       if (response.ok) {
@@ -88,7 +88,7 @@ const StrategyViewPage = () => {
   const fetchStats = async () => {
     try {
       if (strategy?.user_id) {
-        const response = await fetch(`/api/strategies/stats?user_id=${strategy.user_id}`);
+        const response = await fetch(`/api/users/strategies/stats?user_id=${strategy.user_id}`);
       if (response.ok) {
         const data = await response.json();
         setStats(data.overall_stats);
@@ -103,7 +103,7 @@ const StrategyViewPage = () => {
     if (!strategy) return;
 
     try {
-      const response = await fetch(`/api/strategies/${strategyId}`, {
+      const response = await fetch(`/api/users/strategies/${strategyId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

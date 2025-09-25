@@ -176,9 +176,9 @@ function getApiSetupInstructions(brokerId: string) {
            '3. Click "Create New App"',
            '4. Fill the following details:',
            '   - App Name: Your app name (e.g., tradesetu)',
-           '   - Redirect URL: ' + baseUrl + '/api/broker/callback',
+           '   - Redirect URL: ' + baseUrl + '/api/users/broker/callback',
            '   - Primary IP: Your server IP (optional)',
-           '   - Postback URL: ' + baseUrl + '/api/broker/webhook (optional)',
+           '   - Postback URL: ' + baseUrl + '/api/users/broker/webhook (optional)',
            '   - Description: Brief description of your app',
            '5. Accept terms and click "Continue"',
            '6. Copy the generated API Key and API Secret',
@@ -204,8 +204,8 @@ function getApiSetupInstructions(brokerId: string) {
           '2. Click "Register" for API access',
           '3. Fill the following details:',
           '   - App Name: Your app name',
-          '   - Redirect URL: ' + baseUrl + '/api/broker/callback',
-          '   - Webhook URL: ' + baseUrl + '/api/broker/webhook (optional)',
+          '   - Redirect URL: ' + baseUrl + '/api/users/broker/callback',
+          '   - Webhook URL: ' + baseUrl + '/api/users/broker/webhook (optional)',
           '4. Submit and wait for approval',
           '5. Copy the generated API Key and API Secret',
           '6. Use these credentials in the connection form'
@@ -224,8 +224,8 @@ function getApiSetupInstructions(brokerId: string) {
           '2. Click "Register" for API access',
           '3. Fill the following details:',
           '   - App Name: Your app name',
-          '   - Redirect URL: ' + baseUrl + '/api/broker/callback',
-          '   - Callback URL: ' + baseUrl + '/api/broker/webhook',
+          '   - Redirect URL: ' + baseUrl + '/api/users/broker/callback',
+          '   - Callback URL: ' + baseUrl + '/api/users/broker/webhook',
           '4. Submit and wait for approval',
           '5. Copy the generated API Key and API Secret',
           '6. Use these credentials in the connection form'
@@ -465,7 +465,7 @@ export async function POST(request: NextRequest) {
     if (connectionType === 'auth_url') {
       // Generate auth URL for OAuth flow
       const clientId = process.env[`${brokerId.toUpperCase()}_CLIENT_ID`] || 'demo_client_id';
-      const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/broker/callback`;
+      const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/users/broker/callback`;
       
       const authUrl = generateAuthUrl(brokerId, clientId, redirectUri);
       

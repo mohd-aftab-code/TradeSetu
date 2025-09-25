@@ -334,7 +334,7 @@ const CreateStrategyPage = () => {
   const fetchIndicators = async () => {
     try {
       setIsLoadingIndicators(true);
-      const response = await fetch('/api/indicators');
+      const response = await fetch('/api/users/indicators');
       if (response.ok) {
         const data = await response.json();
         setIndicators(data.indicators);
@@ -595,7 +595,7 @@ const CreateStrategyPage = () => {
     
     try {
       // Step 1: Create main strategy record with time-based specific data
-      const strategyResponse = await fetch('/api/strategies', {
+      const strategyResponse = await fetch('/api/users/strategies', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -891,7 +891,7 @@ const CreateStrategyPage = () => {
       
       console.log('Request body being sent to API:', JSON.stringify(requestBody, null, 2));
       
-      const strategyResponse = await fetch('/api/strategies', {
+      const strategyResponse = await fetch('/api/users/strategies', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -968,7 +968,7 @@ const CreateStrategyPage = () => {
     
     try {
       // Step 1: Create main strategy record with programming specific data
-      const strategyResponse = await fetch('/api/strategies', {
+      const strategyResponse = await fetch('/api/users/strategies', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1722,6 +1722,7 @@ const CreateStrategyPage = () => {
                   {indicators.find(ind => ind.value === tempSelectedIndicator)?.label} Parameters
                 </h4>
                 
+                <div className="mb-4 p-2 bg-slate-800/50 rounded text-xs text-gray-300">
                   <div>Current Parameters: {JSON.stringify(tempIndicatorParameters)}</div>
                 </div>
                 

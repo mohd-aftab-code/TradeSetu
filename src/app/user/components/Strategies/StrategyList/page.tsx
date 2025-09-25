@@ -37,7 +37,7 @@ const StrategyList = () => {
     try {
       setLoading(true);
       console.log('StrategyList fetchStrategies - Starting fetch for user_id:', user_id);
-      const response = await fetch(`/api/strategies?user_id=${user_id}`);
+      const response = await fetch(`/api/users/strategies?user_id=${user_id}`);
       console.log('StrategyList fetchStrategies - Response status:', response.status);
       
       if (response.ok) {
@@ -66,7 +66,7 @@ const StrategyList = () => {
       const strategy = strategies.find(s => s.id === id);
       if (!strategy) return;
 
-      const response = await fetch(`/api/strategies/${id}`, {
+      const response = await fetch(`/api/users/strategies/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ const StrategyList = () => {
   const handleDeleteStrategy = async () => {
     try {
       console.log('Deleting strategy with ID:', strategyToDelete);
-      const response = await fetch(`/api/strategies?id=${strategyToDelete}`, {
+      const response = await fetch(`/api/users/strategies?id=${strategyToDelete}`, {
         method: 'DELETE',
       });
 

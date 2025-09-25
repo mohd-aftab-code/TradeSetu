@@ -38,7 +38,7 @@ const ProfilePage: React.FC = () => {
         return;
       }
       
-      const response = await fetch('/api/user/profile', {
+      const response = await fetch('/api/auth/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -83,7 +83,7 @@ const ProfilePage: React.FC = () => {
         return;
       }
       
-      const response = await fetch('/api/user/profile', {
+      const response = await fetch('/api/auth/profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

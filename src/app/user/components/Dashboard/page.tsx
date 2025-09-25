@@ -72,7 +72,7 @@ const Dashboard: React.FC = () => {
           return;
         }
 
-        const response = await fetch(`/api/broker/connect?userId=${userData.id}`);
+        const response = await fetch(`/api/users/broker/connect?userId=${userData.id}`);
         if (response.ok) {
           const data = await response.json();
           if (data.success) {
@@ -97,7 +97,7 @@ const Dashboard: React.FC = () => {
       const broker = brokers.find(b => b.id === brokerId);
       setSelectedBrokerForSetup(broker);
       
-      const response = await fetch(`/api/broker/connect?brokerId=${brokerId}`);
+      const response = await fetch(`/api/users/broker/connect?brokerId=${brokerId}`);
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
@@ -185,7 +185,7 @@ const Dashboard: React.FC = () => {
       }
 
              // Verify OTP and connect
-       const response = await fetch('/api/broker/connect', {
+       const response = await fetch('/api/users/broker/connect', {
          method: 'POST',
          headers: {
            'Content-Type': 'application/json',
@@ -243,7 +243,7 @@ const Dashboard: React.FC = () => {
           return;
         }
 
-        const response = await fetch('/api/user/profile', {
+        const response = await fetch('/api/auth/profile', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -275,7 +275,7 @@ const Dashboard: React.FC = () => {
   const fetchMarketData = async () => {
     try {
       setIsLoadingMarketData(true);
-      const response = await fetch('/api/market-data');
+      const response = await fetch('/api/users/market-data');
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data) {

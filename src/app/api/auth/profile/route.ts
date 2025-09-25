@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '../../../../lib/db';
 import jwt from 'jsonwebtoken';
 
-// GET /api/user/profile - Get user profile
+// GET /api/auth/profile - Get user profile
 export async function GET(request: NextRequest) {
   try {
     // Get the authorization header
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PUT /api/user/profile - Update user profile
+// PUT /api/auth/profile - Update user profile
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
