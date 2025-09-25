@@ -30,7 +30,9 @@ export const setUserToken = (token: string): void => {
 };
 
 export const getUserToken = (): string | null => {
-  return getCookie('userToken');
+  const token = getCookie('userToken');
+  console.log('getUserToken - Retrieved token:', token);
+  return token;
 };
 
 export const setUserData = (userData: any): void => {
@@ -39,14 +41,18 @@ export const setUserData = (userData: any): void => {
 
 export const getUserData = (): any => {
   const data = getCookie('userData');
+  console.log('getUserData - Raw cookie data:', data);
   if (data) {
     try {
-      return JSON.parse(data);
+      const parsedData = JSON.parse(data);
+      console.log('getUserData - Parsed data:', parsedData);
+      return parsedData;
     } catch (error) {
       console.error('Error parsing user data from cookie:', error);
       return null;
     }
   }
+  console.log('getUserData - No data found');
   return null;
 };
 

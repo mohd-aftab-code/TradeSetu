@@ -66,10 +66,23 @@ const CreateStrategyPage = () => {
     stop_loss: '',
     take_profit: '',
     position_size: '',
-    order_type: 'MARKET',
+    stop_loss_type: 'SL pt',
+    stop_loss_value: '',
+    stop_loss_on_price: 'On Price',
+    take_profit_type: 'TP pt',
+    take_profit_value: '',
+    take_profit_on_price: 'On Price',
+    order_type: 'MIS',
     lot_size: 1,
     entry_time: '09:20',
     exit_time: '15:30',
+    start_time: '09:15:00',
+    square_off_time: '15:15:00',
+    working_days: {},
+    noTradeAfter: '15:15:00',
+    chart_type: 'Candle',
+    interval: '5 Min',
+    transaction_type: 'Both Side',
     re_entry_condition: 'NEXT_SIGNAL',
     wait_and_trade: false,
     premium_difference: 0,
@@ -77,6 +90,8 @@ const CreateStrategyPage = () => {
     option_type: 'CE',
     strike_selection: 'ATM',
     expiry_type: 'WEEKLY',
+    action: 'BUY',
+    qty: 75,
     daily_loss_limit: '',
     daily_profit_limit: '',
     max_trade_cycles: '',
@@ -84,23 +99,8 @@ const CreateStrategyPage = () => {
     trailing_stop_percentage: 1.5,
     trailing_profit: false,
     trailing_profit_percentage: 2.0,
-    noTradeAfter: '15:15',
     strategy_start_date: '',
     strategy_start_time: '09:15',
-    start_time: '09:15',
-    square_off_time: '15:15',
-    working_days: {
-      monday: true,
-      tuesday: true,
-      wednesday: true,
-      thursday: true,
-      friday: true,
-      saturday: false,
-      sunday: false
-    },
-    transaction_type: 'Both Side',
-    chart_type: 'Candle',
-    interval: '5 Min',
     is_active: false,
     last_updated: new Date().toISOString(),
     legs: [],
@@ -194,7 +194,24 @@ const CreateStrategyPage = () => {
     code: '',
     stop_loss: '',
     take_profit: '',
-    position_size: ''
+    position_size: '',
+    stop_loss_type: 'SL pt',
+    stop_loss_on_price: 'On Price',
+    take_profit_type: 'TP pt',
+    take_profit_on_price: 'On Price',
+    order_type: 'MIS',
+    start_time: '09:15:00',
+    square_off_time: '15:15:00',
+    working_days: {},
+    daily_profit_limit: null,
+    daily_loss_limit: null,
+    max_trade_cycles: null,
+    noTradeAfter: null,
+    dependencies: [],
+    environment_variables: {},
+    timeout: 300,
+    memory_limit: 512,
+    cpu_limit: 1
   });
 
   // State for validation errors
@@ -590,56 +607,81 @@ const CreateStrategyPage = () => {
       strategy_type: 'TIME_BASED',
       symbol: timeIndicatorFormData.symbol,
           asset_type: timeIndicatorFormData.asset_type || 'STOCK',
-          entry_conditions: timeIndicatorFormData.entry_conditions || '',
-          exit_conditions: timeIndicatorFormData.exit_conditions || '',
-      risk_management: {
-            stop_loss: timeIndicatorFormData.stop_loss || '',
-            take_profit: timeIndicatorFormData.take_profit || '',
-            position_size: timeIndicatorFormData.position_size || ''
-          },
           is_paper_trading: true,
-          strategyData: {
-            // Basic strategy info
-            name: timeIndicatorFormData.name.trim(),
-            description: timeIndicatorFormData.description || '',
-            
-            // Selected instrument
-            selectedInstrument: instrumentSearch.selectedInstrument,
-            
-            // Order configuration
-            time_order_product_type: timeIndicatorFormData.time_order_product_type,
+          
+          // Common configuration
+          config: {
+            selected_instrument_symbol: instrumentSearch.selectedInstrument?.symbol || '',
+            selected_instrument_name: instrumentSearch.selectedInstrument?.name || '',
+            selected_instrument_segment: instrumentSearch.selectedInstrument?.segment || '',
+            selected_instrument_lot_size: instrumentSearch.selectedInstrument?.lotSize || 0,
+            order_type: timeIndicatorFormData.time_order_product_type || 'MIS',
             start_time: timeIndicatorFormData.start_time || '09:15:00',
             square_off_time: timeIndicatorFormData.square_off_time || '15:15:00',
             working_days: timeIndicatorFormData.working_days,
-            
-            // Order legs
-            orderLegs: orderLegs.map(leg => ({
+            daily_profit_limit: timeIndicatorFormData.daily_profit_limit,
+            daily_loss_limit: timeIndicatorFormData.daily_loss_limit,
+            max_trade_cycles: timeIndicatorFormData.max_trade_cycles,
+            no_trade_after: timeIndicatorFormData.noTradeAfter
+          },
+          
+          // Risk management
+          risk_management: {
+            stop_loss_type: 'SL pt',
+            stop_loss_value: 2.00,
+            stop_loss_on_price: 'On Price',
+            take_profit_type: 'TP pt',
+            take_profit_value: 4.00,
+            take_profit_on_price: 'On Price',
+            position_size: '1'
+          },
+          
+          // Profit trailing
+          profit_trailing: {
+            trailing_type: profitTrailingType,
+            lock_fix_profit_reach: null,
+            lock_fix_profit_at: null,
+            trail_profit_increase: null,
+            trail_profit_by: null,
+            lock_and_trail_reach: null,
+            lock_and_trail_at: null,
+            lock_and_trail_increase: null,
+            lock_and_trail_by: null
+          },
+          
+          // Strategy-specific data
+          strategy_specific_data: {
+            trigger_config: {
+              trigger_type: timeIndicatorFormData.trigger_type || 'specific_time',
+              trigger_time: timeIndicatorFormData.trigger_time || '09:20:00',
+              trigger_timezone: timeIndicatorFormData.trigger_timezone || 'IST',
+              trigger_recurrence: timeIndicatorFormData.trigger_recurrence || 'daily',
+              trigger_weekly_days: timeIndicatorFormData.trigger_weekly_days,
+              trigger_monthly_day: timeIndicatorFormData.trigger_monthly_day || 1,
+              trigger_monthly_type: timeIndicatorFormData.trigger_monthly_type || 'day_of_month',
+              trigger_after_open_minutes: timeIndicatorFormData.trigger_after_open_minutes || 5,
+              trigger_before_close_minutes: timeIndicatorFormData.trigger_before_close_minutes || 15,
+              trigger_candle_interval: timeIndicatorFormData.trigger_candle_interval || 5,
+              trigger_candle_delay_minutes: timeIndicatorFormData.trigger_candle_delay_minutes || 1,
+              action_type: timeIndicatorFormData.action_type || 'place_order',
+              order_transaction_type: timeIndicatorFormData.time_order_transaction_type || 'BUY',
+              order_type: timeIndicatorFormData.time_order_type || 'MARKET',
+              order_quantity: timeIndicatorFormData.time_order_quantity || 1,
+              order_product_type: timeIndicatorFormData.time_order_product_type || 'MIS',
+              order_price: timeIndicatorFormData.time_order_price || null
+            },
+            order_legs: orderLegs.map(leg => ({
               ...leg,
               waitAndTradeEnabled: advanceFeatures.waitAndTrade,
               reEntryEnabled: advanceFeatures.reEntryExecute,
               trailSLEnabled: advanceFeatures.trailSL
             })),
-            
-            // Advance features
+            advance_features: advanceFeatures,
+            form_state: {
+              selectedInstrument: instrumentSearch.selectedInstrument,
+              orderLegs: orderLegs,
             advanceFeatures: advanceFeatures,
-            
-            // Risk management
-            daily_profit_limit: timeIndicatorFormData.daily_profit_limit,
-            daily_loss_limit: timeIndicatorFormData.daily_loss_limit,
-            max_trade_cycles: timeIndicatorFormData.max_trade_cycles,
-            noTradeAfter: timeIndicatorFormData.noTradeAfter,
-            
-            // Profit trailing
-            profitTrailingType: profitTrailingType,
-            profitTrailingConfig: {
-              lockFixProfitReach: null,
-              lockFixProfitAt: null,
-              trailProfitIncrease: null,
-              trailProfitBy: null,
-              lockAndTrailReach: null,
-              lockAndTrailAt: null,
-              lockAndTrailIncrease: null,
-              lockAndTrailBy: null
+              profitTrailingType: profitTrailingType
             }
           }
         }),
@@ -665,6 +707,29 @@ const CreateStrategyPage = () => {
 
   const handleTimeIndicatorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('=== INDICATOR-BASED FORM SUBMIT DEBUG ===');
+    console.log('timeIndicatorFormData:', JSON.stringify(timeIndicatorFormData, null, 2));
+    console.log('selectedIndicators:', JSON.stringify(selectedIndicators, null, 2));
+    console.log('longComparator:', longComparator);
+    console.log('shortComparator:', shortComparator);
+    console.log('logicalOperator:', logicalOperator);
+    console.log('strikeType:', strikeType);
+    console.log('customPrice:', customPrice);
+    console.log('advanceFeatures:', JSON.stringify(advanceFeatures, null, 2));
+    console.log('conditionBlocks:', JSON.stringify(conditionBlocks, null, 2));
+    console.log('instrumentSearch.selectedInstrument:', JSON.stringify(instrumentSearch.selectedInstrument, null, 2));
+    
+    // Debug specific form values
+    console.log('=== FORM VALUES DEBUG ===');
+    console.log('daily_profit_limit:', timeIndicatorFormData.daily_profit_limit);
+    console.log('daily_loss_limit:', timeIndicatorFormData.daily_loss_limit);
+    console.log('max_trade_cycles:', timeIndicatorFormData.max_trade_cycles);
+    console.log('action:', timeIndicatorFormData.action);
+    console.log('qty:', timeIndicatorFormData.qty);
+    console.log('order_type:', timeIndicatorFormData.order_type);
+    console.log('start_time:', timeIndicatorFormData.start_time);
+    console.log('square_off_time:', timeIndicatorFormData.square_off_time);
     
     // Comprehensive validation for all required fields
     const validationErrors = [];
@@ -731,109 +796,45 @@ const CreateStrategyPage = () => {
     
     try {
       // Step 1: Create main strategy record with indicator-based specific data
-      const strategyResponse = await fetch('/api/strategies', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const requestBody = {
           user_id: (user as any)?.id,
       name: timeIndicatorFormData.name.trim(),
           description: timeIndicatorFormData.description || '',
           strategy_type: 'INDICATOR_BASED',
           symbol: timeIndicatorFormData.symbol,
           asset_type: timeIndicatorFormData.asset_type || 'STOCK',
-          entry_conditions: timeIndicatorFormData.entry_conditions || '',
-          exit_conditions: timeIndicatorFormData.exit_conditions || '',
-      risk_management: {
-            stop_loss: timeIndicatorFormData.stop_loss || '',
-            take_profit: timeIndicatorFormData.take_profit || '',
-            position_size: timeIndicatorFormData.position_size || ''
-          },
           is_paper_trading: true,
-          strategyData: {
-            // Basic strategy info
-            name: timeIndicatorFormData.name.trim(),
-            description: timeIndicatorFormData.description || '',
-            
-            // Selected instrument
-            selectedInstrument: instrumentSearch.selectedInstrument,
-            
-            // Trading configuration
+          
+          // Common configuration
+          config: {
+            selected_instrument_symbol: instrumentSearch.selectedInstrument?.symbol || '',
+            selected_instrument_name: instrumentSearch.selectedInstrument?.name || '',
+            selected_instrument_segment: instrumentSearch.selectedInstrument?.segment || '',
+            selected_instrument_lot_size: instrumentSearch.selectedInstrument?.lotSize || 0,
             order_type: timeIndicatorFormData.order_type || 'MIS',
             start_time: timeIndicatorFormData.start_time || '09:15:00',
             square_off_time: timeIndicatorFormData.square_off_time || '15:15:00',
             working_days: timeIndicatorFormData.working_days,
-            
-            // Chart and analysis configuration
-          chart_type: timeIndicatorFormData.chart_type || 'Candle',
-          time_interval: timeIndicatorFormData.interval || '5 Min',
-          transaction_type: timeIndicatorFormData.transaction_type || 'Both Side',
-            
-            // Condition configuration
-          condition_blocks: conditionBlocks,
-          logical_operator: logicalOperator,
-            long_conditions: [
-              ...(selectedIndicators.long1 ? [{
-                indicator1: selectedIndicators.long1.indicator,
-                indicator2: selectedIndicators.long2?.indicator || '',
-                parameters: {
-                  ...selectedIndicators.long1.parameters,
-                  ...(selectedIndicators.long2?.parameters || {})
-                }
-              }] : []),
-              ...(selectedIndicators.long2 && !selectedIndicators.long1 ? [{
-                indicator1: selectedIndicators.long2.indicator,
-                indicator2: '',
-                parameters: selectedIndicators.long2.parameters
-              }] : [])
-            ],
-            long_comparator: longComparator,
-            short_conditions: [
-              ...(selectedIndicators.short1 ? [{
-                indicator1: selectedIndicators.short1.indicator,
-                indicator2: selectedIndicators.short2?.indicator || '',
-                parameters: {
-                  ...selectedIndicators.short1.parameters,
-                  ...(selectedIndicators.short2?.parameters || {})
-                }
-              }] : []),
-              ...(selectedIndicators.short2 && !selectedIndicators.short1 ? [{
-                indicator1: selectedIndicators.short2.indicator,
-                indicator2: '',
-                parameters: selectedIndicators.short2.parameters
-              }] : [])
-            ],
-            short_comparator: shortComparator,
-          selected_indicators: selectedIndicators,
-            
-            // Strike configuration
-            strike_type: strikeType,
-            strike_value: '',
-            custom_price: customPrice ? parseFloat(customPrice) : null,
-            
-            // Trading parameters
-            action_type: 'BUY',
-            quantity: 1,
-            expiry_type: 'WEEKLY',
-            
-            // Stop Loss and Take Profit
-            sl_type: 'SL Points',
-            sl_value: 0,
-            sl_on_price: 'On Price',
-            tp_type: 'TP Points',
-            tp_value: 0,
-            tp_on_price: 'On Price',
-            
-            // Risk management
             daily_profit_limit: timeIndicatorFormData.daily_profit_limit,
             daily_loss_limit: timeIndicatorFormData.daily_loss_limit,
             max_trade_cycles: timeIndicatorFormData.max_trade_cycles,
-            no_trade_after: timeIndicatorFormData.noTradeAfter,
+            no_trade_after: timeIndicatorFormData.noTradeAfter
+          },
+          
+          // Risk management
+          risk_management: {
+            stop_loss_type: timeIndicatorFormData.stop_loss_type || 'SL pt',
+            stop_loss_value: parseFloat(timeIndicatorFormData.stop_loss_value) || 0,
+            stop_loss_on_price: timeIndicatorFormData.stop_loss_on_price || 'On Price',
+            take_profit_type: timeIndicatorFormData.take_profit_type || 'TP pt',
+            take_profit_value: parseFloat(timeIndicatorFormData.take_profit_value) || 0,
+            take_profit_on_price: timeIndicatorFormData.take_profit_on_price || 'On Price',
+            position_size: timeIndicatorFormData.position_size || '1'
+          },
             
             // Profit trailing
-          profit_trailing_type: profitTrailingType || 'no_trailing',
-            profit_trailing_config: {
+          profit_trailing: {
+            trailing_type: profitTrailingType || 'no_trailing',
               lock_fix_profit_reach: null,
               lock_fix_profit_at: null,
               trail_profit_increase: null,
@@ -842,17 +843,79 @@ const CreateStrategyPage = () => {
               lock_and_trail_at: null,
               lock_and_trail_increase: null,
               lock_and_trail_by: null
+          },
+          
+          // Strategy-specific data
+          strategy_specific_data: {
+            chart_config: {
+              chart_type: timeIndicatorFormData.chart_type || 'Candle',
+              time_interval: timeIndicatorFormData.interval || '5 Min',
+              transaction_type: timeIndicatorFormData.transaction_type || 'Both Side'
+            },
+            condition_blocks: [
+              {
+                long_indicator1: selectedIndicators.long1?.indicator || '',
+                long_indicator1_params: selectedIndicators.long1?.parameters || {},
+                long_comparator: longComparator,
+                long_indicator2: selectedIndicators.long2?.indicator || '',
+                long_indicator2_params: selectedIndicators.long2?.parameters || {},
+                short_indicator1: selectedIndicators.short1?.indicator || '',
+                short_indicator1_params: selectedIndicators.short1?.parameters || {},
+                short_comparator: shortComparator,
+                short_indicator2: selectedIndicators.short2?.indicator || '',
+                short_indicator2_params: selectedIndicators.short2?.parameters || {},
+                logical_operator: logicalOperator
+              }
+            ],
+            selected_indicators: selectedIndicators,
+            strike_config: {
+              strike_type: strikeType,
+              strike_value: '',
+              custom_price: customPrice ? parseFloat(customPrice) : null
+            },
+            form_state: {
+              selectedInstrument: instrumentSearch.selectedInstrument,
+              condition_blocks: conditionBlocks,
+              logical_operator: logicalOperator,
+              selected_indicators: selectedIndicators,
+              strike_config: {
+                strike_type: strikeType,
+                strike_value: '',
+                custom_price: customPrice
+              }
+            },
+            // Additional form data
+            option_config: {
+              option_type: timeIndicatorFormData.option_type || 'CE',
+              strike_selection: timeIndicatorFormData.strike_selection || 'ATM',
+              expiry_type: timeIndicatorFormData.expiry_type || 'WEEKLY',
+              lot_size: timeIndicatorFormData.lot_size || 1,
+              action: timeIndicatorFormData.action || 'BUY',
+              qty: timeIndicatorFormData.qty || timeIndicatorFormData.lot_size || 75
             }
           }
-        }),
+        };
+      
+      console.log('Request body being sent to API:', JSON.stringify(requestBody, null, 2));
+      
+      const strategyResponse = await fetch('/api/strategies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
       });
+
+      console.log('Strategy response status:', strategyResponse.status);
 
       if (!strategyResponse.ok) {
         const errorData = await strategyResponse.json();
+        console.error('Strategy creation failed:', errorData);
         throw new Error(errorData.error || 'Failed to create main strategy');
       }
 
       const strategyData = await strategyResponse.json();
+      console.log('Strategy creation response:', strategyData);
 
       console.log('Indicator Based Strategy saved successfully');
       // Add a small delay to ensure data is saved
@@ -924,27 +987,62 @@ const CreateStrategyPage = () => {
       strategy_type: 'PROGRAMMING',
           symbol: programmingFormData.symbol,
           asset_type: 'STOCK',
-      entry_conditions: 'Custom programming logic',
-      exit_conditions: 'Custom exit conditions',
-      risk_management: {
-            stop_loss: programmingFormData.stop_loss || '',
-            take_profit: programmingFormData.take_profit || '',
-            position_size: programmingFormData.position_size || ''
-          },
           is_paper_trading: true,
-          strategyData: {
+          
+          // Common configuration
+          config: {
+            selected_instrument_symbol: instrumentSearch.selectedInstrument?.symbol || '',
+            selected_instrument_name: instrumentSearch.selectedInstrument?.name || '',
+            selected_instrument_segment: instrumentSearch.selectedInstrument?.segment || '',
+            selected_instrument_lot_size: instrumentSearch.selectedInstrument?.lotSize || 0,
+            order_type: programmingFormData.order_type || 'MIS',
+            start_time: programmingFormData.start_time || '09:15:00',
+            square_off_time: programmingFormData.square_off_time || '15:15:00',
+            working_days: programmingFormData.working_days,
+            daily_profit_limit: programmingFormData.daily_profit_limit,
+            daily_loss_limit: programmingFormData.daily_loss_limit,
+            max_trade_cycles: programmingFormData.max_trade_cycles,
+            no_trade_after: programmingFormData.noTradeAfter
+          },
+          
+          // Risk management
+      risk_management: {
+            stop_loss_type: programmingFormData.stop_loss_type || 'SL pt',
+            stop_loss_value: parseFloat(programmingFormData.stop_loss) || 2.0,
+            stop_loss_on_price: programmingFormData.stop_loss_on_price || 'On Price',
+            take_profit_type: programmingFormData.take_profit_type || 'TP pt',
+            take_profit_value: parseFloat(programmingFormData.take_profit) || 4.0,
+            take_profit_on_price: programmingFormData.take_profit_on_price || 'On Price',
+            position_size: programmingFormData.position_size || '1'
+          },
+          
+          // Profit trailing
+          profit_trailing: {
+            trailing_type: profitTrailingType || 'no_trailing',
+            lock_fix_profit_reach: null,
+            lock_fix_profit_at: null,
+            trail_profit_increase: null,
+            trail_profit_by: null,
+            lock_and_trail_reach: null,
+            lock_and_trail_at: null,
+            lock_and_trail_increase: null,
+            lock_and_trail_by: null
+          },
+          
+          // Strategy-specific data
+          strategy_specific_data: {
+            dependencies: programmingFormData.dependencies || [],
+            environment_variables: programmingFormData.environment_variables || {},
+            execution_config: {
           programming_language: programmingFormData.programming_language || 'PYTHON',
           code: programmingFormData.code,
           code_version: '1.0.0',
           execution_frequency: 'real_time',
           max_execution_time: 30,
-          dependencies: [],
-          environment_variables: {},
-          stop_loss_type: 'SL %',
-          stop_loss_value: parseFloat(programmingFormData.stop_loss) || 2.0,
-          take_profit_type: 'TP %',
-          take_profit_value: parseFloat(programmingFormData.take_profit) || 4.0,
-          position_size: programmingFormData.position_size || '1'
+              timeout: programmingFormData.timeout || 300,
+              memory_limit: programmingFormData.memory_limit || 512,
+              cpu_limit: programmingFormData.cpu_limit || 1
+            }
           }
         }),
       });

@@ -767,7 +767,9 @@ const IndicatorBasedStrategy: React.FC<IndicatorBasedStrategyProps> = ({
             <div className="flex flex-col">
               <label className="text-xs text-blue-300 mb-1">Action</label>
               <select 
+                value={timeIndicatorFormData.action || 'BUY'}
                 disabled={!isUnderlyingSelected}
+                onChange={(e) => setTimeIndicatorFormData((prev: any) => ({ ...prev, action: e.target.value }))}
                 className={`p-2 rounded text-sm font-medium border focus:outline-none ${
                   isUnderlyingSelected
                     ? 'bg-green-100 text-green-700 border-green-300 focus:ring-1 focus:ring-green-400'
@@ -784,6 +786,7 @@ const IndicatorBasedStrategy: React.FC<IndicatorBasedStrategyProps> = ({
               <input 
                 type="number" 
                 placeholder="75"
+                value={timeIndicatorFormData.qty || ''}
                 disabled={!isUnderlyingSelected}
                 className={`w-full p-2 border rounded text-sm focus:outline-none ${
                   isUnderlyingSelected
@@ -792,11 +795,7 @@ const IndicatorBasedStrategy: React.FC<IndicatorBasedStrategyProps> = ({
                 }`}
                 onChange={(e) => {
                   if (!isUnderlyingSelected) return;
-                  // Update quantity based on lot size
-                  const quantity = parseInt(e.target.value) || 0;
-                  const lotSize = instrumentSearch.selectedInstrument?.lotSize || 50;
-                  const totalQuantity = quantity * lotSize;
-                  console.log(`Quantity: ${quantity}, Lot Size: ${lotSize}, Total: ${totalQuantity}`);
+                  setTimeIndicatorFormData((prev: any) => ({ ...prev, qty: e.target.value }));
                 }}
               />
             </div>
@@ -1015,6 +1014,8 @@ const IndicatorBasedStrategy: React.FC<IndicatorBasedStrategyProps> = ({
                 <input
                   type="number"
                   placeholder="Enter amount"
+                  value={timeIndicatorFormData.daily_profit_limit || ''}
+                  onChange={(e) => setTimeIndicatorFormData((prev: any) => ({ ...prev, daily_profit_limit: e.target.value }))}
                   className="w-full p-3 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-orange-500/30 rounded-lg text-white placeholder-gray-400 focus:ring-1 focus:ring-orange-400 focus:outline-none transition-all duration-300 backdrop-blur-sm"
                 />
               </div>
@@ -1024,6 +1025,8 @@ const IndicatorBasedStrategy: React.FC<IndicatorBasedStrategyProps> = ({
                 <input
                   type="number"
                   placeholder="Enter amount"
+                  value={timeIndicatorFormData.daily_loss_limit || ''}
+                  onChange={(e) => setTimeIndicatorFormData((prev: any) => ({ ...prev, daily_loss_limit: e.target.value }))}
                   className="w-full p-3 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-orange-500/30 rounded-lg text-white placeholder-gray-400 focus:ring-1 focus:ring-orange-400 focus:outline-none transition-all duration-300 backdrop-blur-sm"
                 />
               </div>
@@ -1032,7 +1035,8 @@ const IndicatorBasedStrategy: React.FC<IndicatorBasedStrategyProps> = ({
                 <label className="text-xs text-orange-300 mb-2">Max Trade Cycle</label>
                 <input
                   type="number"
-                  defaultValue="1"
+                  value={timeIndicatorFormData.max_trade_cycles || ''}
+                  onChange={(e) => setTimeIndicatorFormData((prev: any) => ({ ...prev, max_trade_cycles: e.target.value }))}
                   className="w-full p-3 bg-gradient-to-r from-slate-800/80 to-slate-700/80 border border-orange-500/30 rounded-lg text-white placeholder-gray-400 focus:ring-1 focus:ring-orange-400 focus:outline-none transition-all duration-300 backdrop-blur-sm"
                 />
               </div>

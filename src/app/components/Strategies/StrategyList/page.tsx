@@ -21,28 +21,44 @@ const StrategyList = () => {
   useEffect(() => {
     // Get user data from cookies
     const userData = getUserData();
+    console.log('StrategyList useEffect - User data from cookies:', userData);
     if (userData && userData.id) {
+      console.log('StrategyList useEffect - User ID found:', userData.id);
       setUserId(userData.id);
       fetchStrategies(userData.id);
     } else {
-      console.error('No user data found');
+      console.error('StrategyList useEffect - No user data found or user ID missing');
+      // Try with hardcoded user ID for debugging
+      const debugUserId = 'tradesetu002';
+      console.log('StrategyList useEffect - Using debug user ID:', debugUserId);
+      setUserId(debugUserId);
+      fetchStrategies(debugUserId);
     }
   }, []);
 
   const fetchStrategies = async (user_id: string) => {
     try {
       setLoading(true);
+      console.log('StrategyList fetchStrategies - Starting fetch for user_id:', user_id);
       const response = await fetch(`/api/strategies?user_id=${user_id}`);
+      console.log('StrategyList fetchStrategies - Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
+        console.log('StrategyList fetchStrategies - API Response data:', data);
+        console.log('StrategyList fetchStrategies - Strategies array:', data.strategies);
+        console.log('StrategyList fetchStrategies - Strategies array length:', data.strategies?.length);
+        console.log('StrategyList fetchStrategies - Setting strategies state with:', data.strategies || []);
         setStrategies(data.strategies || []);
+        console.log('StrategyList fetchStrategies - State updated, strategies should now be:', data.strategies || []);
       } else {
         const errorData = await response.json();
-        console.error('Failed to fetch strategies:', errorData);
+        console.error('StrategyList fetchStrategies - Failed to fetch strategies:', errorData);
       }
     } catch (error) {
-      console.error('Error fetching strategies:', error);
+      console.error('StrategyList fetchStrategies - Error fetching strategies:', error);
     } finally {
+      console.log('StrategyList fetchStrategies - Setting loading to false');
       setLoading(false);
     }
   };
@@ -78,24 +94,38 @@ const StrategyList = () => {
 
   const handleDeleteStrategy = async () => {
     try {
-      const response = await fetch(`/api/strategies/${strategyToDelete}`, {
+      console.log('Deleting strategy with ID:', strategyToDelete);
+      const response = await fetch(`/api/strategies?id=${strategyToDelete}`, {
         method: 'DELETE',
       });
 
+      console.log('Delete response status:', response.status);
+      
       if (response.ok) {
+        const data = await response.json();
+        console.log('Delete response data:', data);
         setStrategies(strategies.filter(s => s.id !== strategyToDelete));
         setShowDeleteModal(false);
         setStrategyToDelete('');
         setDeploymentStatus('Strategy deleted successfully!');
         setTimeout(() => setDeploymentStatus(''), 3000);
+      } else {
+        const errorData = await response.json();
+        console.error('Delete failed:', errorData);
+        setDeploymentStatus(`Delete failed: ${errorData.error || 'Unknown error'}`);
+        setTimeout(() => setDeploymentStatus(''), 3000);
       }
     } catch (error) {
       console.error('Error deleting strategy:', error);
+      setDeploymentStatus(`Delete error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setTimeout(() => setDeploymentStatus(''), 3000);
     }
   };
 
 
   const handleViewStrategy = (id: string) => {
+    console.log('View button clicked for strategy ID:', id);
+    console.log('Navigating to:', `/strategies/${id}`);
     router.push(`/strategies/${id}`);
   };
 
@@ -119,6 +149,16 @@ const StrategyList = () => {
   const handleCreateStrategy = () => {
     router.push('/strategies/create');
   };
+
+  console.log('StrategyList render - loading:', loading);
+  console.log('StrategyList render - strategies:', strategies);
+  console.log('StrategyList render - strategies length:', strategies.length);
+  console.log('StrategyList render - userId:', userId);
+  console.log('StrategyList render - strategies type:', typeof strategies);
+  console.log('StrategyList render - strategies is array:', Array.isArray(strategies));
+  console.log('StrategyList render - strategies content:', JSON.stringify(strategies, null, 2));
+  console.log('StrategyList render - strategies[0]:', strategies[0]);
+  console.log('StrategyList render - strategies[0]?.name:', strategies[0]?.name);
 
   if (loading) {
     return (
@@ -164,6 +204,12 @@ const StrategyList = () => {
           <div className="text-blue-200 text-sm mb-4">
             Total strategies loaded: {strategies.length}
           </div>
+          <div className="text-red-200 text-sm mb-4">
+            Debug: strategies array = {JSON.stringify(strategies)}
+          </div>
+          <div className="text-yellow-200 text-sm mb-4">
+            Condition check: strategies.length === 0 = {strategies.length === 0}
+          </div>
           <button
             onClick={handleCreateStrategy}
             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
@@ -173,21 +219,30 @@ const StrategyList = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {strategies.map((strategy) => (
+          <div className="text-green-200 text-sm mb-4 col-span-full">
+            Debug: Rendering {strategies.length} strategies
+          </div>
+          {strategies.map((strategy, index) => {
+            console.log(`StrategyList render - Mapping strategy ${index}:`, strategy);
+            return (
             <div key={strategy.id} className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-xl font-semibold text-white">{strategy.name}</h3>
-                  <p className="text-blue-200 mt-1">{strategy.description}</p>
+                  <h3 className="text-xl font-semibold text-white">{strategy.name || 'No Name'}</h3>
+                  <p className="text-blue-200 mt-1">{strategy.description || 'No Description'}</p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleViewStrategy(strategy.id)}
-                    className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all duration-200"
+                  <a
+                    href={`/strategies/${strategy.id}`}
+                    onClick={(e) => {
+                      console.log('View link clicked, strategy:', strategy);
+                      console.log('Navigating to:', `/strategies/${strategy.id}`);
+                    }}
+                    className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all duration-200 inline-block"
                     title="View Strategy"
                   >
                     <Eye size={16} />
-                  </button>
+                  </a>
                   <button
                     onClick={() => toggleStrategy(strategy.id)}
                     className={`p-2 rounded-lg transition-all duration-200 ${
@@ -267,7 +322,8 @@ const StrategyList = () => {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

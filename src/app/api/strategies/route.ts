@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
-// GET - Fetch all strategies with their details
+// GET - Fetch all strategies with their details using normalized structure
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -9,10 +9,25 @@ export async function GET(request: NextRequest) {
     const strategyType = searchParams.get('strategy_type');
     const limit = searchParams.get('limit') || '50';
 
-
     let query = `
-      SELECT s.*, sp.total_trades, sp.winning_trades, sp.total_pnl, sp.win_rate, sp.max_drawdown
+      SELECT 
+        s.*,
+        sc.selected_instrument_symbol, sc.selected_instrument_name, sc.selected_instrument_segment, sc.selected_instrument_lot_size,
+        sc.order_type, sc.start_time, sc.square_off_time, sc.working_days,
+        sc.daily_profit_limit, sc.daily_loss_limit, sc.max_trade_cycles, sc.no_trade_after,
+        srm.stop_loss_type, srm.stop_loss_value, srm.stop_loss_on_price,
+        srm.take_profit_type, srm.take_profit_value, srm.take_profit_on_price, srm.position_size,
+        spt.trailing_type, spt.lock_fix_profit_reach, spt.lock_fix_profit_at,
+        spt.trail_profit_increase, spt.trail_profit_by, spt.lock_and_trail_reach, spt.lock_and_trail_at,
+        spt.lock_and_trail_increase, spt.lock_and_trail_by,
+        sp.total_trades, sp.winning_trades, sp.losing_trades, sp.total_pnl, sp.max_drawdown,
+        sp.sharpe_ratio, sp.win_rate, sp.avg_win, sp.avg_loss, sp.profit_factor,
+        sp.max_consecutive_losses, sp.total_runtime_hours, sp.avg_trade_duration_minutes,
+        sp.max_position_size, sp.max_daily_loss, sp.max_daily_profit
       FROM strategies s
+      LEFT JOIN strategy_config sc ON s.id = sc.strategy_id
+      LEFT JOIN strategy_risk_management srm ON s.id = srm.strategy_id
+      LEFT JOIN strategy_profit_trailing spt ON s.id = spt.strategy_id
       LEFT JOIN strategy_performance sp ON s.id = sp.strategy_id
     `;
     
@@ -38,41 +53,136 @@ export async function GET(request: NextRequest) {
     const [rows] = await pool.execute(query, params);
     const strategies = rows as any[];
 
+    console.log('Raw strategies from database:', strategies);
+    console.log('Number of strategies found:', strategies.length);
 
-    // Parse JSON fields and add strategy-specific details
-    const strategiesWithDetails = strategies.map((strategy) => {
+    // Get strategy-specific data for each strategy
+    const strategiesWithDetails = await Promise.all(strategies.map(async (strategy) => {
+      let strategySpecificData = null;
+      
+      // Get strategy-specific configuration based on type
+      if (strategy.strategy_type === 'TIME_BASED') {
+        const [timeBasedRows] = await pool.execute(
+          'SELECT * FROM time_based_strategies WHERE strategy_id = ?',
+          [strategy.id]
+        );
+        strategySpecificData = (timeBasedRows as any[])[0] || null;
+      } else if (strategy.strategy_type === 'INDICATOR_BASED') {
+        const [indicatorRows] = await pool.execute(
+          'SELECT * FROM indicator_based_strategies WHERE strategy_id = ?',
+          [strategy.id]
+        );
+        strategySpecificData = (indicatorRows as any[])[0] || null;
+      } else if (strategy.strategy_type === 'PROGRAMMING') {
+        const [programmingRows] = await pool.execute(
+          'SELECT * FROM programming_strategies WHERE strategy_id = ?',
+          [strategy.id]
+        );
+        strategySpecificData = (programmingRows as any[])[0] || null;
+      }
+
       // Parse JSON fields
-      const riskManagement = typeof strategy.risk_management === 'string' 
-        ? JSON.parse(strategy.risk_management) 
-        : strategy.risk_management;
-      
-      const strategyData = strategy.strategy_data 
-        ? (typeof strategy.strategy_data === 'string' 
-            ? JSON.parse(strategy.strategy_data) 
-            : strategy.strategy_data)
+      const workingDays = strategy.working_days 
+        ? (typeof strategy.working_days === 'string' ? JSON.parse(strategy.working_days) : strategy.working_days)
         : null;
       
-      const advanceFeatures = strategy.advance_features 
-        ? (typeof strategy.advance_features === 'string' 
-            ? JSON.parse(strategy.advance_features) 
-            : strategy.advance_features)
-        : null;
+      // Parse strategy-specific JSON fields
+      let parsedStrategyData = null;
+      if (strategySpecificData) {
+        if (strategy.strategy_type === 'TIME_BASED') {
+          parsedStrategyData = {
+            trigger_config: strategySpecificData.trigger_config 
+              ? (typeof strategySpecificData.trigger_config === 'string' ? JSON.parse(strategySpecificData.trigger_config) : strategySpecificData.trigger_config)
+              : null,
+            order_legs: strategySpecificData.order_legs 
+              ? (typeof strategySpecificData.order_legs === 'string' ? JSON.parse(strategySpecificData.order_legs) : strategySpecificData.order_legs)
+              : null,
+            advance_features: strategySpecificData.advance_features 
+              ? (typeof strategySpecificData.advance_features === 'string' ? JSON.parse(strategySpecificData.advance_features) : strategySpecificData.advance_features)
+              : null,
+            form_state: strategySpecificData.form_state 
+              ? (typeof strategySpecificData.form_state === 'string' ? JSON.parse(strategySpecificData.form_state) : strategySpecificData.form_state)
+              : null
+          };
+        } else if (strategy.strategy_type === 'INDICATOR_BASED') {
+          parsedStrategyData = {
+            chart_config: strategySpecificData.chart_config 
+              ? (typeof strategySpecificData.chart_config === 'string' ? JSON.parse(strategySpecificData.chart_config) : strategySpecificData.chart_config)
+              : null,
+            condition_blocks: strategySpecificData.condition_blocks 
+              ? (typeof strategySpecificData.condition_blocks === 'string' ? JSON.parse(strategySpecificData.condition_blocks) : strategySpecificData.condition_blocks)
+              : null,
+            selected_indicators: strategySpecificData.selected_indicators 
+              ? (typeof strategySpecificData.selected_indicators === 'string' ? JSON.parse(strategySpecificData.selected_indicators) : strategySpecificData.selected_indicators)
+              : null,
+            strike_config: strategySpecificData.strike_config 
+              ? (typeof strategySpecificData.strike_config === 'string' ? JSON.parse(strategySpecificData.strike_config) : strategySpecificData.strike_config)
+              : null,
+            form_state: strategySpecificData.form_state 
+              ? (typeof strategySpecificData.form_state === 'string' ? JSON.parse(strategySpecificData.form_state) : strategySpecificData.form_state)
+              : null,
+            option_config: strategySpecificData.option_config 
+              ? (typeof strategySpecificData.option_config === 'string' ? JSON.parse(strategySpecificData.option_config) : strategySpecificData.option_config)
+              : null
+          };
+        } else if (strategy.strategy_type === 'PROGRAMMING') {
+          parsedStrategyData = {
+            dependencies: strategySpecificData.dependencies 
+              ? (typeof strategySpecificData.dependencies === 'string' ? JSON.parse(strategySpecificData.dependencies) : strategySpecificData.dependencies)
+              : null,
+            environment_variables: strategySpecificData.environment_variables 
+              ? (typeof strategySpecificData.environment_variables === 'string' ? JSON.parse(strategySpecificData.environment_variables) : strategySpecificData.environment_variables)
+              : null
+          };
+        }
+      }
+
+      // Get risk management data
+      const [riskRows] = await pool.execute(
+        'SELECT * FROM strategy_risk_management WHERE strategy_id = ?',
+        [strategy.id]
+      );
+      const riskManagement = (riskRows as any[])[0] || null;
       
-      const performanceMetrics = strategy.performance_metrics 
-        ? (typeof strategy.performance_metrics === 'string' 
-            ? JSON.parse(strategy.performance_metrics) 
-            : strategy.performance_metrics)
-        : null;
+      // Get config data
+      const [configRows] = await pool.execute(
+        'SELECT * FROM strategy_config WHERE strategy_id = ?',
+        [strategy.id]
+      );
+      const config = (configRows as any[])[0] || null;
+      
+      console.log('Risk management data for strategy', strategy.id, ':', riskManagement);
+      console.log('Config data for strategy', strategy.id, ':', config);
 
       return {
         ...strategy,
+        working_days: workingDays,
+        details: parsedStrategyData,
         risk_management: riskManagement,
-        strategy_data: strategyData,
-        advance_features: advanceFeatures,
-        performance_metrics: performanceMetrics,
-        details: strategyData // Use strategy_data as details
+        config: config,
+        performance: {
+          total_trades: strategy.total_trades || 0,
+          winning_trades: strategy.winning_trades || 0,
+          losing_trades: strategy.losing_trades || 0,
+          total_pnl: strategy.total_pnl || 0,
+          max_drawdown: strategy.max_drawdown || 0,
+          sharpe_ratio: strategy.sharpe_ratio || 0,
+          win_rate: strategy.win_rate || 0,
+          avg_win: strategy.avg_win || 0,
+          avg_loss: strategy.avg_loss || 0,
+          profit_factor: strategy.profit_factor || 0,
+          max_consecutive_losses: strategy.max_consecutive_losses || 0,
+          total_runtime_hours: strategy.total_runtime_hours || 0,
+          avg_trade_duration_minutes: strategy.avg_trade_duration_minutes || 0,
+          max_position_size: strategy.max_position_size || 0,
+          max_daily_loss: strategy.max_daily_loss || 0,
+          max_daily_profit: strategy.max_daily_profit || 0
+        }
       };
-    });
+    }));
+    
+    console.log('Final strategies with details:', strategiesWithDetails);
+    console.log('Final count:', strategiesWithDetails.length);
     
     return NextResponse.json({ 
       strategies: strategiesWithDetails,
@@ -87,7 +197,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create a new strategy (main strategy record only)
+// POST - Create a new strategy using normalized structure
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -98,23 +208,48 @@ export async function POST(request: NextRequest) {
       strategy_type,
       symbol,
       asset_type = 'STOCK',
-      entry_conditions,
-      exit_conditions,
-      risk_management,
       is_active = false,
       is_paper_trading = true,
-      strategyData // Additional strategy-specific data
+      // Common configuration
+      config = {},
+      // Risk management
+      risk_management = {},
+      // Profit trailing
+      profit_trailing = {},
+      // Strategy-specific data
+      strategy_specific_data = {}
     } = body;
 
     const strategyId = `strategy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Insert into main strategies table
-    const [result] = await pool.execute(
+    console.log('=== STRATEGY CREATION DEBUG ===');
+    console.log('Request body:', JSON.stringify(body, null, 2));
+    console.log('Config data:', JSON.stringify(config, null, 2));
+    console.log('Risk management data:', JSON.stringify(risk_management, null, 2));
+    console.log('Strategy specific data:', JSON.stringify(strategy_specific_data, null, 2));
+    
+    // Debug specific config values
+    console.log('=== CONFIG VALUES DEBUG ===');
+    console.log('config.daily_profit_limit:', config.daily_profit_limit);
+    console.log('config.daily_loss_limit:', config.daily_loss_limit);
+    console.log('config.max_trade_cycles:', config.max_trade_cycles);
+    console.log('config.order_type:', config.order_type);
+    console.log('config.start_time:', config.start_time);
+    console.log('config.square_off_time:', config.square_off_time);
+
+    // Get a connection from the pool for transaction
+    const connection = await pool.getConnection();
+    
+    try {
+      // Start transaction
+      await connection.beginTransaction();
+
+      // 1. Insert into main strategies table
+      await connection.execute(
       `INSERT INTO strategies (
         id, user_id, name, description, strategy_type, symbol, asset_type,
-        entry_conditions, exit_conditions, risk_management,
         is_active, is_paper_trading
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         strategyId,
         user_id,
@@ -123,37 +258,118 @@ export async function POST(request: NextRequest) {
         strategy_type,
         symbol,
         asset_type,
-        entry_conditions,
-        exit_conditions,
-        JSON.stringify(risk_management),
         is_active,
         is_paper_trading
       ]
     );
 
-        // Create strategy-specific record based on type
-        if (strategy_type === 'TIME_BASED' && strategyData) {
-          await createTimeBasedStrategyComplete(strategyId, user_id, strategyData);
-        } else if (strategy_type === 'INDICATOR_BASED' && strategyData) {
-          await createIndicatorBasedStrategy(strategyId, user_id, strategyData);
-        }
+      // 2. Insert common configuration
+      const configId = `config_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      const configValues = [
+        configId, strategyId,
+        config.selected_instrument_symbol || '',
+        config.selected_instrument_name || '',
+        config.selected_instrument_segment || '',
+        config.selected_instrument_lot_size || 0,
+        config.order_type || 'MIS',
+        config.start_time || '09:15:00',
+        config.square_off_time || '15:15:00',
+        JSON.stringify(config.working_days || {}),
+        config.daily_profit_limit || null,
+        config.daily_loss_limit || null,
+        config.max_trade_cycles || null,
+        config.no_trade_after || null
+      ];
+      
+      console.log('Config insert values:', configValues);
+      
+      await connection.execute(
+        `INSERT INTO strategy_config (
+          id, strategy_id, selected_instrument_symbol, selected_instrument_name, 
+          selected_instrument_segment, selected_instrument_lot_size, order_type,
+          start_time, square_off_time, working_days, daily_profit_limit, 
+          daily_loss_limit, max_trade_cycles, no_trade_after
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        configValues
+      );
 
-    // Initialize performance record
+      // 3. Insert risk management
+      const riskId = `risk_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      await connection.execute(
+        `INSERT INTO strategy_risk_management (
+          id, strategy_id, stop_loss_type, stop_loss_value, stop_loss_on_price,
+          take_profit_type, take_profit_value, take_profit_on_price, position_size
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          riskId, strategyId,
+          risk_management.stop_loss_type || 'SL pt',
+          risk_management.stop_loss_value || 2.00,
+          risk_management.stop_loss_on_price || 'On Price',
+          risk_management.take_profit_type || 'TP pt',
+          risk_management.take_profit_value || 4.00,
+          risk_management.take_profit_on_price || 'On Price',
+          risk_management.position_size || '1'
+        ]
+      );
+
+      // 4. Insert profit trailing
+      const trailingId = `trail_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      await connection.execute(
+        `INSERT INTO strategy_profit_trailing (
+          id, strategy_id, trailing_type, lock_fix_profit_reach, lock_fix_profit_at,
+          trail_profit_increase, trail_profit_by, lock_and_trail_reach, lock_and_trail_at,
+          lock_and_trail_increase, lock_and_trail_by
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          trailingId, strategyId,
+          profit_trailing.trailing_type || 'no_trailing',
+          profit_trailing.lock_fix_profit_reach || null,
+          profit_trailing.lock_fix_profit_at || null,
+          profit_trailing.trail_profit_increase || null,
+          profit_trailing.trail_profit_by || null,
+          profit_trailing.lock_and_trail_reach || null,
+          profit_trailing.lock_and_trail_at || null,
+          profit_trailing.lock_and_trail_increase || null,
+          profit_trailing.lock_and_trail_by || null
+        ]
+      );
+
+      // 5. Insert strategy-specific data
+      if (strategy_type === 'TIME_BASED' && strategy_specific_data) {
+        await createTimeBasedStrategyWithConnection(connection, strategyId, user_id, strategy_specific_data);
+      } else if (strategy_type === 'INDICATOR_BASED' && strategy_specific_data) {
+        await createIndicatorBasedStrategyWithConnection(connection, strategyId, user_id, strategy_specific_data);
+      } else if (strategy_type === 'PROGRAMMING' && strategy_specific_data) {
+        await createProgrammingStrategyWithConnection(connection, strategyId, user_id, strategy_specific_data);
+      }
+
+      // 6. Initialize performance record
     const performanceId = `perf_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    await pool.execute(
+    await connection.execute(
       `INSERT INTO strategy_performance (
-        id, strategy_id, user_id, total_trades, winning_trades, losing_trades,
+        id, strategy_id, total_trades, winning_trades, losing_trades,
         total_pnl, max_drawdown, sharpe_ratio, win_rate, avg_win, avg_loss,
         profit_factor, max_consecutive_losses, total_runtime_hours,
         avg_trade_duration_minutes, max_position_size, max_daily_loss, max_daily_profit
-      ) VALUES (?, ?, ?, 0, 0, 0, 0.00, 0.00, 0.0000, 0.00, 0.00, 0.00, 0.0000, 0, 0.00, 0.00, 0.00, 0.00, 0.00)`,
-      [performanceId, strategyId, user_id]
+      ) VALUES (?, ?, 0, 0, 0, 0.00, 0.00, 0.0000, 0.00, 0.00, 0.00, 0.0000, 0, 0.00, 0.00, 0.00, 0.00, 0.00)`,
+      [performanceId, strategyId]
     );
+
+      // Commit transaction
+      await connection.commit();
 
     return NextResponse.json({ 
       message: 'Strategy created successfully',
       strategy_id: strategyId 
     });
+    } catch (error) {
+      // Rollback transaction on error
+      await connection.rollback();
+      throw error;
+    } finally {
+      // Release connection back to pool
+      connection.release();
+    }
   } catch (error) {
     console.error('Error creating strategy:', error);
     return NextResponse.json({ 
@@ -163,601 +379,160 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Helper function to create comprehensive time-based strategy
-async function createTimeBasedStrategyComplete(strategyId: string, userId: string, data: any) {
+// Helper function to create time-based strategy using normalized structure
+async function createTimeBasedStrategyWithConnection(connection: any, strategyId: string, userId: string, data: any) {
   const timeBasedId = `time_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
   
   // Extract form data
   const {
-    name,
-    description,
-    selectedInstrument,
-    time_order_product_type,
-    start_time,
-    square_off_time,
-    working_days,
-    orderLegs = [],
-    advanceFeatures = {},
-    daily_profit_limit,
-    daily_loss_limit,
-    max_trade_cycles,
-    noTradeAfter,
-    profitTrailingType = 'no_trailing',
-    profitTrailingConfig = {}
+    trigger_config = {},
+    order_legs = [],
+    advance_features = {},
+    form_state = {}
   } = data;
 
-  // Create main time-based strategy record
-  await pool.execute(
-    `INSERT INTO time_based_strategies_complete (
-      id, strategy_id, user_id, name, description,
-      selected_instrument_symbol, selected_instrument_name, selected_instrument_segment, selected_instrument_lot_size,
-      order_product_type, start_time, square_off_time, working_days, order_legs, advance_features,
-      daily_profit_limit, daily_loss_limit, max_trade_cycles, no_trade_after,
-      profit_trailing_type, profit_trailing_config
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      timeBasedId, strategyId, userId, name, description,
-      selectedInstrument?.symbol || '',
-      selectedInstrument?.name || '',
-      selectedInstrument?.segment || '',
-      selectedInstrument?.lotSize || 0,
-      time_order_product_type,
-      start_time,
-      square_off_time,
-      JSON.stringify(working_days),
-      JSON.stringify(orderLegs),
-      JSON.stringify(advanceFeatures),
-      daily_profit_limit,
-      daily_loss_limit,
-      max_trade_cycles,
-      noTradeAfter,
-      profitTrailingType,
-      JSON.stringify(profitTrailingConfig)
-    ]
-  );
-
-  // Create individual order legs
-  for (let i = 0; i < orderLegs.length; i++) {
-    const leg = orderLegs[i];
-    const legId = `leg_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    
-    await pool.execute(
-      `INSERT INTO time_based_order_legs (
-        id, time_based_strategy_id, leg_order, action, quantity, option_type, expiry,
-        atm_pt, atm_value, sl_type, sl_value, sl_on_price, tp_type, tp_value, tp_on_price,
-        wait_and_trade_enabled, wait_and_trade_type, wait_and_trade_value,
-        re_entry_enabled, re_entry_type, re_entry_value, re_entry_condition,
-        trail_sl_enabled, tsl_type, tsl_value1, tsl_value2
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        legId, timeBasedId, i + 1,
-        leg.action || 'buy',
-        leg.quantity || 0,
-        leg.optionType || 'ce',
-        leg.expiry || 'Weekly',
-        leg.atmPt || 'ATM pt',
-        leg.atm || '0',
-        leg.slType || 'SL %',
-        leg.slValue || 0,
-        leg.slOnPrice || 'On Price',
-        leg.tpType || 'TP %',
-        leg.tpValue || 0,
-        leg.tpOnPrice || 'On Price',
-        leg.waitAndTradeEnabled || false,
-        leg.waitAndTradeType || '%↑',
-        leg.waitAndTradeValue || 0,
-        leg.reEntryEnabled || false,
-        leg.reEntryType || 'ReEntry On Cost',
-        leg.reEntryValue || 5,
-        leg.reEntryCondition || 'On Close',
-        leg.trailSLEnabled || false,
-        leg.tslType || 'TSL %',
-        leg.tslValue1 || 0,
-        leg.tslValue2 || 0
-      ]
-    );
-  }
-
-  // Create advance features record
-  const advanceFeaturesId = `adv_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO time_based_advance_features (
-      id, time_based_strategy_id, move_sl_to_cost, exit_all_on_sl_tgt,
-      pre_punch_sl, wait_and_trade, re_entry_execute, trail_sl
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      advanceFeaturesId, timeBasedId,
-      advanceFeatures.moveSLToCost || false,
-      advanceFeatures.exitAllOnSLTgt || false,
-      advanceFeatures.prePunchSL || false,
-      advanceFeatures.waitAndTrade || false,
-      advanceFeatures.reEntryExecute || false,
-      advanceFeatures.trailSL || false
-    ]
-  );
-
-  // Create profit trailing record
-  const profitTrailingId = `trail_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO time_based_profit_trailing (
-      id, time_based_strategy_id, trailing_type,
-      lock_fix_profit_reach, lock_fix_profit_at,
-      trail_profit_increase, trail_profit_by,
-      lock_and_trail_reach, lock_and_trail_at, lock_and_trail_increase, lock_and_trail_by
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      profitTrailingId, timeBasedId, profitTrailingType,
-      profitTrailingConfig.lockFixProfitReach || null,
-      profitTrailingConfig.lockFixProfitAt || null,
-      profitTrailingConfig.trailProfitIncrease || null,
-      profitTrailingConfig.trailProfitBy || null,
-      profitTrailingConfig.lockAndTrailReach || null,
-      profitTrailingConfig.lockAndTrailAt || null,
-      profitTrailingConfig.lockAndTrailIncrease || null,
-      profitTrailingConfig.lockAndTrailBy || null
-    ]
-  );
-
-  // Create form state record
-  const formStateId = `state_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO time_based_form_states (
-      id, time_based_strategy_id, time_indicator_form_data, instrument_search_state,
-      order_legs_state, advance_features_state, profit_trailing_type_state,
-      is_underlying_selected, show_advance_features
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      formStateId, timeBasedId,
-      JSON.stringify(data),
-      JSON.stringify({ selectedInstrument }),
-      JSON.stringify(orderLegs),
-      JSON.stringify(advanceFeatures),
-      profitTrailingType,
-      true, // is_underlying_selected
-      false // show_advance_features
-    ]
-  );
-}
-
-// Helper function to create time-based strategy (legacy)
-async function createTimeBasedStrategy(strategyId: string, userId: string, data: any) {
-  const timeBasedId = `time_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  
-  await pool.execute(
+  // Create time-based strategy record
+  await connection.execute(
     `INSERT INTO time_based_strategies (
-      id, strategy_id, user_id, trigger_type, trigger_time, trigger_timezone,
-      trigger_recurrence, trigger_weekly_days, trigger_monthly_day, trigger_monthly_type,
-      trigger_after_open_minutes, trigger_before_close_minutes, trigger_candle_interval,
-      trigger_candle_delay_minutes, action_type, order_transaction_type, order_type,
-      order_quantity, order_product_type, order_price, working_days, start_time,
-      square_off_time, strategy_start_date, strategy_start_time, strategy_validity_date,
-      deactivate_after_first_trigger, stop_loss_type, stop_loss_value, take_profit_type,
-      take_profit_value, position_size, profit_trailing_type, trailing_stop,
-      trailing_stop_percentage, trailing_profit, trailing_profit_percentage,
-      daily_loss_limit, daily_profit_limit, max_trade_cycles, no_trade_after
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      id, strategy_id, trigger_config, order_legs, advance_features, form_state
+    ) VALUES (?, ?, ?, ?, ?, ?)`,
     [
-      timeBasedId, strategyId, userId,
-      data.trigger_type || 'specific_time',
-      data.trigger_time || '09:20:00',
-      data.trigger_timezone || 'IST',
-      data.trigger_recurrence || 'daily',
-      JSON.stringify(data.trigger_weekly_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
-      data.trigger_monthly_day || 1,
-      data.trigger_monthly_type || 'day_of_month',
-      data.trigger_after_open_minutes || 0,
-      data.trigger_before_close_minutes || 0,
-      data.trigger_candle_interval || 0,
-      data.trigger_candle_delay_minutes || 0,
-      data.action_type || 'place_order',
-      data.order_transaction_type || 'BOTH',
-      data.order_type || 'MARKET',
-      data.order_quantity || 1,
-      data.order_product_type || 'MIS',
-      data.order_price || 0.00,
-      JSON.stringify(data.working_days || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']),
-      data.start_time || '09:15:00',
-      data.square_off_time || '15:15:00',
-      data.strategy_start_date || null,
-      data.strategy_start_time || null,
-      data.strategy_validity_date || null,
-      data.deactivate_after_first_trigger || 0,
-      data.stop_loss_type || 'SL %',
-      data.stop_loss_value || 2.00,
-      data.take_profit_type || 'TP %',
-      data.take_profit_value || 4.00,
-      data.position_size || '1 lot',
-      data.profit_trailing_type || 'no_trailing',
-      data.trailing_stop || 0,
-      data.trailing_stop_percentage || 0.00,
-      data.trailing_profit || 0,
-      data.trailing_profit_percentage || 0.00,
-      data.daily_loss_limit || null,
-      data.daily_profit_limit || null,
-      data.max_trade_cycles || null,
-      data.no_trade_after || null
+      timeBasedId, strategyId,
+      JSON.stringify(trigger_config),
+      JSON.stringify(order_legs),
+      JSON.stringify(advance_features),
+      JSON.stringify(form_state)
     ]
   );
 }
 
-// Helper function to create indicator-based strategy
-// Helper function to create comprehensive indicator-based strategy
-async function createIndicatorBasedStrategyComplete(strategyId: string, userId: string, data: any) {
+// Helper function to create indicator-based strategy using normalized structure
+async function createIndicatorBasedStrategyWithConnection(connection: any, strategyId: string, userId: string, data: any) {
+  console.log('=== CREATE INDICATOR-BASED STRATEGY DEBUG ===');
+  console.log('strategyId:', strategyId);
+  console.log('userId:', userId);
+  console.log('data:', JSON.stringify(data, null, 2));
+  
   const indicatorBasedId = `ind_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  console.log('Generated indicatorBasedId:', indicatorBasedId);
   
   // Extract form data
   const {
-    name,
-    description,
-    selectedInstrument,
-    order_type,
-    start_time,
-    square_off_time,
-    working_days,
-    chart_type,
-    time_interval,
-    transaction_type,
-    condition_blocks,
-    logical_operator,
-    long_conditions,
-    long_comparator,
-    short_conditions,
-    short_comparator,
-    selected_indicators,
-    strike_type,
-    strike_value,
-    custom_price,
-    action_type,
-    quantity,
-    expiry_type,
-    sl_type,
-    sl_value,
-    sl_on_price,
-    tp_type,
-    tp_value,
-    tp_on_price,
-    daily_profit_limit,
-    daily_loss_limit,
-    max_trade_cycles,
-    no_trade_after,
-    profit_trailing_type,
-    profit_trailing_config
+    chart_config = {},
+    condition_blocks = [],
+    selected_indicators = {},
+    strike_config = {},
+    form_state = {}
   } = data;
 
-  // Create main indicator-based strategy record
-  await pool.execute(
-    `INSERT INTO indicator_based_strategies_complete (
-      id, strategy_id, user_id, name, description,
-      selected_instrument_symbol, selected_instrument_name, selected_instrument_segment, selected_instrument_lot_size,
-      order_type, start_time, square_off_time, working_days,
-      chart_type, time_interval, transaction_type,
-      condition_blocks, logical_operator,
-      long_conditions, long_comparator, short_conditions, short_comparator,
-      selected_indicators, strike_type, strike_value, custom_price,
-      action_type, quantity, expiry_type,
-      sl_type, sl_value, sl_on_price, tp_type, tp_value, tp_on_price,
-      daily_profit_limit, daily_loss_limit, max_trade_cycles, no_trade_after,
-      profit_trailing_type, profit_trailing_config
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      indicatorBasedId, strategyId, userId, name, description,
-      selectedInstrument?.symbol || '',
-      selectedInstrument?.name || '',
-      selectedInstrument?.segment || '',
-      selectedInstrument?.lotSize || 0,
-      order_type || 'MIS',
-      start_time || '09:15:00',
-      square_off_time || '15:15:00',
-      JSON.stringify(working_days || {}),
-      chart_type || 'Candle',
-      time_interval || '5 Min',
-      transaction_type || 'Both Side',
-      condition_blocks || 1,
-      logical_operator || 'AND',
-      JSON.stringify(long_conditions || []),
-      long_comparator || '',
-      JSON.stringify(short_conditions || []),
-      short_comparator || '',
-      JSON.stringify(selected_indicators || {}),
-      strike_type || 'ATM pt',
-      strike_value || '',
-      custom_price || null,
-      action_type || 'BUY',
-      quantity || 1,
-      expiry_type || 'WEEKLY',
-      sl_type || 'SL pt',
-      sl_value || 0,
-      sl_on_price || 'On Price',
-      tp_type || 'TP pt',
-      tp_value || 0,
-      tp_on_price || 'On Price',
-      daily_profit_limit || null,
-      daily_loss_limit || null,
-      max_trade_cycles || null,
-      no_trade_after || null,
-      profit_trailing_type || 'no_trailing',
-      JSON.stringify(profit_trailing_config || {})
-    ]
-  );
+  console.log('Extracted values:');
+  console.log('- chart_config:', JSON.stringify(chart_config, null, 2));
+  console.log('- condition_blocks:', JSON.stringify(condition_blocks, null, 2));
+  console.log('- selected_indicators:', JSON.stringify(selected_indicators, null, 2));
+  console.log('- strike_config:', JSON.stringify(strike_config, null, 2));
+  console.log('- form_state:', JSON.stringify(form_state, null, 2));
 
-  // Create condition blocks
-  if (condition_blocks && condition_blocks > 0) {
-    for (let i = 0; i < condition_blocks; i++) {
-      const blockId = `block_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-      
-      await pool.execute(
-        `INSERT INTO indicator_condition_blocks (
-          id, indicator_strategy_id, block_order,
-          long_indicator1, long_indicator1_params, long_comparator, long_indicator2, long_indicator2_params,
-          short_indicator1, short_indicator1_params, short_comparator, short_indicator2, short_indicator2_params,
-          logical_operator
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          blockId, indicatorBasedId, i + 1,
-          long_conditions?.[i]?.indicator1 || null,
-          JSON.stringify(long_conditions?.[i]?.indicator1_params || {}),
-          long_comparator || '',
-          long_conditions?.[i]?.indicator2 || null,
-          JSON.stringify(long_conditions?.[i]?.indicator2_params || {}),
-          short_conditions?.[i]?.indicator1 || null,
-          JSON.stringify(short_conditions?.[i]?.indicator1_params || {}),
-          short_comparator || '',
-          short_conditions?.[i]?.indicator2 || null,
-          JSON.stringify(short_conditions?.[i]?.indicator2_params || {}),
-          logical_operator || 'AND'
-        ]
-      );
-    }
-  }
-
-  // Create strike configuration
-  const strikeConfigId = `strike_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO indicator_strike_config (
-      id, indicator_strategy_id, strike_type, strike_value, custom_price,
-      atm_offset_points, atm_offset_percentage, sp_operator, sp_value
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      strikeConfigId, indicatorBasedId, strike_type || 'ATM pt',
-      strike_value || '', custom_price || null,
-      null, null, '=', null
-    ]
+  // Create indicator-based strategy record
+  const insertValues = [
+    indicatorBasedId, strategyId,
+    JSON.stringify(chart_config),
+    JSON.stringify(condition_blocks),
+    JSON.stringify(selected_indicators),
+    JSON.stringify(strike_config),
+    JSON.stringify(form_state)
+  ];
+  
+  console.log('Insert values for indicator_based_strategies:', insertValues);
+  console.log('SQL Query: INSERT INTO indicator_based_strategies (id, strategy_id, chart_config, condition_blocks, selected_indicators, strike_config, form_state) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  
+  const result = await connection.execute(
+    `INSERT INTO indicator_based_strategies (
+      id, strategy_id, chart_config, condition_blocks, selected_indicators, strike_config, form_state
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    insertValues
   );
-
-  // Create risk management configuration
-  const riskMgmtId = `risk_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO indicator_risk_management (
-      id, indicator_strategy_id, daily_profit_limit, daily_loss_limit,
-      max_trade_cycles, no_trade_after, trading_start_time, trading_end_time,
-      stop_loss_type, stop_loss_value, stop_loss_on_price,
-      take_profit_type, take_profit_value, take_profit_on_price
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      riskMgmtId, indicatorBasedId,
-      daily_profit_limit || null,
-      daily_loss_limit || null,
-      max_trade_cycles || null,
-      no_trade_after || null,
-      start_time || '09:15:00',
-      square_off_time || '15:15:00',
-      sl_type || 'SL pt',
-      sl_value || 0,
-      sl_on_price || 'On Price',
-      tp_type || 'TP pt',
-      tp_value || 0,
-      tp_on_price || 'On Price'
-    ]
-  );
-
-  // Create profit trailing configuration
-  const profitTrailingId = `trail_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO indicator_profit_trailing (
-      id, indicator_strategy_id, trailing_type,
-      lock_fix_profit_reach, lock_fix_profit_at,
-      trail_profit_increase, trail_profit_by,
-      lock_and_trail_reach, lock_and_trail_at, lock_and_trail_increase, lock_and_trail_by
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      profitTrailingId, indicatorBasedId, profit_trailing_type || 'no_trailing',
-      profit_trailing_config?.lock_fix_profit_reach || null,
-      profit_trailing_config?.lock_fix_profit_at || null,
-      profit_trailing_config?.trail_profit_increase || null,
-      profit_trailing_config?.trail_profit_by || null,
-      profit_trailing_config?.lock_and_trail_reach || null,
-      profit_trailing_config?.lock_and_trail_at || null,
-      profit_trailing_config?.lock_and_trail_increase || null,
-      profit_trailing_config?.lock_and_trail_by || null
-    ]
-  );
-
-  // Create form state record
-  const formStateId = `state_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO indicator_form_states (
-      id, indicator_strategy_id, indicator_form_data, instrument_search_state,
-      condition_blocks_state, selected_indicators_state, strike_config_state,
-      risk_management_state, profit_trailing_state, is_underlying_selected, show_advanced_options
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      formStateId, indicatorBasedId,
-      JSON.stringify(data),
-      JSON.stringify({ selectedInstrument }),
-      JSON.stringify({ condition_blocks, logical_operator }),
-      JSON.stringify(selected_indicators || {}),
-      JSON.stringify({ strike_type, strike_value, custom_price }),
-      JSON.stringify({ daily_profit_limit, daily_loss_limit, max_trade_cycles, no_trade_after }),
-      JSON.stringify({ profit_trailing_type, profit_trailing_config }),
-      true, // is_underlying_selected
-      false // show_advanced_options
-    ]
-  );
+  
+  console.log('Insert result for indicator_based_strategies:', result);
+  console.log('=== END CREATE INDICATOR-BASED STRATEGY DEBUG ===');
 }
 
-async function createIndicatorBasedStrategy(strategyId: string, userId: string, data: any) {
-  const indicatorBasedId = `ind_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+// Helper function to create programming strategy using normalized structure
+async function createProgrammingStrategyWithConnection(connection: any, strategyId: string, userId: string, data: any) {
+  const programmingId = `prog_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
   
-  // Extract data from the new structure
+  // Extract form data
   const {
-    name,
-    description,
-    selectedInstrument,
-    order_type,
-    start_time,
-    square_off_time,
-    working_days,
-    chart_type,
-    time_interval,
-    transaction_type,
-    condition_blocks,
-    logical_operator,
-    long_conditions,
-    short_conditions,
-    long_comparator,
-    short_comparator,
-    selected_indicators,
-    strike_type,
-    strike_value,
-    custom_price,
-    action_type,
-    quantity,
-    expiry_type,
-    sl_type,
-    sl_value,
-    sl_on_price,
-    tp_type,
-    tp_value,
-    tp_on_price,
-    daily_profit_limit,
-    daily_loss_limit,
-    max_trade_cycles,
-    no_trade_after,
-    profit_trailing_type,
-    profit_trailing_config
+    dependencies = [],
+    environment_variables = {},
+    execution_config = {}
   } = data;
   
-  // Store in comprehensive table
-  await pool.execute(
-    `INSERT INTO indicator_based_strategies_complete (
-      id, strategy_id, user_id, name, description,
-      selected_instrument_symbol, selected_instrument_name, selected_instrument_segment, selected_instrument_lot_size,
-      order_type, start_time, square_off_time, working_days,
-      chart_type, time_interval, transaction_type,
-      condition_blocks, logical_operator,
-      long_conditions, long_comparator, short_conditions, short_comparator,
-      selected_indicators,
-      strike_type, strike_value, custom_price,
-      action_type, quantity, expiry_type,
-      sl_type, sl_value, sl_on_price,
-      tp_type, tp_value, tp_on_price,
-      daily_profit_limit, daily_loss_limit, max_trade_cycles, no_trade_after,
-      profit_trailing_type, profit_trailing_config
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  // Create programming strategy record
+  await connection.execute(
+    `INSERT INTO programming_strategies (
+      id, strategy_id, dependencies, environment_variables, execution_config
+    ) VALUES (?, ?, ?, ?, ?)`,
     [
-      indicatorBasedId, strategyId, userId,
-      name || 'Indicator Strategy',
-      description || '',
-      selectedInstrument?.symbol || '',
-      selectedInstrument?.name || '',
-      selectedInstrument?.segment || '',
-      selectedInstrument?.lotSize || 0,
-      order_type || 'MIS',
-      start_time || '09:15:00',
-      square_off_time || '15:15:00',
-      JSON.stringify(working_days || {}),
-      chart_type || 'Candle',
-      time_interval || '5 Min',
-      transaction_type || 'Both Side',
-      condition_blocks || 1,
-      logical_operator || 'AND',
-      JSON.stringify(long_conditions || []),
-      long_comparator || '',
-      JSON.stringify(short_conditions || []),
-      short_comparator || '',
-      JSON.stringify(selected_indicators || {}),
-      strike_type || 'ATM pt',
-      strike_value || '',
-      custom_price || null,
-      action_type || 'BUY',
-      quantity || 1,
-      expiry_type || 'WEEKLY',
-      (sl_type === 'SL Points' ? 'SL pt' : sl_type) || 'SL pt',
-      sl_value || 2.00,
-      sl_on_price || 'On Price',
-      (tp_type === 'TP Points' ? 'TP pt' : tp_type) || 'TP pt',
-      tp_value || 4.00,
-      tp_on_price || 'On Price',
-      daily_profit_limit || null,
-      daily_loss_limit || null,
-      max_trade_cycles || null,
-      no_trade_after || null,
-      profit_trailing_type || 'no_trailing',
-      JSON.stringify(profit_trailing_config || {})
+      programmingId, strategyId,
+      JSON.stringify(dependencies),
+      JSON.stringify(environment_variables),
+      JSON.stringify(execution_config)
     ]
   );
-  
-  // Store in condition blocks table
-  const conditionBlockId = `block_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO indicator_condition_blocks (
-      id, indicator_strategy_id, block_order,
-      long_indicator1, long_indicator1_params, long_comparator, long_indicator2, long_indicator2_params,
-      short_indicator1, short_indicator1_params, short_comparator, short_indicator2, short_indicator2_params,
-      logical_operator
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      conditionBlockId, indicatorBasedId, 1,
-      long_conditions?.[0]?.indicator1 || null,
-      JSON.stringify(long_conditions?.[0]?.parameters || {}),
-      long_comparator || '',
-      long_conditions?.[0]?.indicator2 || null,
-      JSON.stringify({}),
-      short_conditions?.[0]?.indicator1 || null,
-      JSON.stringify(short_conditions?.[0]?.parameters || {}),
-      short_comparator || '',
-      short_conditions?.[0]?.indicator2 || null,
-      JSON.stringify({}),
-      logical_operator || 'AND'
-    ]
-  );
-  
-  // Store in risk management table
-  const riskMgmtId = `risk_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO indicator_risk_management (
-      id, indicator_strategy_id, daily_profit_limit, daily_loss_limit,
-      max_trade_cycles, no_trade_after, trading_start_time, trading_end_time,
-      stop_loss_type, stop_loss_value, stop_loss_on_price,
-      take_profit_type, take_profit_value, take_profit_on_price
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [
-      riskMgmtId, indicatorBasedId,
-      daily_profit_limit || null,
-      daily_loss_limit || null,
-      max_trade_cycles || null,
-      no_trade_after || null,
-      start_time || '09:15:00',
-      square_off_time || '15:15:00',
-      (sl_type === 'SL Points' ? 'SL pt' : sl_type) || 'SL pt',
-      sl_value || 2.00,
-      sl_on_price || 'On Price',
-      (tp_type === 'TP Points' ? 'TP pt' : tp_type) || 'TP pt',
-      tp_value || 4.00,
-      tp_on_price || 'On Price'
-    ]
-  );
-  
-  // Store in profit trailing table
-  const profitTrailingId = `trail_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-  await pool.execute(
-    `INSERT INTO indicator_profit_trailing (
-      id, indicator_strategy_id, trailing_type
-    ) VALUES (?, ?, ?)`,
-    [
-      profitTrailingId, indicatorBasedId,
-      profit_trailing_type || 'no_trailing'
-    ]
-  );
-  
 }
+
+// DELETE method to delete a strategy
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const strategyId = searchParams.get('id');
+    
+    if (!strategyId) {
+      return NextResponse.json({ error: 'Strategy ID is required' }, { status: 400 });
+    }
+
+    const connection = await pool.getConnection();
+    
+    try {
+      await connection.beginTransaction();
+
+      // Delete from strategy-specific tables first (foreign key constraints)
+      await connection.execute('DELETE FROM time_based_strategies WHERE strategy_id = ?', [strategyId]);
+      await connection.execute('DELETE FROM indicator_based_strategies WHERE strategy_id = ?', [strategyId]);
+      await connection.execute('DELETE FROM programming_strategies WHERE strategy_id = ?', [strategyId]);
+      
+      // Delete from related tables
+      await connection.execute('DELETE FROM strategy_performance WHERE strategy_id = ?', [strategyId]);
+      await connection.execute('DELETE FROM strategy_profit_trailing WHERE strategy_id = ?', [strategyId]);
+      await connection.execute('DELETE FROM strategy_risk_management WHERE strategy_id = ?', [strategyId]);
+      await connection.execute('DELETE FROM strategy_config WHERE strategy_id = ?', [strategyId]);
+      
+      // Finally delete from main strategies table
+      const result = await connection.execute('DELETE FROM strategies WHERE id = ?', [strategyId]);
+      
+      if ((result as any).affectedRows === 0) {
+        await connection.rollback();
+        return NextResponse.json({ error: 'Strategy not found' }, { status: 404 });
+      }
+
+      await connection.commit();
+      
+      return NextResponse.json({ 
+        message: 'Strategy deleted successfully',
+        strategy_id: strategyId 
+      });
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Error deleting strategy:', error);
+    return NextResponse.json({ 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  }
+}
+

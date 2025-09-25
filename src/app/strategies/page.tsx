@@ -7,7 +7,7 @@ import StrategyList from '../components/Strategies/StrategyList/page';
 import { getUserToken, getUserData } from '@/lib/cookies';
 
 const StrategiesPage = () => {
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
 
@@ -15,12 +15,17 @@ const StrategiesPage = () => {
     // Check if user is authenticated
     const token = getUserToken()
     const userData = getUserData()
+    
+    console.log('Strategies page - Token:', token)
+    console.log('Strategies page - User data:', userData)
 
     if (!token || !userData) {
+      console.log('No token or user data found, redirecting to login')
       router.push('/auth/login')
       return
     }
 
+    console.log('User authenticated, setting user data')
     setUser(userData)
     setIsLoading(false)
   }, [router])
