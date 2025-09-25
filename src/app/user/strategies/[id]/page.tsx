@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Play, Pause, TrendingUp, BarChart3, Clock, Calendar, Target } from 'lucide-react';
-import { Strategy } from '../../../types/database';
-import { formatPercentage } from '../../../lib/utils';
+import { Strategy } from '../../../../types/database';
+import { formatPercentage } from '../../../../lib/utils';
 import Sidebar from '../../components/Layout/Sidebar';
 import { getUserToken, getUserData } from '@/lib/cookies';
 

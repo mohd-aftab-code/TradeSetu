@@ -41,15 +41,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   ];
 
   const routeMap: Record<string, string> = {
-    dashboard: '/dashboard',
-    strategies: '/strategies',
-    backtesting: '/backtesting',
-    'live-trades': '/live-trades',
-    'market-insight': '/market-insight',
-    'onetape-trade': '/onetape-trade',
-    billing: '/billing',
-    profile: '/profile',
-    settings: '/settings',
+    dashboard: '/user/dashboard',
+    strategies: '/user/strategies',
+    backtesting: '/user/backtesting',
+    'live-trades': '/user/live-trades',
+    'market-insight': '/user/market-insight',
+    'onetape-trade': '/user/onetape-trade',
+    billing: '/user/billing',
+    profile: '/user/profile',
+    settings: '/user/settings',
   };
 
   return (

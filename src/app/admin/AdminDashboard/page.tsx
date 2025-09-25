@@ -28,9 +28,9 @@ const AdminDashboard = () => {
     if (userData.role !== 'ADMIN') {
       // Redirect to appropriate dashboard based on role
       if (userData.role === 'SALES_EXECUTIVE') {
-        router.push('/sales-dashboard');
+        router.push('/sales/sales-dashboard');
       } else {
-        router.push('/dashboard');
+        router.push('/user/dashboard');
       }
       return;
     }

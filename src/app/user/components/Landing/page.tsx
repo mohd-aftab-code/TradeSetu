@@ -21,7 +21,7 @@ import {
   Linkedin
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { getUserToken, getUserData, setSelectedPlan, removeUserAuth } from '../../../lib/cookies';
+import { getUserToken, getUserData, setSelectedPlan, removeUserAuth } from '../../../../lib/cookies';
 
 const LandingPage = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
@@ -143,9 +143,9 @@ const LandingPage = () => {
       if (userData.role === 'ADMIN') {
           router.push('/admin');
       } else if (userData.role === 'SALES_EXECUTIVE') {
-        router.push('/sales-dashboard');
+        router.push('/sales/sales-dashboard');
         } else {
-          router.push('/dashboard'); // Regular user dashboard
+          router.push('/user/dashboard'); // Regular user dashboard
       }
     } else {
       // Not logged in, go to login page

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, CreditCard, Settings, Save, Loader2 } from 'lucide-react';
-import { User as UserType } from '../../../types/database';
+import { User as UserType } from '../../../../types/database';
 import { getUserToken } from '@/lib/cookies';
 
 const ProfilePage: React.FC = () => {

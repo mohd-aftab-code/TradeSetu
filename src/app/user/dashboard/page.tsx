@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Dashboard from '@/app/components/Dashboard/page'
+import Dashboard from '@/app/user/components/Dashboard/page'
 import { getUserToken, getUserData } from '@/lib/cookies'
 
 export default function DashboardPage() {
@@ -26,7 +26,7 @@ export default function DashboardPage() {
       if (userData.role === 'ADMIN') {
         router.push('/admin')
       } else if (userData.role === 'SALES_EXECUTIVE') {
-        router.push('/sales-dashboard')
+        router.push('/sales/sales-dashboard')
       }
       return
     }

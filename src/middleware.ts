@@ -35,29 +35,29 @@ export function middleware(request: NextRequest) {
     if (path.startsWith('/admin') && userRole !== 'ADMIN') {
       // Redirect non-admin users to their appropriate dashboard
       if (userRole === 'SALES_EXECUTIVE') {
-        return NextResponse.redirect(new URL('/sales-dashboard', request.url))
+        return NextResponse.redirect(new URL('/sales/sales-dashboard', request.url))
       } else {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+        return NextResponse.redirect(new URL('/user/dashboard', request.url))
       }
     }
 
     // Sales executive dashboard access control
-    if (path.startsWith('/sales-dashboard') && userRole !== 'SALES_EXECUTIVE') {
+    if (path.startsWith('/sales/sales-dashboard') && userRole !== 'SALES_EXECUTIVE') {
       // Redirect non-sales users to their appropriate dashboard
       if (userRole === 'ADMIN') {
         return NextResponse.redirect(new URL('/admin', request.url))
       } else {
-        return NextResponse.redirect(new URL('/dashboard', request.url))
+        return NextResponse.redirect(new URL('/user/dashboard', request.url))
       }
     }
 
     // Regular user dashboard access control
-    if (path === '/dashboard' && userRole !== 'USER') {
+    if (path === '/user/dashboard' && userRole !== 'USER') {
       // Redirect non-regular users to their appropriate dashboard
       if (userRole === 'ADMIN') {
         return NextResponse.redirect(new URL('/admin', request.url))
       } else if (userRole === 'SALES_EXECUTIVE') {
-        return NextResponse.redirect(new URL('/sales-dashboard', request.url))
+        return NextResponse.redirect(new URL('/sales/sales-dashboard', request.url))
       }
     }
   }
@@ -68,9 +68,9 @@ export function middleware(request: NextRequest) {
     if (userRole === 'ADMIN') {
       return NextResponse.redirect(new URL('/admin', request.url))
     } else if (userRole === 'SALES_EXECUTIVE') {
-      return NextResponse.redirect(new URL('/sales-dashboard', request.url))
+      return NextResponse.redirect(new URL('/sales/sales-dashboard', request.url))
     } else {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+      return NextResponse.redirect(new URL('/user/dashboard', request.url))
     }
   }
 

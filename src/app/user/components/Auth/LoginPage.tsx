@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, TrendingUp, ArrowLeft, Mail, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { setUserToken, setUserData } from '../../../lib/cookies';
+import { setUserToken, setUserData } from '../../../../lib/cookies';
 
 interface LoginPageProps {
   onLogin?: (credentials: { email: string; password: string }) => void;
@@ -42,9 +42,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onBack, selectedPlan, on
         if (data.user.role === 'ADMIN') {
           router.push('/admin');
         } else if (data.user.role === 'SALES_EXECUTIVE') {
-          router.push('/sales-dashboard'); // Future sales dashboard
+          router.push('/sales/sales-dashboard'); // Sales dashboard
         } else {
-          router.push('/dashboard'); // Regular user dashboard
+          router.push('/user/dashboard'); // Regular user dashboard
         }
         
         // Call onLogin callback if provided

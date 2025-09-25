@@ -40,7 +40,7 @@ export default function SalesDashboardPage() {
       if (userData.role === 'ADMIN') {
         router.push('/admin')
       } else {
-        router.push('/dashboard')
+        router.push('/user/dashboard')
       }
       return
     }

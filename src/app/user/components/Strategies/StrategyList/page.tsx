@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Play, Pause, TrendingUp, Eye, RefreshCw } from 'lucide-react';
-import { Strategy } from '../../../../types/database';
+import { Strategy } from '../../../../../types/database';
 import { useRouter } from 'next/navigation';
-import { formatPercentage } from '../../../../lib/utils';
-import { getUserData } from '../../../../lib/cookies';
+import { formatPercentage } from '../../../../../lib/utils';
+import { getUserData } from '../../../../../lib/cookies';
 
 const StrategyList = () => {
   const [strategies, setStrategies] = useState<Strategy[]>([]);
