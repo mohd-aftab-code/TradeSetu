@@ -1074,7 +1074,7 @@ const Dashboard: React.FC = () => {
                  <p className="text-blue-200 text-sm">We've sent a 6-digit OTP to your registered mobile number</p>
                  <p className="text-blue-300 text-xs mt-1">Account: {accountDetails.userId}</p>
                </div>
-
+ 
                <div className="space-y-4">
                  <div>
                    <label className="block text-blue-200 text-sm font-medium mb-2">Enter OTP</label>
