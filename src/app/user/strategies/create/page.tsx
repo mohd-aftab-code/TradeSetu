@@ -697,7 +697,7 @@ const CreateStrategyPage = () => {
         console.log('Time Based Strategy saved successfully');
       // Add a small delay to ensure data is saved
       setTimeout(() => {
-        router.push('/strategies');
+        router.push('/user/strategies');
       }, 1000);
     } catch (error) {
       console.error('Error saving time based strategy:', error);
@@ -913,7 +913,7 @@ const CreateStrategyPage = () => {
       console.log('Indicator Based Strategy saved successfully');
       // Add a small delay to ensure data is saved
       setTimeout(() => {
-        router.push('/strategies');
+        router.push('/user/strategies');
       }, 1000);
     } catch (error) {
       console.error('Error saving indicator based strategy:', error);
@@ -1050,7 +1050,7 @@ const CreateStrategyPage = () => {
       console.log('Programming Strategy saved successfully');
       // Add a small delay to ensure data is saved
       setTimeout(() => {
-        router.push('/strategies');
+        router.push('/user/strategies');
       }, 1000);
     } catch (error) {
       console.error('Error saving programming strategy:', error);

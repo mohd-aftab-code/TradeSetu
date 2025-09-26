@@ -21,7 +21,7 @@ import {
   Linkedin
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { getUserToken, getUserData, setSelectedPlan, removeUserAuth } from '../../../../lib/cookies';
+import { getUserToken, getUserData, setSelectedPlan, removeUserAuth } from '@/lib/cookies';
 
 const LandingPage = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);

@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Play, Pause, TrendingUp, BarChart3, Clock, Calendar, Target } from 'lucide-react';
-import { Strategy } from '../../../../types/database';
-import { formatPercentage } from '../../../../lib/utils';
+import { Strategy } from '@/types/database';
+import { formatPercentage } from '@/lib/utils';
 import Sidebar from '../../components/Layout/Sidebar';
 import { getUserToken, getUserData } from '@/lib/cookies';
 
@@ -70,16 +70,16 @@ const StrategyViewPage = () => {
           setStrategy(foundStrategy);
         } else {
           console.error('Strategy not found with ID:', strategyId);
-          router.push('/strategies');
+          router.push('/user/strategies');
         }
       } else {
         const errorData = await response.json();
         console.error('Failed to fetch strategies:', errorData);
-        router.push('/strategies');
+        router.push('/user/strategies');
       }
     } catch (error) {
       console.error('Error fetching strategy:', error);
-      router.push('/strategies');
+      router.push('/user/strategies');
     } finally {
       setLoading(false);
     }
@@ -174,7 +174,7 @@ const StrategyViewPage = () => {
           <main className="flex-1 p-6 space-y-4 md:ml-0">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => router.push('/strategies')}
+                onClick={() => router.push('/user/strategies')}
                 className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200"
               >
                 <ArrowLeft size={20} />
@@ -211,7 +211,7 @@ const StrategyViewPage = () => {
           <main className="flex-1 p-6 space-y-4 md:ml-0">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => router.push('/strategies')}
+                onClick={() => router.push('/user/strategies')}
                 className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200"
               >
                 <ArrowLeft size={20} />
@@ -232,7 +232,7 @@ const StrategyViewPage = () => {
               
               <div className="mt-4 space-x-4">
                 <button
-                  onClick={() => router.push('/strategies')}
+                  onClick={() => router.push('/user/strategies')}
                   className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all duration-200"
                 >
                   Back to Strategies
@@ -255,7 +255,7 @@ const StrategyViewPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
           <button
-            onClick={() => router.push('/strategies')}
+            onClick={() => router.push('/user/strategies')}
             className="p-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all duration-200"
           >
             <ArrowLeft size={20} />

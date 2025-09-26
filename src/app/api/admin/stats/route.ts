@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import pool from '../../../../lib/db';
+import pool from '@/lib/db';
 import jwt from 'jsonwebtoken';
 
 // GET /api/admin/stats - Get admin dashboard statistics
